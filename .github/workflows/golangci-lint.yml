@@ -16,8 +16,12 @@ on:
       - main
 
 jobs:
-  Go:
-    runs-on: ubuntu-latest
+  Lint:
+    strategy:
+      matrix:
+        go: [ 1.16, 1.17, 1.18 ]
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: on
 
@@ -25,7 +29,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: ${{ matrix.go }}
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -35,4 +39,3 @@ jobs:
         with:
           version: latest
           args: -E revive,gofmt
-          skip-go-installation: true
