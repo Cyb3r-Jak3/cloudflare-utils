@@ -11,6 +11,7 @@ on:
       - 'go.mod'
       - '**.go'
       - .github/workflows/golang.yml
+      - "cmd/cloudflare-utils/.goreleaser.yml"
   pull_request:
     branches:
       - main
