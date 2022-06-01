@@ -1,0 +1,36 @@
+name: Golanglint CI
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+    paths:
+      - '**.go'
+      - .github/workflows/golangci-lint.yml
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  Go:
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.17
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          args: -E revive,gofmt
+          skip-go-installation: true
