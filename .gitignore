@@ -23,3 +23,5 @@
 
 dns-records.yml
 *.env
+
+**/dist/*

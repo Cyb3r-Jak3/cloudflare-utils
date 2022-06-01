@@ -47,5 +47,6 @@ jobs:
         with:
           version: latest
           args: --snapshot --skip-publish --rm-dist
+          workdir: cmd/cloudflare-utils
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
