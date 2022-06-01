@@ -8,13 +8,15 @@ on:
       - '**'
     paths:
       - '**.go'
+      - 'go.mod'
+      - 'go.sum'
       - .github/workflows/golangci-lint.yml
   pull_request:
     branches:
       - main
 
 jobs:
-  Go:
+  Lint:
     runs-on: ubuntu-latest
     env:
       GO111MODULE: on
@@ -23,7 +25,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: ${{ matrix.go }}
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -33,4 +35,3 @@ jobs:
         with:
           version: latest
           args: -E revive,gofmt
-          skip-go-installation: true

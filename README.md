@@ -12,5 +12,3 @@ Basic Steps:
 2. There will be a file called `dns-records.yml`
 3. For any record you do not want to keep change `keep: true` to false
 4. Rerun `./cloudflare-utils dns-cleaner` and all records not marked to keep will be removed. **This tool does not recreate records if they are missing**
-
-

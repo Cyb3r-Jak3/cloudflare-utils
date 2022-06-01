@@ -11,6 +11,7 @@ on:
       - 'go.mod'
       - '**.go'
       - .github/workflows/golang.yml
+      - "cmd/cloudflare-utils/.goreleaser.yml"
   pull_request:
     branches:
       - main
@@ -50,3 +51,9 @@ jobs:
           workdir: cmd/cloudflare-utils
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: cloudflare-utils
+          path: cmd/cloudflare-utils/dist/*

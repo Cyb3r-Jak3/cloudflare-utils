@@ -1,6 +1,7 @@
 before:
   hooks:
-    - go mod tidy
+    - go mod tidy -compat 1.17
+    - cp ../../LICENSE .
 
 builds:
   - env:
@@ -14,6 +15,7 @@ builds:
       - arm
       - arm64
     binary: cloudflare-utils
+    mod_timestamp: '{{ .CommitTimestamp }}'
 
 archives:
   - replacements:
