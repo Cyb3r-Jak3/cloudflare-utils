@@ -8,6 +8,8 @@ on:
       - '**'
     paths:
       - '**.go'
+      - 'go.mod'
+      - 'go.sum'
       - .github/workflows/golangci-lint.yml
   pull_request:
     branches:
