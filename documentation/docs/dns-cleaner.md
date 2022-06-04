@@ -9,8 +9,9 @@ It operates in two steps, one to download the records and another to make any re
 
 ### 1. Download
 
-To download you current records run `cloudflare-utils <auth> --zone-name <ZONE> dns-cleaner` where `<ZONE>` is your domain ie `example.com`
-This will create a file called `dns-records.yml` with contains your DNS records. If you want a different file name then add `--dns-file` with the name of the file you want. It needs to end in either `.yml` or `.yaml`
+To download you current records run `cloudflare-utils <auth> --zone-name <ZONE> dns-cleaner` where `<ZONE>` is your domain ie `example.com`.  
+This will create a file called `dns-records.yml` with contains your DNS records.  
+If you want a different file name then add `--dns-file` with the name of the file you want. It needs to end in either `.yml` or `.yaml`
 
 ### 2. Edit your records
 
