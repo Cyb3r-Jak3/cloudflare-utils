@@ -9,7 +9,6 @@ import (
 	"github.com/urfave/cli/v2"
 	"os"
 	"sort"
-	"strings"
 )
 
 var (
@@ -82,14 +81,19 @@ func main() {
 }
 
 func setup(c *cli.Context) (err error) {
+	// Set up log level
 	setLogLevel(c)
+
+	// Create Cloudflare API Client
 	if c.String(apiTokenFlag) != "" {
+		// Create new API Client using an API Token
 		APIClient, err = cloudflare.NewWithAPIToken(c.String(apiTokenFlag), cloudflare.UserAgent("cloudflare-utils"))
 		if err != nil {
 			log.WithError(err).Error("Error creating new API instance with token")
 			return err
 		}
 	} else if c.String(apiKeyFlag) != "" || c.String(apiEmailFlag) != "" {
+		// Create new API Client using legacy API Key and API Email
 		if c.String(apiKeyFlag) == "" || c.String(apiEmailFlag) == "" {
 			log.Error("Need to have both API Key and Email set for legacy method")
 		}
@@ -102,22 +106,4 @@ func setup(c *cli.Context) (err error) {
 		return errors.New("no authentication method detected")
 	}
 	return err
-}
-
-func setLogLevel(c *cli.Context) {
-	if c.Bool("debug") {
-		log.SetLevel(logrus.DebugLevel)
-	} else if c.Bool("verbose") {
-		log.SetLevel(logrus.WarnLevel)
-	} else {
-		switch strings.ToLower(os.Getenv("LOG_LEVEL")) {
-		case "trace":
-			log.SetLevel(logrus.TraceLevel)
-		case "debug":
-			log.SetLevel(logrus.DebugLevel)
-		default:
-			log.SetLevel(logrus.InfoLevel)
-		}
-	}
-	log.Debugf("Log Level set to %v", log.Level)
 }
