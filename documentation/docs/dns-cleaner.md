@@ -17,7 +17,7 @@ You can choose either downloading or uploading with the `download` and `upload` 
 When you download DNS records, a file called `dns-records.yml` will be created with contains your DNS records.  
 If you want a different file name then add `--dns-file` with the name of the file you want. It needs to end in either `.yml` or `.yaml`
 
-###### Download options
+##### Download options
 
 `--no-keep`: Changes the default keep value to false
 
