@@ -14,8 +14,8 @@ import (
 var (
 	log       = logrus.New()
 	ctx       = context.Background()
-	Version   = "DEV"
-	BuildTime = "unknown"
+	version   = "DEV"
+	date      = "unknown"
 	APIClient *cloudflare.API
 )
 
@@ -30,7 +30,7 @@ func main() {
 	app := &cli.App{
 		Name:    "cloudflare-utils",
 		Usage:   "Program for quick cloudflare utils",
-		Version: fmt.Sprintf("%s (built %s)", Version, BuildTime),
+		Version: fmt.Sprintf("%s (built %s)", version, date),
 		Suggest: true,
 		Authors: []*cli.Author{
 			{
