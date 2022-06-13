@@ -34,6 +34,7 @@ nav:
   - Home: index.md
   - started.md
   - dns-cleaner.md
+  - dns-purge.md
   - features.md
 
 markdown_extensions:
