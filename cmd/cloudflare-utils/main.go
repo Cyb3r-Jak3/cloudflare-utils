@@ -40,6 +40,7 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			BuildDNSCleanerCommand(),
+			BuildDNSPurgeCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
