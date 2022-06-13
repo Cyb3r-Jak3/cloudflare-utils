@@ -16,11 +16,11 @@ const (
 func BuildDNSPurgeCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "dns-purge",
-		Usage: "Deletes all DNS records",
+		Usage: "Deletes all DNS records. API Token Requirements: DNS:Edit",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  confirmFlag,
-				Usage: "Auto confirm to delete records. API Token Requirements: DNS:Edit",
+				Usage: "Auto confirm to delete records",
 				Value: false,
 			},
 		},
@@ -56,7 +56,7 @@ func DNSPurge(c *cli.Context) error {
 	}
 	if !c.Bool(confirmFlag) {
 		var confirmString string
-		fmt.Printf("About to remove %d records.\n Continue: y/n", len(records))
+		fmt.Printf("About to remove %d records.\n Continue (y/n): ", len(records))
 		if _, err := fmt.Scanln(&confirmString); err != nil {
 			return err
 		}
