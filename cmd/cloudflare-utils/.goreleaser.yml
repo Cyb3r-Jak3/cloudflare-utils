@@ -18,7 +18,7 @@ builds:
     mod_timestamp: '{{ .CommitTimestamp }}'
 
 archives:
-    format: tar.xz
+  - format: tar.xz
     format_overrides:
       - goos: windows
         format: zip
