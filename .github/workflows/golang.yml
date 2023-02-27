@@ -58,5 +58,5 @@ jobs:
       - name: Upload assets
         uses: actions/upload-artifact@v3
         with:
-          name: cloudflare-utils
+          name: cloudflare-utils-${{ matrix.go-version }}
           path: cmd/cloudflare-utils/dist/*
