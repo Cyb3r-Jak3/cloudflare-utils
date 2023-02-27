@@ -49,7 +49,7 @@ func DNSPurge(c *cli.Context) error {
 	}
 
 	// Get all DNS records
-	records, err := APIClient.DNSRecords(ctx, id, cloudflare.DNSRecord{})
+	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(id), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		log.WithError(err).Error("Error getting zone info with ID")
 		return err
@@ -68,7 +68,7 @@ func DNSPurge(c *cli.Context) error {
 	}
 	errorCount := 0
 	for _, record := range records {
-		if err := APIClient.DeleteDNSRecord(ctx, id, record.ID); err != nil {
+		if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ResourceIdentifier(id), record.ID); err != nil {
 			log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
 			errorCount++
 		}

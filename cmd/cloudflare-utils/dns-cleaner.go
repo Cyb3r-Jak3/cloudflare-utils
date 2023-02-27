@@ -153,7 +153,7 @@ func DownloadDNS(c *cli.Context) error {
 		return err
 	}
 	// Get all DNS records
-	records, err := APIClient.DNSRecords(ctx, id, cloudflare.DNSRecord{})
+	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(id), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		log.WithError(err).Error("Error getting zone info with ID")
 		return err
@@ -238,7 +238,7 @@ func UploadDNS(c *cli.Context) error {
 	for _, record := range recordFile.Records {
 		if !record.Keep {
 			toRemove++
-			if err := APIClient.DeleteDNSRecord(ctx, zoneID, record.ID); err != nil {
+			if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ResourceIdentifier(zoneID), record.ID); err != nil {
 				log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
 				errorCount++
 			}
