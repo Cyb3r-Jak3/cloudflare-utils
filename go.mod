@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/cloudflare/cloudflare-go v0.62.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/urfave/cli/v2 v2.25.0
+	github.com/urfave/cli/v2 v2.25.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
