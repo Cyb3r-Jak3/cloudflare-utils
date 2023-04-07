@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"os"
+	"runtime/debug"
 	"sort"
 )
 
@@ -16,6 +17,7 @@ var (
 	ctx       = context.Background()
 	version   = "DEV"
 	date      = "unknown"
+	goVersion = "unknown"
 	APIClient *cloudflare.API
 )
 
@@ -29,10 +31,13 @@ const (
 )
 
 func main() {
+	if buildInfo, available := debug.ReadBuildInfo(); available {
+		goVersion = buildInfo.GoVersion
+	}
 	app := &cli.App{
 		Name:    "cloudflare-utils",
 		Usage:   "Program for quick cloudflare utils",
-		Version: fmt.Sprintf("%s (built %s)", version, date),
+		Version: fmt.Sprintf("%s (built %s with %s)", version, date, goVersion),
 		Suggest: true,
 		Authors: []*cli.Author{
 			{
@@ -99,9 +104,10 @@ func setup(c *cli.Context) (err error) {
 		APIClient, err = cloudflare.NewWithAPIToken(c.String(apiTokenFlag), cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
 		if err != nil {
 			log.WithError(err).Error("Error creating new API instance with token")
-			return err
 		}
-	} else if c.String(apiKeyFlag) != "" || c.String(apiEmailFlag) != "" {
+		return err
+	}
+	if c.String(apiKeyFlag) != "" || c.String(apiEmailFlag) != "" {
 		// Create new API Client using legacy API Key and API Email
 		if c.String(apiKeyFlag) == "" || c.String(apiEmailFlag) == "" {
 			log.Error("Need to have both API Key and Email set for legacy method")
@@ -111,8 +117,8 @@ func setup(c *cli.Context) (err error) {
 		if err != nil {
 			log.WithError(err).Error("Error creating new API instance with legacy method")
 		}
-	} else {
-		return errors.New("no authentication method detected")
+		return err
 	}
-	return err
+
+	return errors.New("no authentication method detected")
 }

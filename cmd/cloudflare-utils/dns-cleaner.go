@@ -139,25 +139,16 @@ func DownloadDNS(c *cli.Context) error {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
 
-	zoneName := c.String(zoneNameFlag)
-	zoneID := c.String(zoneIDFlag)
-	log.Infof("Zone name: %s. DNS file: %s", zoneName, c.String(dnsFileFlag))
-	if zoneName == "" && zoneID == "" {
-		return fmt.Errorf("need `%s` or `%s` set when downloading DNS", zoneNameFlag, zoneIDFlag)
+	zoneID, err := GetZoneID(c)
+	if err != nil {
+		return err
 	}
-
-	// Get the Zone ID which is what the API calls are made with
-	// Easier to ask for this than having users get the ID
-	if zoneID == "" {
-		id, err := APIClient.ZoneIDByName(zoneName)
-		if err != nil {
-			log.WithError(err).Debug("Error getting zone id from name")
-			return err
-		}
-		zoneID = id
+	zoneName := c.String(zoneNameFlag)
+	if zoneName == "" {
+		zoneName = zoneID
 	}
 	// Get all DNS records
-	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
+	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		log.WithError(err).Error("Error getting zone info with ID")
 		return err
@@ -200,7 +191,7 @@ func DownloadDNS(c *cli.Context) error {
 		return err
 	}
 	// Write out the RecordFile Data
-	if err := os.WriteFile(c.String(dnsFileFlag), data, 0755); err != nil {
+	if err := os.WriteFile(c.String(dnsFileFlag), data, 0600); err != nil {
 		log.WithError(err).Error("Error writing DNS file")
 		return err
 	}
@@ -209,7 +200,6 @@ func DownloadDNS(c *cli.Context) error {
 
 // UploadDNS makes the changes to DNS records based on the DNS file
 func UploadDNS(c *cli.Context) error {
-
 	// Always need to set up
 	if APIClient == nil {
 		if err := setup(c); err != nil {

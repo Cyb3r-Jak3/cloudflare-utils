@@ -24,9 +24,6 @@ permissions:
 jobs:
   Go:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ['1.19', '1.20']
     env:
       GO111MODULE: on
 
@@ -34,7 +31,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: '1.20'
           cache: false
 
       - uses: actions/cache@v3
@@ -42,7 +39,7 @@ jobs:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
-          key: go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+          key: go-${{ hashFiles('**/go.sum') }}
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -59,5 +56,5 @@ jobs:
       - name: Upload assets
         uses: actions/upload-artifact@v3
         with:
-          name: cloudflare-utils-${{ matrix.go-version }}
+          name: cloudflare-utils
           path: cmd/cloudflare-utils/dist/*

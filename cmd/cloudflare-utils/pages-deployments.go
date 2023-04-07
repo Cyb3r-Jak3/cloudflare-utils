@@ -53,12 +53,14 @@ func DeleteAlias(c *cli.Context) error {
 		}
 	}
 	if len(toDelete) == 0 {
-		return fmt.Errorf("no deployments found with alias %s", selectedAlias)
+		fmt.Println("No deployments found with alias", selectedAlias)
+		return nil
 	}
+
 	for _, deployment := range toDelete {
 		err = APIClient.DeletePagesDeployment(c.Context, cloudflare.AccountIdentifier(c.String(accountIDFlag)), projectName, deployment.ID)
 		if err != nil {
-			log.Error(fmt.Errorf("error deleting deployment %s: %w", deployment.ID, err))
+			log.WithError(err).WithField("deployment", deployment.ID).Error("error deleting deployment")
 		}
 	}
 

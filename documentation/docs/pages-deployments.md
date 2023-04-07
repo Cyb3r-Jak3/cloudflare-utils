@@ -2,7 +2,7 @@
 
 The purpose of this program is to offer a quick way to bulk remove Pages Alias deployments that you don't want typically once your have merged a pull request.
 
-**Required API Permissions**: _Pages:Edit_
+**Required API Permissions**: _Account:Cloudflare Pages:Edit_
 
 ## Running
 

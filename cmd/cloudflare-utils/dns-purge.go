@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
@@ -30,26 +29,18 @@ func BuildDNSPurgeCommand() *cli.Command {
 
 // DNSPurge is a command to delete all DNS records without downloading
 func DNSPurge(c *cli.Context) error {
-	//Always setup
+	// Always setup
 	if err := setup(c); err != nil {
 		return err
 	}
 
-	zoneName := c.String(zoneNameFlag)
-	if zoneName == "" {
-		return errors.New("need zone-name set when downloading DNS")
-	}
-	// Get the Zone ID which is what the API calls are made with
-	// Easier to ask for this than having users get the ID
-	// ToDo: Allow for Zone ID input
-	id, err := APIClient.ZoneIDByName(zoneName)
+	zoneID, err := GetZoneID(c)
 	if err != nil {
-		log.WithError(err).Debug("Error getting zone id from name")
 		return err
 	}
 
 	// Get all DNS records
-	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(id), cloudflare.ListDNSRecordsParams{})
+	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		log.WithError(err).Error("Error getting zone info with ID")
 		return err
@@ -60,15 +51,14 @@ func DNSPurge(c *cli.Context) error {
 		if _, err := fmt.Scanln(&confirmString); err != nil {
 			return err
 		}
-		if !strings.HasPrefix("y", confirmString) {
+		if !strings.EqualFold(confirmString, "y") {
 			fmt.Println("Did not get `y` as input. Exiting")
 			return nil
 		}
-
 	}
 	errorCount := 0
 	for _, record := range records {
-		if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ResourceIdentifier(id), record.ID); err != nil {
+		if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
 			log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
 			errorCount++
 		}

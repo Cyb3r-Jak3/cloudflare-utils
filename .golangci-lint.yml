@@ -1,0 +1,28 @@
+run:
+  skip-dirs-use-default: true
+
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - staticcheck
+    - exportloopref
+    - dupl
+    - govet
+    - goconst
+    - tenv
+    - ineffassign
+    - bodyclose
+    - gosec
+    - prealloc
+    - unused
+    - gofmt
+    - revive
+    - stylecheck
+    - whitespace
+    - goprintffuncname
+    - gosimple
+    - gocyclo
+
+output:
+  format: colored-line-number
