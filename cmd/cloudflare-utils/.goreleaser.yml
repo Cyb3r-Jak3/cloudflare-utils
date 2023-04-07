@@ -24,6 +24,35 @@ archives:
         format: zip
     name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 
+dockers:
+  - image_templates:
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Major }}"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:latest"
+    goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--build-arg=VERSION={{ .Version }}"
+      - "--build-arg=COMMIT={{ .Commit }}"
+      - "--build-arg=DATE={{ .Date }}"
+    use: docker
+
+  - image_templates:
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Major }}"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:latest"
+    goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--build-arg=VERSION={{ .Version }}"
+      - "--build-arg=COMMIT={{ .Commit }}"
+      - "--build-arg=DATE={{ .Date }}"
+    use: docker
+
 snapshot:
   name_template: "{{ .Tag }}-next"
 

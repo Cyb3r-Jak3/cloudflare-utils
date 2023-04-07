@@ -20,10 +20,12 @@ var (
 )
 
 const (
-	apiTokenFlag = "api-token"
-	apiEmailFlag = "api-email"
-	apiKeyFlag   = "api-key"
-	zoneNameFlag = "zone-name"
+	apiTokenFlag  = "api-token"
+	apiEmailFlag  = "api-email"
+	apiKeyFlag    = "api-key"
+	zoneNameFlag  = "zone-name"
+	accountIDFlag = "account-id"
+	zoneIDFlag    = "zone-id"
 )
 
 func main() {
@@ -41,6 +43,7 @@ func main() {
 		Commands: []*cli.Command{
 			BuildDNSCleanerCommand(),
 			BuildDNSPurgeCommand(),
+			BuildDeleteAliasCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -62,6 +65,11 @@ func main() {
 				Name:    zoneNameFlag,
 				Usage:   "Domain name of your zone",
 				EnvVars: []string{"CLOUDFLARE_ZONE_NAME"},
+			},
+			&cli.StringFlag{
+				Name:    accountIDFlag,
+				Usage:   "Account ID",
+				EnvVars: []string{"CLOUDFLARE_ACCOUNT_ID"},
 			},
 			&cli.BoolFlag{
 				Name:    "verbose",
@@ -88,7 +96,7 @@ func setup(c *cli.Context) (err error) {
 	// Create Cloudflare API Client
 	if c.String(apiTokenFlag) != "" {
 		// Create new API Client using an API Token
-		APIClient, err = cloudflare.NewWithAPIToken(c.String(apiTokenFlag), cloudflare.UserAgent("cloudflare-utils"))
+		APIClient, err = cloudflare.NewWithAPIToken(c.String(apiTokenFlag), cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
 		if err != nil {
 			log.WithError(err).Error("Error creating new API instance with token")
 			return err
@@ -99,7 +107,7 @@ func setup(c *cli.Context) (err error) {
 			log.Error("Need to have both API Key and Email set for legacy method")
 		}
 		log.Warning("Using legacy method. Using API tokens is recommended")
-		APIClient, err = cloudflare.New(c.String(apiKeyFlag), c.String(apiTokenFlag), cloudflare.UserAgent("cloudflare-utils"))
+		APIClient, err = cloudflare.New(c.String(apiKeyFlag), c.String(apiTokenFlag), cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
 		if err != nil {
 			log.WithError(err).Error("Error creating new API instance with legacy method")
 		}

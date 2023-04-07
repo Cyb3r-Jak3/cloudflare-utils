@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
@@ -98,7 +99,7 @@ func DNSCleaner(c *cli.Context) error {
 	}
 	log.Info("Running DNS Cleaner")
 
-	fileExists := FileExists(c.String(dnsFileFlag))
+	fileExists := common.FileExists(c.String(dnsFileFlag))
 	log.Debugf("Existing DNS file: %t", fileExists)
 	if !fileExists {
 		log.Info("Downloading DNS Records")
@@ -134,32 +135,35 @@ func DownloadDNS(c *cli.Context) error {
 	}
 
 	// Make sure that we don't overwrite if told not to
-	if FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
+	if common.FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
 
 	zoneName := c.String(zoneNameFlag)
+	zoneID := c.String(zoneIDFlag)
 	log.Infof("Zone name: %s. DNS file: %s", zoneName, c.String(dnsFileFlag))
-	if zoneName == "" {
-		return errors.New("need zone-name set when downloading DNS")
+	if zoneName == "" && zoneID == "" {
+		return fmt.Errorf("need `%s` or `%s` set when downloading DNS", zoneNameFlag, zoneIDFlag)
 	}
 
 	// Get the Zone ID which is what the API calls are made with
 	// Easier to ask for this than having users get the ID
-	// ToDo: Allow for Zone ID input
-	id, err := APIClient.ZoneIDByName(zoneName)
-	if err != nil {
-		log.WithError(err).Debug("Error getting zone id from name")
-		return err
+	if zoneID == "" {
+		id, err := APIClient.ZoneIDByName(zoneName)
+		if err != nil {
+			log.WithError(err).Debug("Error getting zone id from name")
+			return err
+		}
+		zoneID = id
 	}
 	// Get all DNS records
-	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(id), cloudflare.ListDNSRecordsParams{})
+	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		log.WithError(err).Error("Error getting zone info with ID")
 		return err
 	}
 	recordFile := &RecordFile{
-		ZoneID:   id,
+		ZoneID:   zoneID,
 		ZoneName: zoneName,
 	}
 	// Default keep action
@@ -215,7 +219,7 @@ func UploadDNS(c *cli.Context) error {
 
 	// Make sure the DNS File exists
 	dnsFilePath := c.String(dnsFileFlag)
-	if !FileExists(c.String(dnsFilePath)) {
+	if !common.FileExists(c.String(dnsFilePath)) {
 		return fmt.Errorf("no DNS file found at '%s'", dnsFilePath)
 	}
 
