@@ -94,9 +94,6 @@ func BuildDNSCleanerCommand() *cli.Command {
 // DNSCleaner is the main action function for the dns-cleaner command.
 // It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records
 func DNSCleaner(c *cli.Context) error {
-	if err := setup(c); err != nil {
-		return err
-	}
 	log.Info("Running DNS Cleaner")
 
 	fileExists := common.FileExists(c.String(dnsFileFlag))
@@ -127,12 +124,6 @@ func quickClean(zoneName, record string) bool {
 
 // DownloadDNS downloads current DNS records from Cloudflare
 func DownloadDNS(c *cli.Context) error {
-	// Always need to set up
-	if APIClient == nil {
-		if err := setup(c); err != nil {
-			return err
-		}
-	}
 
 	// Make sure that we don't overwrite if told not to
 	if common.FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
@@ -200,12 +191,6 @@ func DownloadDNS(c *cli.Context) error {
 
 // UploadDNS makes the changes to DNS records based on the DNS file
 func UploadDNS(c *cli.Context) error {
-	// Always need to set up
-	if APIClient == nil {
-		if err := setup(c); err != nil {
-			return err
-		}
-	}
 
 	// Make sure the DNS File exists
 	dnsFilePath := c.String(dnsFileFlag)
