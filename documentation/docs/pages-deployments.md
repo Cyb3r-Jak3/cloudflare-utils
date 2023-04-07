@@ -1,6 +1,6 @@
-# Delete Pages Alias Deployments
+# Delete Alias Deployments
 
-The purpose of this program is to offer a quick way to bulk remove Pages Alias deployments that you don't want typically once your have merged a pull request.
+The purpose of this program is to offer a quick way to bulk remove Cloudflare Pages Alias deployments that you don't want typically once your have merged a pull request.
 
 **Required API Permissions**: _Account:Cloudflare Pages:Edit_
 

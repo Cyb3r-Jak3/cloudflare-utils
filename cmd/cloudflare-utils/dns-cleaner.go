@@ -124,7 +124,6 @@ func quickClean(zoneName, record string) bool {
 
 // DownloadDNS downloads current DNS records from Cloudflare
 func DownloadDNS(c *cli.Context) error {
-
 	// Make sure that we don't overwrite if told not to
 	if common.FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
 		return errors.New("existing DNS file found and no overwrite flag is set")
@@ -191,7 +190,6 @@ func DownloadDNS(c *cli.Context) error {
 
 // UploadDNS makes the changes to DNS records based on the DNS file
 func UploadDNS(c *cli.Context) error {
-
 	// Make sure the DNS File exists
 	dnsFilePath := c.String(dnsFileFlag)
 	if !common.FileExists(c.String(dnsFilePath)) {

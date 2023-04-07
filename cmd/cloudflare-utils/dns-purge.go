@@ -66,7 +66,7 @@ func DNSPurge(c *cli.Context) error {
 	if errorCount == 0 {
 		fmt.Printf("Successfully deleted all %d DNS records\n", len(records))
 	} else {
-		fmt.Printf("Error deleting %d DNS records.\nPlease review errors and reach out if you belive to be an error with the program", errorCount)
+		fmt.Printf("Error deleting %d DNS records.\nPlease review errors and reach out if you believe to be an error with the program", errorCount)
 	}
 	return nil
 }

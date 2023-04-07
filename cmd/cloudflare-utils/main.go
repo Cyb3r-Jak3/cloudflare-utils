@@ -96,12 +96,9 @@ func main() {
 }
 
 func setup(c *cli.Context) (err error) {
-	// Set up log level
 	setLogLevel(c)
 
-	// Create Cloudflare API Client
 	if c.String(apiTokenFlag) != "" {
-		// Create new API Client using an API Token
 		APIClient, err = cloudflare.NewWithAPIToken(c.String(apiTokenFlag), cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
 		if err != nil {
 			log.WithError(err).Error("Error creating new API instance with token")
@@ -109,9 +106,8 @@ func setup(c *cli.Context) (err error) {
 		return err
 	}
 	if c.String(apiKeyFlag) != "" || c.String(apiEmailFlag) != "" {
-		// Create new API Client using legacy API Key and API Email
 		if c.String(apiKeyFlag) == "" || c.String(apiEmailFlag) == "" {
-			log.Error("Need to have both API Key and Email set for legacy method")
+			return errors.New("need to have both API Key and Email set for legacy method")
 		}
 		log.Warning("Using legacy method. Using API tokens is recommended")
 		APIClient, err = cloudflare.New(c.String(apiKeyFlag), c.String(apiTokenFlag), cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
