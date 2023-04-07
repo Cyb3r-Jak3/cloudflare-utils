@@ -35,6 +35,7 @@ nav:
   - started.md
   - dns-cleaner.md
   - dns-purge.md
+  - pages-deployments.md
   - features.md
 
 markdown_extensions:
