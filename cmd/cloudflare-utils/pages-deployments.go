@@ -7,43 +7,56 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func BuildDeleteAliasCommand() *cli.Command {
+const (
+	projectNameFlag = "project"
+	branchNameFlag  = "branch"
+	dryRunFlag      = "dry-run"
+)
+
+func BuildDeleteBranchCommand() *cli.Command {
 	return &cli.Command{
-		Name:   "delete-alias-deployments",
-		Usage:  "Delete an alias",
-		Action: DeleteAlias,
+		Name:   "delete-branch-deployments",
+		Usage:  "Delete add deployments for a branch\nAPI Token Requirements: Pages:Edit",
+		Action: DeleteBranchDeployments,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "alias",
-				Aliases: []string{"a"},
-				Usage:   "The alias to delete",
+				Name:     projectNameFlag,
+				Aliases:  []string{"p"},
+				Usage:    "Pages project to delete the alias from",
+				Required: true,
 			},
 			&cli.StringFlag{
-				Name:    "project",
-				Aliases: []string{"p"},
-				Usage:   "The project to delete the alias from",
+				Name:     branchNameFlag,
+				Aliases:  []string{"b"},
+				Usage:    "Branch to delete",
+				Required: true,
+			},
+			&cli.BoolFlag{
+				Name:  dryRunFlag,
+				Usage: "Don't actually delete anything. Just print what would be deleted",
+				Value: false,
 			},
 		},
 	}
 }
 
-func DeleteAlias(c *cli.Context) error {
-	projectName := c.String("project")
-	if projectName == "" {
-		return errors.New("`project` is required")
+func DeleteBranchDeployments(c *cli.Context) error {
+	accountID := c.String(accountIDFlag)
+	if accountID == "" {
+		return errors.New("`account-id` is required")
 	}
+	accountResource := cloudflare.AccountIdentifier(accountID)
 
-	selectedAlias := c.String("alias")
-	if selectedAlias == "" {
-		return errors.New("`alias` is required")
-	}
+	projectName := c.String(projectNameFlag)
+	selectedBranch := c.String(branchNameFlag)
 
 	// Hacky solution to pagination until cloudflare-go supports it
 	// https://github.com/cloudflare/cloudflare-go/pull/1264
 	var allDeployments []cloudflare.PagesProjectDeployment
 	paginate := cloudflare.PaginationOptions{}
 	for {
-		deployments, res, err := APIClient.ListPagesDeployments(c.Context, cloudflare.AccountIdentifier(c.String(accountIDFlag)), cloudflare.ListPagesDeploymentsParams{
+		//log.Debugf("Getting page %d", paginate.Page)
+		deployments, res, err := APIClient.ListPagesDeployments(c.Context, accountResource, cloudflare.ListPagesDeploymentsParams{
 			ProjectName:       projectName,
 			PaginationOptions: paginate,
 		})
@@ -51,7 +64,7 @@ func DeleteAlias(c *cli.Context) error {
 			return fmt.Errorf("error listing deployments: %w", err)
 		}
 		allDeployments = append(allDeployments, deployments...)
-		if res.TotalPages == res.Page {
+		if len(deployments) == 0 || res.Page == res.TotalPages {
 			break
 		}
 		paginate.Page = res.Page + 1
@@ -65,25 +78,34 @@ func DeleteAlias(c *cli.Context) error {
 	//}
 	var toDelete []cloudflare.PagesProjectDeployment
 	for _, deployment := range allDeployments {
-		for _, alias := range deployment.Aliases {
-			if alias == selectedAlias {
-				toDelete = append(toDelete, deployment)
-				break
-			}
+		if deployment.DeploymentTrigger.Metadata == nil {
+			continue
+		}
+		if deployment.DeploymentTrigger.Metadata.Branch == selectedBranch {
+			toDelete = append(toDelete, deployment)
 		}
 	}
 	if len(toDelete) == 0 {
-		fmt.Println("No deployments found with alias", selectedAlias)
+		fmt.Println("No deployments found with branch", selectedBranch)
 		return nil
 	}
 
 	errorCount := 0
 	for _, deployment := range toDelete {
-		err := APIClient.DeletePagesDeployment(c.Context, cloudflare.AccountIdentifier(c.String(accountIDFlag)), projectName, deployment.ID)
+		if c.Bool(dryRunFlag) {
+			fmt.Println("Would delete", deployment.ID)
+			continue
+		}
+		fmt.Println("Deleting", deployment.ID)
+		err := APIClient.DeletePagesDeployment(c.Context, accountResource, projectName, deployment.ID)
 		if err != nil {
 			log.WithError(err).WithField("deployment", deployment.ID).Error("error deleting deployment")
 			errorCount++
 		}
+	}
+	if c.Bool(dryRunFlag) {
+		fmt.Println("Dry run complete")
+		return nil
 	}
 	if errorCount > 0 {
 		return fmt.Errorf("error deleting %d deployments out of %d", errorCount, len(toDelete))

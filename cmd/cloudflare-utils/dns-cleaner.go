@@ -41,7 +41,7 @@ type RecordFile struct {
 func BuildDNSCleanerCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "dns-cleaner",
-		Usage:  "Clean DNS records. API Token Requirements: DNS:Edit",
+		Usage:  "Clean DNS records.\nAPI Token Requirements: DNS:Edit",
 		Action: DNSCleaner,
 		Subcommands: []*cli.Command{
 			{

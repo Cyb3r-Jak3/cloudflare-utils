@@ -15,7 +15,7 @@ const (
 func BuildDNSPurgeCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "dns-purge",
-		Usage: "Deletes all DNS records. API Token Requirements: DNS:Edit",
+		Usage: "Deletes all DNS records.\nAPI Token Requirements: DNS:Edit",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  confirmFlag,
@@ -29,11 +29,6 @@ func BuildDNSPurgeCommand() *cli.Command {
 
 // DNSPurge is a command to delete all DNS records without downloading
 func DNSPurge(c *cli.Context) error {
-	// Always setup
-	if err := setup(c); err != nil {
-		return err
-	}
-
 	zoneID, err := GetZoneID(c)
 	if err != nil {
 		return err

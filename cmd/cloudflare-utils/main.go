@@ -49,7 +49,7 @@ func main() {
 		Commands: []*cli.Command{
 			BuildDNSCleanerCommand(),
 			BuildDNSPurgeCommand(),
-			BuildDeleteAliasCommand(),
+			BuildDeleteBranchCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -91,12 +91,16 @@ func main() {
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	if err := app.Run(os.Args); err != nil {
-		log.WithError(err).Fatal("Error running app")
+		fmt.Printf("Error running app: %s\n", err)
+		os.Exit(1)
 	}
 }
 
 func setup(c *cli.Context) (err error) {
 	setLogLevel(c)
+	if c.Args().First() == "help" {
+		return nil
+	}
 
 	if c.String(apiTokenFlag) != "" {
 		APIClient, err = cloudflare.NewWithAPIToken(c.String(apiTokenFlag), cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
