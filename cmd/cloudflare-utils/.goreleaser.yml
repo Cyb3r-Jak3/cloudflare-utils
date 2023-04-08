@@ -16,9 +16,6 @@ builds:
       - arm
       - arm64
       - 386
-    goarm:
-      - 6
-      - 7
     binary: cloudflare-utils
     mod_timestamp: '{{ .CommitTimestamp }}'
 
