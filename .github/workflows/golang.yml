@@ -39,7 +39,7 @@ jobs:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
-          key: go-${{ hashFiles('**/go.sum') }}
+          key: go-${{ hashFiles('go.sum') }}
 
       - name: Checkout code
         uses: actions/checkout@v3
