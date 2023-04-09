@@ -30,7 +30,7 @@ checksum:
   name_template: 'checksums.txt'
 
 snapshot:
-  name_template: "{{ .Version }}-{{ .ShortCommit }}"
+  name_template: "{{ .Version }}-snapshot-{{ .ShortCommit }}"
 
 changelog:
   sort: asc
