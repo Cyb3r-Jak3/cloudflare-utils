@@ -19,6 +19,7 @@ on:
 permissions:
   security-events: write
   actions: write
+  packages: write
 
 jobs:
   Snapshot:
@@ -78,6 +79,19 @@ jobs:
             ~\AppData\Local\go-build
             ~\go\pkg\mod
           key: go-${{ hashFiles('go.sum') }}
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: cyb3rjak3
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout code
         uses: actions/checkout@v3

@@ -42,7 +42,7 @@ changelog:
 
 dockers:
   - image_templates:
-      - "cyberjake/cloudflare-utils:{{ .Tag }}-amd64"
+      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-amd64"
       - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-amd64"
     dockerfile: ../../dist.Dockerfile
     use: docker
@@ -56,7 +56,7 @@ dockers:
       - "--label=org.opencontainers.image.maintainer=Cyb3r Jak3 git@cyberjake.xyz"
       - "--platform=linux/amd64"
   - image_templates:
-      - "cyberjake/cloudflare-utils:{{ .Tag }}-arm64"
+      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-arm64"
       - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-arm64"
     dockerfile: ../../dist.Dockerfile
     goarch: arm64
@@ -71,15 +71,15 @@ dockers:
       - "--label=org.opencontainers.image.maintainer=Cyb3r Jak3 git@cyberjake.xyz"
 
 docker_manifests:
-  - name_template: "cyberjake/cloudflare-utils:{{ .Tag }}"
+  - name_template: "cyb3rjak3/cloudflare-utils:{{ .Tag }}"
     image_templates:
-      - "cyberjake/cloudflare-utils:{{ .Tag }}-amd64"
-      - "cyberjake/cloudflare-utils:{{ .Tag }}-arm64"
+      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-amd64"
+      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-arm64"
 
-  - name_template: "cyberjake/cloudflare-utils:latest"
+  - name_template: "cyb3rjak3/cloudflare-utils:latest"
     image_templates:
-      - "cyberjake/cloudflare-utils:{{ .Tag }}-amd64"
-      - "cyberjake/cloudflare-utils:{{ .Tag }}-arm64"
+      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-amd64"
+      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-arm64"
 
   - name_template: "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}"
     image_templates:
