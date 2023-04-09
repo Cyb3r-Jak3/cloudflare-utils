@@ -53,6 +53,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
       - "--label=org.opencontainers.image.maintainer=Cyb3r Jak3 git@cyberjake.xyz"
       - "--platform=linux/amd64"
   - image_templates:
@@ -68,6 +69,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
       - "--label=org.opencontainers.image.maintainer=Cyb3r Jak3 git@cyberjake.xyz"
 
 docker_manifests:
