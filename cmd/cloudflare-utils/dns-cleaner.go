@@ -154,11 +154,9 @@ func DownloadDNS(c *cli.Context) error {
 	}
 	// Default keep action
 	toKeep := !c.Bool(noKeepFlag)
-	log.Debugf("ToKeep setting: %t", toKeep)
 
 	// If using quick clean to filter out numeric records
 	useQuickClean := c.Bool(quickCleanFlag)
-	log.Debugf("Quick Clean setting: %t", useQuickClean)
 
 	if useQuickClean && !toKeep {
 		return errors.New("using `--quick-clean` is not supported with `--no-keep`")

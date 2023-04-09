@@ -20,10 +20,10 @@ permissions:
   security-events: write
   actions: write
 
-
 jobs:
-  Go:
-    runs-on: ubuntu-latest
+  Snapshot:
+    if: ref.startsWith('refs/tags/v') == false
+    runs-on: windows-latest
     env:
       GO111MODULE: on
 
@@ -37,8 +37,8 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
+            ~\AppData\Local\go-build
+            ~\go\pkg\mod
           key: go-${{ hashFiles('go.sum') }}
 
       - name: Checkout code
@@ -58,3 +58,36 @@ jobs:
         with:
           name: cloudflare-utils
           path: cmd/cloudflare-utils/dist/*
+
+  Release:
+    if: ref.startsWith('refs/tags/v')
+    runs-on: windows-latest
+    env:
+      GO111MODULE: on
+
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: false
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~\AppData\Local\go-build
+            ~\go\pkg\mod
+          key: go-${{ hashFiles('go.sum') }}
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          version: latest
+          args: release --clean
+          workdir: cmd/cloudflare-utils
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}

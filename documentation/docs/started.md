@@ -2,9 +2,14 @@
 
 ## Download
 
-Cloudflare-utils is build for Windows, Mac and Linux and the latest release is available to download from [GitHub](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases). Download the tar/zip file for your operating system and then extract the progra
+Cloudflare-utils is build for Windows, Mac and Linux and the latest release is available to download from [GitHub](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases). Download the tar/zip file for your operating system and then extract the executable.
 
-To see all the options and commands run `cloudflare-utils --help`
+### Additional Installation Methods
+
+1. Docker 
+   There is also a docker image available at `cyb3rjak3/cloudflare-utils` or `ghcr.io/cyb3r-jak3/cloudflare-utils`
+2. Chocolatey
+   There is also a chocolatey package available at `cloudflare-utils`
 
 ## Authentication
 
