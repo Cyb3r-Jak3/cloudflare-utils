@@ -12,4 +12,4 @@ You need to pass the following flags to run this program:
 - `--project-name`: The name of the pages project.
 - `--branch`: The alias you want to remove deployments from.
 
-Example: `cloudflare-utils --api-token <API Token with Pages:Edit> --account-id <account ID> delete-pages-alias-deployments --project-name <project name> --branch <branch>`
+Example: `cloudflare-utils --api-token <API Token with Pages:Edit> --account-id <account ID> delete-branch-deployments --project-name <project name> --branch <branch>`

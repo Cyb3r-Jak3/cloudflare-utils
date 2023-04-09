@@ -30,14 +30,14 @@ type DNSRecord struct {
 	Content string `yaml:"content"`
 }
 
-// RecordFile is the struct of the YAML DNS file
+// RecordFile is the struct of the YAML DNS file.
 type RecordFile struct {
 	ZoneName string      `yaml:"zone_name"`
 	ZoneID   string      `yaml:"zone_id"`
 	Records  []DNSRecord `yaml:"records"`
 }
 
-// BuildDNSCleanerCommand builds the `dns-cleaner` command for the application
+// BuildDNSCleanerCommand builds the `dns-cleaner` command for the application.
 func BuildDNSCleanerCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "dns-cleaner",
@@ -87,12 +87,17 @@ func BuildDNSCleanerCommand() *cli.Command {
 				Usage: "Remove the DNS file once the upload completes",
 				Value: false,
 			},
+			&cli.BoolFlag{
+				Name:  dryRunFlag,
+				Usage: "Do not make any changes. Only applies to upload",
+				Value: false,
+			},
 		},
 	}
 }
 
 // DNSCleaner is the main action function for the dns-cleaner command.
-// It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records
+// It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records.
 func DNSCleaner(c *cli.Context) error {
 	log.Info("Running DNS Cleaner")
 
@@ -188,7 +193,7 @@ func DownloadDNS(c *cli.Context) error {
 	return nil
 }
 
-// UploadDNS makes the changes to DNS records based on the DNS file
+// UploadDNS makes the changes to DNS records based on the DNS file.
 func UploadDNS(c *cli.Context) error {
 	// Make sure the DNS File exists
 	dnsFilePath := c.String(dnsFileFlag)
@@ -215,11 +220,18 @@ func UploadDNS(c *cli.Context) error {
 	for _, record := range recordFile.Records {
 		if !record.Keep {
 			toRemove++
-			if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ResourceIdentifier(zoneID), record.ID); err != nil {
-				log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
+			if c.Bool(dryRunFlag) {
+				fmt.Printf("Dry Run: Would have removed %s,", record.Name)
+				continue
+			}
+			if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
+				log.WithError(err).WithField("record", record.ID).Error("error deleting DNS record")
 				errorCount++
 			}
 		}
+	}
+	if c.Bool(dryRunFlag) {
+		return nil
 	}
 	log.Infof("%d total records. %d to removed. %d errors removing records", recordCount, errorCount, toRemove)
 

@@ -42,7 +42,7 @@ func DNSPurge(c *cli.Context) error {
 	}
 	if !c.Bool(confirmFlag) {
 		var confirmString string
-		fmt.Printf("About to remove %d records.\n Continue (y/n): ", len(records))
+		fmt.Printf("About to remove %d records.\nContinue (y/n): ", len(records))
 		if _, err := fmt.Scanln(&confirmString); err != nil {
 			return err
 		}
@@ -54,6 +54,7 @@ func DNSPurge(c *cli.Context) error {
 	errorCount := 0
 	for _, record := range records {
 		if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
+			log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
 			log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
 			errorCount++
 		}

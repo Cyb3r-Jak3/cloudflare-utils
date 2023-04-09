@@ -23,3 +23,5 @@ require (
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )
+// Until https://github.com/cloudflare/cloudflare-go/pull/1264 is merged
+replace github.com/cloudflare/cloudflare-go => github.com/Cyb3r-Jak3/cloudflare-go v0.42.1-0.20230409175712-645aed884a0e
