@@ -42,7 +42,7 @@ dockers:
       - "cyberjake/cloudflare-utils:{{ .Tag }}-amd64"
       - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-amd64"
     dockerfile: ../../dist.Dockerfile
-    use: buildx
+    use: docker
     build_flag_templates:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.created={{ .CommitTimestamp }}"
@@ -55,7 +55,8 @@ dockers:
       - "cyberjake/cloudflare-utils:{{ .Tag }}-arm64"
       - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-arm64"
     dockerfile: ../../dist.Dockerfile
-    use: buildx
+    goarch: arm64
+    use: docker
     build_flag_templates:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.created={{ .CommitTimestamp }}"
