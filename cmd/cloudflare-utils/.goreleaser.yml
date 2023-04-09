@@ -37,5 +37,54 @@ changelog:
       - '^test:'
       - '^chore:'
 
+dockers:
+  - image_templates:
+      - "cyberjake/cloudflare-utils:{{ .Tag }}-amd64"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-amd64"
+    dockerfile: ../../dist.Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{ .CommitTimestamp }}"
+      - "--label=org.opencontainers.image.name={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "cyberjake/cloudflare-utils:{{ .Tag }}-arm64"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-arm64"
+    dockerfile: ../../dist.Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.created={{ .CommitTimestamp }}"
+      - "--label=org.opencontainers.image.name={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source={{ .GitURL }}"
+
+docker_manifests:
+  - name_template: "cyberjake/cloudflare-utils:{{ .Tag }}"
+    image_templates:
+      - "cyberjake/cloudflare-utils:{{ .Tag }}-amd64"
+      - "cyberjake/cloudflare-utils:{{ .Tag }}-arm64"
+
+  - name_template: "cyberjake/cloudflare-utils:latest"
+    image_templates:
+      - "cyberjake/cloudflare-utils:{{ .Tag }}-amd64"
+      - "cyberjake/cloudflare-utils:{{ .Tag }}-arm64"
+
+  - name_template: "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-amd64"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-arm64"
+
+  - name_template: "ghcr.io/cyb3r-jak3/cloudflare-utils:latest"
+    image_templates:
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-amd64"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-arm64"
+
+
 release:
   draft: true
