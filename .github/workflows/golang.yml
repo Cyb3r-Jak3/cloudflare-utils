@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   Snapshot:
-    if: ref.startsWith('refs/tags/v') == false
+    if: !startsWith(github.ref, 'refs/tags/v')
     runs-on: windows-latest
     env:
       GO111MODULE: on
@@ -60,7 +60,7 @@ jobs:
           path: cmd/cloudflare-utils/dist/*
 
   Release:
-    if: ref.startsWith('refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: windows-latest
     env:
       GO111MODULE: on
