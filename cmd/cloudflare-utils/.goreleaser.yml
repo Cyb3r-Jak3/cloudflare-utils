@@ -26,6 +26,9 @@ archives:
         format: zip
     name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 
+checksum:
+  name_template: 'checksums.txt'
+
 snapshot:
   name_template: "{{ .Tag }}-next"
 
@@ -50,6 +53,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--label=org.opencontainers.image.maintainer=Cyb3r Jak3 git@cyberjake.xyz"
       - "--platform=linux/amd64"
   - image_templates:
       - "cyberjake/cloudflare-utils:{{ .Tag }}-arm64"
@@ -64,6 +68,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--label=org.opencontainers.image.maintainer=Cyb3r Jak3 git@cyberjake.xyz"
 
 docker_manifests:
   - name_template: "cyberjake/cloudflare-utils:{{ .Tag }}"
@@ -85,6 +90,15 @@ docker_manifests:
     image_templates:
       - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-amd64"
       - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-arm64"
+
+chocolateys:
+  - title: "Cloudflare utils"
+    authors: "Cyb3r-Jak3"
+    project_url: "https://cloudflare-utils.cyberjake.xyz/"
+    license_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils/blob/main/LICENSE"
+    summary: "Community created utilities for Cloudflare"
+    release_notes: "https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/tag/v{{ .Version }}"
+
 
 
 release:
