@@ -32,7 +32,7 @@ func BuildPurgeDeploymentsCommand() *cli.Command {
 				Value: false,
 			},
 			&cli.BoolFlag{
-				Name:  "force",
+				Name:  consts.ForceFlag,
 				Usage: "Force delete deployments",
 				Value: false,
 			},
@@ -73,5 +73,14 @@ func PurgeDeployments(c *cli.Context) error {
 	if errorCount > 0 {
 		return fmt.Errorf("failed to delete %d deployments", errorCount)
 	}
+
+	if c.Bool("delete-project") {
+		err := APIClient.DeletePagesProject(c.Context, accountID, projectName)
+		if err != nil {
+			return fmt.Errorf("error deleting project: %w", err)
+		}
+		fmt.Printf("Deleted project %s", projectName)
+	}
+
 	return nil
 }
