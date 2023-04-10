@@ -1,7 +1,8 @@
-package main
+package dns
 
 import (
 	"fmt"
+	"github.com/Cyb3r-Jak3/cloudflare-utils/internal"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
 	"strings"
@@ -29,13 +30,13 @@ func BuildDNSPurgeCommand() *cli.Command {
 
 // DNSPurge is a command to delete all DNS records without downloading
 func DNSPurge(c *cli.Context) error {
-	zoneID, err := GetZoneID(c)
+	zoneID, err := internal.GetZoneID(c)
 	if err != nil {
 		return err
 	}
 
 	// Get all DNS records
-	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
+	records, _, err := main.APIClient.ListDNSRecords(main.ctx, cloudflare.ResourceIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		log.WithError(err).Error("Error getting zone info with ID")
 		return err
@@ -53,9 +54,9 @@ func DNSPurge(c *cli.Context) error {
 	}
 	errorCount := 0
 	for _, record := range records {
-		if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
-			log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
-			log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
+		if err := main.APIClient.DeleteDNSRecord(main.ctx, cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
+			main.log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
+			main.log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
 			errorCount++
 		}
 	}

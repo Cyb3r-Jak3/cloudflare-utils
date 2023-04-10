@@ -1,8 +1,10 @@
-package main
+package dns
 
 import (
 	"errors"
 	"fmt"
+	"github.com/Cyb3r-Jak3/cloudflare-utils/cmd/cloudflare-utils"
+	"github.com/Cyb3r-Jak3/cloudflare-utils/internal"
 	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
@@ -88,7 +90,7 @@ func BuildDNSCleanerCommand() *cli.Command {
 				Value: false,
 			},
 			&cli.BoolFlag{
-				Name:  dryRunFlag,
+				Name:  main.dryRunFlag,
 				Usage: "Do not make any changes. Only applies to upload",
 				Value: false,
 			},
@@ -99,17 +101,17 @@ func BuildDNSCleanerCommand() *cli.Command {
 // DNSCleaner is the main action function for the dns-cleaner command.
 // It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records.
 func DNSCleaner(c *cli.Context) error {
-	log.Info("Running DNS Cleaner")
+	main.log.Info("Running DNS Cleaner")
 
 	fileExists := common.FileExists(c.String(dnsFileFlag))
-	log.Debugf("Existing DNS file: %t", fileExists)
+	main.log.Debugf("Existing DNS file: %t", fileExists)
 	if !fileExists {
-		log.Info("Downloading DNS Records")
+		main.log.Info("Downloading DNS Records")
 		if err := DownloadDNS(c); err != nil {
 			return err
 		}
 	} else {
-		log.Info("Uploading DNS Records")
+		main.log.Info("Uploading DNS Records")
 		if err := UploadDNS(c); err != nil {
 			return err
 		}
@@ -120,9 +122,9 @@ func DNSCleaner(c *cli.Context) error {
 // quickClean checks to see if a DNS record is numeric
 func quickClean(zoneName, record string) bool {
 	r := strings.Split(record, fmt.Sprintf(".%s", zoneName))[0]
-	log.Debugf("Stripped record: %s", r)
+	main.log.Debugf("Stripped record: %s", r)
 	_, err := strconv.Atoi(r)
-	log.Debugf("Error converting: %t", err != nil)
+	main.log.Debugf("Error converting: %t", err != nil)
 	// if err != nil there is no number, and we should keep
 	return err != nil
 }
@@ -134,18 +136,18 @@ func DownloadDNS(c *cli.Context) error {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
 
-	zoneID, err := GetZoneID(c)
+	zoneID, err := internal.GetZoneID(c)
 	if err != nil {
 		return err
 	}
-	zoneName := c.String(zoneNameFlag)
+	zoneName := c.String(main.zoneNameFlag)
 	if zoneName == "" {
 		zoneName = zoneID
 	}
 	// Get all DNS records
-	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
+	records, _, err := main.APIClient.ListDNSRecords(main.ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
-		log.WithError(err).Error("Error getting zone info with ID")
+		main.log.WithError(err).Error("Error getting zone info with ID")
 		return err
 	}
 	recordFile := &RecordFile{
@@ -180,12 +182,12 @@ func DownloadDNS(c *cli.Context) error {
 	}
 	data, err := yaml.Marshal(&recordFile)
 	if err != nil {
-		log.WithError(err).Error("Error marshalling yaml data")
+		main.log.WithError(err).Error("Error marshalling yaml data")
 		return err
 	}
 	// Write out the RecordFile Data
 	if err := os.WriteFile(c.String(dnsFileFlag), data, 0600); err != nil {
-		log.WithError(err).Error("Error writing DNS file")
+		main.log.WithError(err).Error("Error writing DNS file")
 		return err
 	}
 	return nil
@@ -202,13 +204,13 @@ func UploadDNS(c *cli.Context) error {
 	// Read the DNS file and parse the data
 	file, err := os.ReadFile(dnsFilePath)
 	if err != nil {
-		log.WithError(err).Error("Error reading DNS file")
+		main.log.WithError(err).Error("Error reading DNS file")
 		return err
 	}
 
 	recordFile := &RecordFile{}
 	if err := yaml.Unmarshal(file, recordFile); err != nil {
-		log.WithError(err).Error("Error unmarshalling yaml")
+		main.log.WithError(err).Error("Error unmarshalling yaml")
 		return err
 	}
 
@@ -218,25 +220,25 @@ func UploadDNS(c *cli.Context) error {
 	for _, record := range recordFile.Records {
 		if !record.Keep {
 			toRemove++
-			if c.Bool(dryRunFlag) {
+			if c.Bool(main.dryRunFlag) {
 				fmt.Printf("Dry Run: Would have removed %s,", record.Name)
 				continue
 			}
-			if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
-				log.WithError(err).WithField("record", record.ID).Error("error deleting DNS record")
+			if err := main.APIClient.DeleteDNSRecord(main.ctx, cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
+				main.log.WithError(err).WithField("record", record.ID).Error("error deleting DNS record")
 				errorCount++
 			}
 		}
 	}
-	if c.Bool(dryRunFlag) {
+	if c.Bool(main.dryRunFlag) {
 		return nil
 	}
-	log.Infof("%d total records. %d to removed. %d errors removing records", recordCount, errorCount, toRemove)
+	main.log.Infof("%d total records. %d to removed. %d errors removing records", recordCount, errorCount, toRemove)
 
 	// Remove DNS record file
 	if c.Bool(removeDNSFileFlag) {
 		if err := os.Remove(dnsFilePath); err != nil {
-			log.WithError(err).Warn("Error deleting old DNS file")
+			main.log.WithError(err).Warn("Error deleting old DNS file")
 		}
 	}
 	return nil
