@@ -40,59 +40,6 @@ changelog:
       - '^test:'
       - '^chore:'
 
-dockers:
-  - image_templates:
-      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-amd64"
-      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-amd64"
-    dockerfile: ../../dist.Dockerfile
-    use: docker
-    build_flag_templates:
-      - "--platform=linux/amd64"
-      - "--label=org.opencontainers.image.created={{ .CommitTimestamp }}"
-      - "--label=org.opencontainers.image.name={{ .ProjectName }}"
-      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-      - "--label=org.opencontainers.image.version={{ .Version }}"
-      - "--label=org.opencontainers.image.source={{ .GitURL }}"
-      - "--label=org.opencontainers.image.licenses=Apache-2.0"
-      - "--label=org.opencontainers.image.maintainer=Cyb3r Jak3 git@cyberjake.xyz"
-      - "--platform=linux/amd64"
-  - image_templates:
-      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-arm64"
-      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-arm64"
-    dockerfile: ../../dist.Dockerfile
-    goarch: arm64
-    use: docker
-    build_flag_templates:
-      - "--platform=linux/arm64"
-      - "--label=org.opencontainers.image.created={{ .CommitTimestamp }}"
-      - "--label=org.opencontainers.image.name={{ .ProjectName }}"
-      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-      - "--label=org.opencontainers.image.version={{ .Version }}"
-      - "--label=org.opencontainers.image.source={{ .GitURL }}"
-      - "--label=org.opencontainers.image.licenses=Apache-2.0"
-      - "--label=org.opencontainers.image.maintainer=Cyb3r Jak3 git@cyberjake.xyz"
-
-docker_manifests:
-  - name_template: "cyb3rjak3/cloudflare-utils:{{ .Tag }}"
-    image_templates:
-      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-amd64"
-      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-arm64"
-
-  - name_template: "cyb3rjak3/cloudflare-utils:latest"
-    image_templates:
-      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-amd64"
-      - "cyb3rjak3/cloudflare-utils:{{ .Tag }}-arm64"
-
-  - name_template: "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}"
-    image_templates:
-      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-amd64"
-      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-arm64"
-
-  - name_template: "ghcr.io/cyb3r-jak3/cloudflare-utils:latest"
-    image_templates:
-      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-amd64"
-      - "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Tag }}-arm64"
-
 chocolateys:
   - title: "Cloudflare utils"
     authors: "Cyb3r-Jak3"
@@ -109,8 +56,6 @@ chocolateys:
       - deleting all records in a zone
       - deleting all records in a zone except for a list of records
       - deleting all Pages deployments for a branch
-
-
 
 release:
   draft: true

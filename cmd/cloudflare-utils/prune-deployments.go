@@ -3,14 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
+
+	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/consts"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
 )
 
 const (
-	projectNameFlag = "project"
-	branchNameFlag  = "branch"
-	dryRunFlag      = "dry-run"
+	branchNameFlag = "branch"
 )
 
 func BuildDeleteBranchCommand() *cli.Command {
@@ -20,7 +20,7 @@ func BuildDeleteBranchCommand() *cli.Command {
 		Action: DeleteBranchDeployments,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     projectNameFlag,
+				Name:     consts.ProjectNameFlag,
 				Aliases:  []string{"p"},
 				Usage:    "Pages project to delete the alias from",
 				Required: true,
@@ -32,7 +32,7 @@ func BuildDeleteBranchCommand() *cli.Command {
 				Required: true,
 			},
 			&cli.BoolFlag{
-				Name:  dryRunFlag,
+				Name:  consts.DryRunFlag,
 				Usage: "Don't actually delete anything. Just print what would be deleted",
 				Value: false,
 			},
@@ -41,16 +41,16 @@ func BuildDeleteBranchCommand() *cli.Command {
 }
 
 func DeleteBranchDeployments(c *cli.Context) error {
-	accountID := c.String(accountIDFlag)
+	accountID := c.String(consts.AccountIDFlag)
 	if accountID == "" {
 		return errors.New("`account-id` is required")
 	}
 	accountResource := cloudflare.AccountIdentifier(accountID)
 
-	projectName := c.String(projectNameFlag)
+	projectName := c.String(consts.ProjectNameFlag)
 	selectedBranch := c.String(branchNameFlag)
 
-	allDeployments, _, err := APIClient.ListPagesDeployments(c.Context, cloudflare.AccountIdentifier(c.String(accountIDFlag)), cloudflare.ListPagesDeploymentsParams{
+	allDeployments, _, err := APIClient.ListPagesDeployments(c.Context, accountResource, cloudflare.ListPagesDeploymentsParams{
 		ProjectName: projectName,
 	})
 	if err != nil {
@@ -73,18 +73,18 @@ func DeleteBranchDeployments(c *cli.Context) error {
 
 	errorCount := 0
 	for _, deployment := range toDelete {
-		if c.Bool(dryRunFlag) {
+		if c.Bool(consts.DryRunFlag) {
 			fmt.Println("Dry Run: Would delete", deployment.ID)
 			continue
 		}
-		log.Debugf("Deleting deployment %s", deployment.ID)
+		logger.Debugf("Deleting deployment %s", deployment.ID)
 		err := APIClient.DeletePagesDeployment(c.Context, accountResource, projectName, deployment.ID, cloudflare.DeletePagesDeploymentParams{Force: true})
 		if err != nil {
-			log.WithError(err).WithField("deployment", deployment.ID).Error("error deleting deployment")
+			logger.WithError(err).WithField("deployment", deployment.ID).Error("error deleting deployment")
 			errorCount++
 		}
 	}
-	if c.Bool(dryRunFlag) {
+	if c.Bool(consts.DryRunFlag) {
 		fmt.Println("Dry run complete")
 		return nil
 	}

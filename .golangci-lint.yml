@@ -23,6 +23,14 @@ linters:
     - goprintffuncname
     - gosimple
     - gocyclo
+    - exportloopref
+    - goimports
+    - misspell
+    - godot
+    - reassign
+    - unconvert
+    - nilerr
+    - govet
 
 output:
   format: colored-line-number

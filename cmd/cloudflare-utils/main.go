@@ -4,30 +4,24 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
 	"os"
 	"runtime/debug"
 	"sort"
+
+	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/consts"
+	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/utils"
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 var (
-	log       = logrus.New()
-	ctx       = context.Background()
 	version   = "DEV"
 	date      = "unknown"
 	goVersion = "unknown"
 	APIClient *cloudflare.API
-)
-
-const (
-	apiTokenFlag  = "api-token"
-	apiEmailFlag  = "api-email"
-	apiKeyFlag    = "api-key"
-	zoneNameFlag  = "zone-name"
-	accountIDFlag = "account-id"
-	zoneIDFlag    = "zone-id"
+	logger    = logrus.New()
+	ctx       = context.Background()
 )
 
 func main() {
@@ -50,30 +44,31 @@ func main() {
 			BuildDNSCleanerCommand(),
 			BuildDNSPurgeCommand(),
 			BuildDeleteBranchCommand(),
+			BuildPurgeDeploymentsCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    apiTokenFlag,
+				Name:    consts.APITokenFlag,
 				Usage:   "A scoped API token (preferred)",
 				EnvVars: []string{"CLOUDFLARE_API_TOKEN"},
 			},
 			&cli.StringFlag{
-				Name:    apiEmailFlag,
+				Name:    consts.APIEmailFlag,
 				Usage:   "Cloudflare API email (legacy)",
 				EnvVars: []string{"CLOUDFLARE_API_EMAIL"},
 			},
 			&cli.StringFlag{
-				Name:    apiKeyFlag,
+				Name:    consts.APIKeyFlag,
 				Usage:   "Cloudflare Global API key (legacy)",
 				EnvVars: []string{"CLOUDFLARE_API_KEY"},
 			},
 			&cli.StringFlag{
-				Name:    zoneNameFlag,
+				Name:    consts.ZoneNameFlag,
 				Usage:   "Domain name of your zone",
 				EnvVars: []string{"CLOUDFLARE_ZONE_NAME"},
 			},
 			&cli.StringFlag{
-				Name:    accountIDFlag,
+				Name:    consts.AccountIDFlag,
 				Usage:   "Account ID",
 				EnvVars: []string{"CLOUDFLARE_ACCOUNT_ID"},
 			},
@@ -97,26 +92,29 @@ func main() {
 }
 
 func setup(c *cli.Context) (err error) {
-	setLogLevel(c)
+	utils.SetLogLevel(c, logger)
 	if c.Args().First() == "help" {
 		return nil
 	}
 
-	if c.String(apiTokenFlag) != "" {
-		APIClient, err = cloudflare.NewWithAPIToken(c.String(apiTokenFlag), cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
+	apiToken := c.String(consts.APITokenFlag)
+	apiEmail := c.String(consts.APIEmailFlag)
+	apiKey := c.String(consts.APIKeyFlag)
+	if apiToken != "" {
+		APIClient, err = cloudflare.NewWithAPIToken(apiToken, cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
 		if err != nil {
-			log.WithError(err).Error("Error creating new API instance with token")
+			logger.WithError(err).Error("Error creating new API instance with token")
 		}
 		return err
 	}
-	if c.String(apiKeyFlag) != "" || c.String(apiEmailFlag) != "" {
-		if c.String(apiKeyFlag) == "" || c.String(apiEmailFlag) == "" {
+	if apiEmail != "" || apiKey != "" {
+		if apiEmail == "" || apiKey == "" {
 			return errors.New("need to have both API Key and Email set for legacy method")
 		}
-		log.Warning("Using legacy method. Using API tokens is recommended")
-		APIClient, err = cloudflare.New(c.String(apiKeyFlag), c.String(apiTokenFlag), cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
+		logger.Warning("Using legacy method. Using API tokens is recommended")
+		APIClient, err = cloudflare.New(apiKey, apiEmail, cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
 		if err != nil {
-			log.WithError(err).Error("Error creating new API instance with legacy method")
+			logger.WithError(err).Error("Error creating new API instance with legacy method")
 		}
 		return err
 	}

@@ -1,18 +1,19 @@
-package dns
+package main
 
 import (
 	"fmt"
-	"github.com/Cyb3r-Jak3/cloudflare-utils/internal"
+	"strings"
+
+	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/utils"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
-	"strings"
 )
 
 const (
 	confirmFlag = "confirm"
 )
 
-// BuildDNSPurgeCommand creates the dns-purge command
+// BuildDNSPurgeCommand creates the dns-purge command.
 func BuildDNSPurgeCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "dns-purge",
@@ -28,17 +29,18 @@ func BuildDNSPurgeCommand() *cli.Command {
 	}
 }
 
-// DNSPurge is a command to delete all DNS records without downloading
+// DNSPurge is a command to delete all DNS records without downloading.
 func DNSPurge(c *cli.Context) error {
-	zoneID, err := internal.GetZoneID(c)
+	zoneID, err := utils.GetZoneID(c, APIClient, logger)
 	if err != nil {
 		return err
 	}
 
+	zoneResource := cloudflare.ZoneIdentifier(zoneID)
 	// Get all DNS records
-	records, _, err := main.APIClient.ListDNSRecords(main.ctx, cloudflare.ResourceIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
+	records, _, err := APIClient.ListDNSRecords(ctx, zoneResource, cloudflare.ListDNSRecordsParams{})
 	if err != nil {
-		log.WithError(err).Error("Error getting zone info with ID")
+		logger.WithError(err).Error("Error getting zone info with ID")
 		return err
 	}
 	if !c.Bool(confirmFlag) {
@@ -54,9 +56,9 @@ func DNSPurge(c *cli.Context) error {
 	}
 	errorCount := 0
 	for _, record := range records {
-		if err := main.APIClient.DeleteDNSRecord(main.ctx, cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
-			main.log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
-			main.log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
+		if err := APIClient.DeleteDNSRecord(ctx, zoneResource, record.ID); err != nil {
+			logger.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
+			logger.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
 			errorCount++
 		}
 	}
