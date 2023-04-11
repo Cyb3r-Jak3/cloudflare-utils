@@ -8,8 +8,6 @@ import (
 	"runtime/debug"
 	"sort"
 
-	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/consts"
-	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/utils"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -48,29 +46,34 @@ func main() {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    consts.APITokenFlag,
+				Name:    apiTokenFlag,
 				Usage:   "A scoped API token (preferred)",
 				EnvVars: []string{"CLOUDFLARE_API_TOKEN"},
 			},
 			&cli.StringFlag{
-				Name:    consts.APIEmailFlag,
+				Name:    apiEmailFlag,
 				Usage:   "Cloudflare API email (legacy)",
 				EnvVars: []string{"CLOUDFLARE_API_EMAIL"},
 			},
 			&cli.StringFlag{
-				Name:    consts.APIKeyFlag,
+				Name:    apiKeyFlag,
 				Usage:   "Cloudflare Global API key (legacy)",
 				EnvVars: []string{"CLOUDFLARE_API_KEY"},
 			},
 			&cli.StringFlag{
-				Name:    consts.ZoneNameFlag,
+				Name:    zoneNameFlag,
 				Usage:   "Domain name of your zone",
 				EnvVars: []string{"CLOUDFLARE_ZONE_NAME"},
 			},
 			&cli.StringFlag{
-				Name:    consts.AccountIDFlag,
+				Name:    accountIDFlag,
 				Usage:   "Account ID",
 				EnvVars: []string{"CLOUDFLARE_ACCOUNT_ID"},
+			},
+			&cli.Float64Flag{
+				Name:  "rate-limit",
+				Usage: "Rate limit for API calls.\nDefault is 4 which matches the Cloudflare API limit of 1200 calls per 5 minutes",
+				Value: 4,
 			},
 			&cli.BoolFlag{
 				Name:    "verbose",
@@ -92,32 +95,43 @@ func main() {
 }
 
 func setup(c *cli.Context) (err error) {
-	utils.SetLogLevel(c, logger)
+	SetLogLevel(c, logger)
 	if c.Args().First() == "help" {
 		return nil
 	}
 
-	apiToken := c.String(consts.APITokenFlag)
-	apiEmail := c.String(consts.APIEmailFlag)
-	apiKey := c.String(consts.APIKeyFlag)
+	apiToken := c.String(apiTokenFlag)
+	apiEmail := c.String(apiEmailFlag)
+	apiKey := c.String(apiKeyFlag)
+
+	if apiToken == "" && apiEmail == "" && apiKey == "" {
+		return errors.New("no authentication method detected")
+	}
+
+	rateLimit := c.Float64("rate-limit")
+	if c.Bool(lotsOfDeploymentsFlag) {
+		rateLimit = 3
+	}
+
+	rateLimiter := cloudflare.UsingRateLimit(rateLimit)
+	userAgent := cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version))
+
 	if apiToken != "" {
-		APIClient, err = cloudflare.NewWithAPIToken(apiToken, cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
+		APIClient, err = cloudflare.NewWithAPIToken(apiToken, rateLimiter, userAgent)
 		if err != nil {
 			logger.WithError(err).Error("Error creating new API instance with token")
 		}
-		return err
 	}
 	if apiEmail != "" || apiKey != "" {
 		if apiEmail == "" || apiKey == "" {
 			return errors.New("need to have both API Key and Email set for legacy method")
 		}
 		logger.Warning("Using legacy method. Using API tokens is recommended")
-		APIClient, err = cloudflare.New(apiKey, apiEmail, cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)))
+		APIClient, err = cloudflare.New(apiKey, apiEmail, rateLimiter, userAgent)
 		if err != nil {
 			logger.WithError(err).Error("Error creating new API instance with legacy method")
 		}
-		return err
 	}
 
-	return errors.New("no authentication method detected")
+	return err
 }

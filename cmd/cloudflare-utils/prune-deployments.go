@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/consts"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
 )
@@ -20,7 +19,7 @@ func BuildDeleteBranchCommand() *cli.Command {
 		Action: DeleteBranchDeployments,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     consts.ProjectNameFlag,
+				Name:     projectNameFlag,
 				Aliases:  []string{"p"},
 				Usage:    "Pages project to delete the alias from",
 				Required: true,
@@ -32,7 +31,7 @@ func BuildDeleteBranchCommand() *cli.Command {
 				Required: true,
 			},
 			&cli.BoolFlag{
-				Name:  consts.DryRunFlag,
+				Name:  dryRunFlag,
 				Usage: "Don't actually delete anything. Just print what would be deleted",
 				Value: false,
 			},
@@ -41,18 +40,22 @@ func BuildDeleteBranchCommand() *cli.Command {
 }
 
 func DeleteBranchDeployments(c *cli.Context) error {
-	accountID := c.String(consts.AccountIDFlag)
+	accountID := c.String(accountIDFlag)
 	if accountID == "" {
 		return errors.New("`account-id` is required")
 	}
 	accountResource := cloudflare.AccountIdentifier(accountID)
 
-	projectName := c.String(consts.ProjectNameFlag)
+	projectName := c.String(projectNameFlag)
 	selectedBranch := c.String(branchNameFlag)
 
-	allDeployments, _, err := APIClient.ListPagesDeployments(c.Context, accountResource, cloudflare.ListPagesDeploymentsParams{
-		ProjectName: projectName,
-	})
+	allDeployments, err := DeploymentsPaginate(
+		PagesDeploymentPaginationOptions{
+			CLIContext:      c,
+			APIClient:       APIClient,
+			AccountResource: accountResource,
+			ProjectName:     projectName,
+		})
 	if err != nil {
 		return fmt.Errorf("error listing deployments: %w", err)
 	}
@@ -73,7 +76,7 @@ func DeleteBranchDeployments(c *cli.Context) error {
 
 	errorCount := 0
 	for _, deployment := range toDelete {
-		if c.Bool(consts.DryRunFlag) {
+		if c.Bool(dryRunFlag) {
 			fmt.Println("Dry Run: Would delete", deployment.ID)
 			continue
 		}
@@ -88,7 +91,7 @@ func DeleteBranchDeployments(c *cli.Context) error {
 			errorCount++
 		}
 	}
-	if c.Bool(consts.DryRunFlag) {
+	if c.Bool(dryRunFlag) {
 		fmt.Println("Dry run complete")
 		return nil
 	}

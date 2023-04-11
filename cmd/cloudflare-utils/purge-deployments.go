@@ -4,9 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/consts"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
+)
+
+const (
+	deleteProjectFlag     = "delete-project"
+	lotsOfDeploymentsFlag = "lots-of-deployments"
 )
 
 func BuildPurgeDeploymentsCommand() *cli.Command {
@@ -16,24 +20,24 @@ func BuildPurgeDeploymentsCommand() *cli.Command {
 		Action: PurgeDeployments,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     consts.ProjectNameFlag,
+				Name:     projectNameFlag,
 				Aliases:  []string{"p"},
 				Usage:    "Pages project to delete the alias from",
 				Required: true,
 			},
 			&cli.BoolFlag{
-				Name:  "delete-project",
+				Name:  deleteProjectFlag,
 				Usage: "Delete the project as well",
 				Value: false,
 			},
 			&cli.BoolFlag{
-				Name:  consts.DryRunFlag,
+				Name:  dryRunFlag,
 				Usage: "Don't actually delete anything. Just print what would be deleted",
 				Value: false,
 			},
 			&cli.BoolFlag{
-				Name:  "delete-project",
-				Usage: "Delete the project after deleting all deployments",
+				Name:  lotsOfDeploymentsFlag,
+				Usage: "If you have a lot of deployments, you may need to use this flag.",
 				Value: false,
 			},
 		},
@@ -41,27 +45,31 @@ func BuildPurgeDeploymentsCommand() *cli.Command {
 }
 
 func PurgeDeployments(c *cli.Context) error {
-	accountID := c.String(consts.AccountIDFlag)
+	accountID := c.String(accountIDFlag)
 	if accountID == "" {
 		return errors.New("`account-id` is required")
 	}
 
 	accountResource := cloudflare.AccountIdentifier(accountID)
-	projectName := c.String(consts.ProjectNameFlag)
+	projectName := c.String(projectNameFlag)
 
-	allDeployments, _, err := APIClient.ListPagesDeployments(c.Context, accountResource, cloudflare.ListPagesDeploymentsParams{
-		ProjectName: projectName,
-	})
+	allDeployments, err := DeploymentsPaginate(
+		PagesDeploymentPaginationOptions{
+			CLIContext:      c,
+			APIClient:       APIClient,
+			AccountResource: accountResource,
+			ProjectName:     projectName,
+		})
 	if err != nil {
 		return fmt.Errorf("error listing deployments: %w", err)
 	}
 
-	dryRun := c.Bool(consts.DryRunFlag)
+	dryRun := c.Bool(dryRunFlag)
 	if dryRun {
 		fmt.Printf("Would delete %d deployments for project %s", len(allDeployments), projectName)
 		return nil
 	}
-	forceFlag := c.Bool(consts.ForceFlag)
+	forceFlag := c.Bool(forceFlag)
 	errorCount := 0
 	for _, deployment := range allDeployments {
 		err := APIClient.DeletePagesDeployment(c.Context, accountResource, cloudflare.DeletePagesDeploymentParams{
@@ -78,7 +86,7 @@ func PurgeDeployments(c *cli.Context) error {
 		return fmt.Errorf("failed to delete %d deployments", errorCount)
 	}
 
-	if c.Bool("delete-project") {
+	if c.Bool(deleteProjectFlag) {
 		err := APIClient.DeletePagesProject(c.Context, accountResource, projectName)
 		if err != nil {
 			return fmt.Errorf("error deleting project: %w", err)

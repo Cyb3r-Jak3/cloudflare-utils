@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/utils"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
 )
@@ -31,7 +30,7 @@ func BuildDNSPurgeCommand() *cli.Command {
 
 // DNSPurge is a command to delete all DNS records without downloading.
 func DNSPurge(c *cli.Context) error {
-	zoneID, err := utils.GetZoneID(c, APIClient, logger)
+	zoneID, err := GetZoneID(c, APIClient, logger)
 	if err != nil {
 		return err
 	}

@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/consts"
-	"github.com/Cyb3r-Jak3/cloudflare-utils/internal/utils"
 	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
@@ -91,7 +89,7 @@ func BuildDNSCleanerCommand() *cli.Command {
 				Value: false,
 			},
 			&cli.BoolFlag{
-				Name:  consts.DryRunFlag,
+				Name:  dryRunFlag,
 				Usage: "Do not make any changes. Only applies to upload",
 				Value: false,
 			},
@@ -137,11 +135,11 @@ func DownloadDNS(c *cli.Context) error {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
 
-	zoneID, err := utils.GetZoneID(c, APIClient, logger)
+	zoneID, err := GetZoneID(c, APIClient, logger)
 	if err != nil {
 		return err
 	}
-	zoneName := c.String(consts.ZoneNameFlag)
+	zoneName := c.String(zoneNameFlag)
 	if zoneName == "" {
 		zoneName = zoneID
 	}
@@ -221,7 +219,7 @@ func UploadDNS(c *cli.Context) error {
 	for _, record := range recordFile.Records {
 		if !record.Keep {
 			toRemove++
-			if c.Bool(consts.DryRunFlag) {
+			if c.Bool(dryRunFlag) {
 				fmt.Printf("Dry Run: Would have removed %s,", record.Name)
 				continue
 			}
@@ -231,7 +229,7 @@ func UploadDNS(c *cli.Context) error {
 			}
 		}
 	}
-	if c.Bool(consts.DryRunFlag) {
+	if c.Bool(dryRunFlag) {
 		return nil
 	}
 	logger.Infof("%d total records. %d to removed. %d errors removing records", recordCount, errorCount, toRemove)
