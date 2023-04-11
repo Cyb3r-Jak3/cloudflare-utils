@@ -16,6 +16,8 @@ builds:
       - arm
       - arm64
       - 386
+      - s390x
+      - ppc64le
     binary: cloudflare-utils
     mod_timestamp: '{{ .CommitTimestamp }}'
 
