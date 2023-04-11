@@ -33,11 +33,13 @@ theme:
 nav:
   - Home: index.md
   - started.md
-  - dns-cleaner.md
-  - dns-purge.md
-  - prune-deployments.md
-  - purge-deployments.md
-  - features.md
+  - DNS:
+    - dns/dns-cleaner.md
+    - dns-purge.md
+  - Pages:
+    - pages/prune-deployments.md
+    - pages/purge-deployments.md
+  - roadmap.md
 
 markdown_extensions:
   - admonition
