@@ -26,6 +26,7 @@ theme:
     - search.share
 
   plugins:
+    - social
     - search
     - minify:
         minify_html: true
@@ -45,7 +46,6 @@ markdown_extensions:
   - admonition
   - codehilite
   - meta
-  - social
   - toc:
       permalink: true
   - pymdownx.tabbed:
