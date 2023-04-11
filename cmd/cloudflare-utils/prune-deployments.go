@@ -78,7 +78,11 @@ func DeleteBranchDeployments(c *cli.Context) error {
 			continue
 		}
 		logger.Debugf("Deleting deployment %s", deployment.ID)
-		err := APIClient.DeletePagesDeployment(c.Context, accountResource, projectName, deployment.ID, cloudflare.DeletePagesDeploymentParams{Force: true})
+		err := APIClient.DeletePagesDeployment(c.Context, accountResource, cloudflare.DeletePagesDeploymentParams{
+			ProjectName:  projectName,
+			DeploymentID: deployment.ID,
+			Force:        true,
+		})
 		if err != nil {
 			logger.WithError(err).WithField("deployment", deployment.ID).Error("error deleting deployment")
 			errorCount++

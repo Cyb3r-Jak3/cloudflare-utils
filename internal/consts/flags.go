@@ -1,5 +1,6 @@
 package consts
 
+// Flags that are shared between commands.
 const (
 	APITokenFlag    = "api-token"
 	APIEmailFlag    = "api-email"

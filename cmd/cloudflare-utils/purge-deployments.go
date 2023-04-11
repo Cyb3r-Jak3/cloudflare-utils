@@ -32,8 +32,8 @@ func BuildPurgeDeploymentsCommand() *cli.Command {
 				Value: false,
 			},
 			&cli.BoolFlag{
-				Name:  consts.ForceFlag,
-				Usage: "Force delete deployments",
+				Name:  "delete-project",
+				Usage: "Delete the project after deleting all deployments",
 				Value: false,
 			},
 		},
@@ -64,7 +64,11 @@ func PurgeDeployments(c *cli.Context) error {
 	forceFlag := c.Bool(consts.ForceFlag)
 	errorCount := 0
 	for _, deployment := range allDeployments {
-		err := APIClient.DeletePagesDeployment(c.Context, accountResource, projectName, deployment.ID, cloudflare.DeletePagesDeploymentParams{Force: forceFlag})
+		err := APIClient.DeletePagesDeployment(c.Context, accountResource, cloudflare.DeletePagesDeploymentParams{
+			ProjectName:  projectName,
+			DeploymentID: deployment.ID,
+			Force:        forceFlag,
+		})
 		if err != nil {
 			logger.WithField("deployment ID", deployment.ID).Errorf("error deleting deployment: %s", err)
 			errorCount++
@@ -75,7 +79,7 @@ func PurgeDeployments(c *cli.Context) error {
 	}
 
 	if c.Bool("delete-project") {
-		err := APIClient.DeletePagesProject(c.Context, accountID, projectName)
+		err := APIClient.DeletePagesProject(c.Context, accountResource, projectName)
 		if err != nil {
 			return fmt.Errorf("error deleting project: %w", err)
 		}
