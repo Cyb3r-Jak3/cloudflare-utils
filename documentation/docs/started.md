@@ -53,5 +53,5 @@ You can pass the rate limit in milliseconds with the `--rate-limit` flag. This i
 - `--zone-name`
 You can pass your zone name with the `--zone-name` flag or with the environment variable `CLOUDFLARE_ZONE_NAME`. This is useful if you are running a command that only requires a zone name.
 
-- --zone-id
+- `--zone-id`
 You can pass your zone ID with the `--zone-id` flag or with the environment variable `CLOUDFLARE_ZONE_ID`. This is useful if you are running a command that only requires a zone ID.

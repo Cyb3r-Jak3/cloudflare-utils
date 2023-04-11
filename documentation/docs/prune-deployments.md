@@ -9,12 +9,14 @@ The purpose of this program is to offer a quick way to bulk remove Cloudflare Pa
 ## Running
 
 You need to pass the following flags to run this program:
+
 - `--api-token`: Your API token with the required permissions.
 - `--account-id`: Your account ID where the pages project is located.
 - `--project-name`: The name of the pages project.
 - `--branch`: The alias you want to remove deployments from.
 
 Optional flags:
+
 - `--dry-run`: If you want to see what would be deleted without actually deleting anything.
 
 Example:
