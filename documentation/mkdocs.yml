@@ -34,7 +34,7 @@ nav:
   - Home: index.md
   - started.md
   - DNS:
-    - dns/dns-cleaner.md
+    - dns/cleaner.md
     - dns/purge.md
   - Pages:
     - pages/prune-deployments.md
@@ -45,11 +45,10 @@ markdown_extensions:
   - admonition
   - codehilite
   - meta
+  - social
   - toc:
       permalink: true
   - pymdownx.tabbed:
       alternate_style: true
-#  - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true
-#  - footnotes
