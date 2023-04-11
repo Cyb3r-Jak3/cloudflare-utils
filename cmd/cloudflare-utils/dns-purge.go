@@ -16,7 +16,7 @@ const (
 func BuildDNSPurgeCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "dns-purge",
-		Usage: "Deletes all DNS records.\nAPI Token Requirements: DNS:Edit",
+		Usage: "Deletes all dns records.\nAPI Token Requirements: dns:Edit",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  confirmFlag,
@@ -28,7 +28,7 @@ func BuildDNSPurgeCommand() *cli.Command {
 	}
 }
 
-// DNSPurge is a command to delete all DNS records without downloading.
+// DNSPurge is a command to delete all dns records without downloading.
 func DNSPurge(c *cli.Context) error {
 	zoneID, err := GetZoneID(c, APIClient, logger)
 	if err != nil {
@@ -36,7 +36,7 @@ func DNSPurge(c *cli.Context) error {
 	}
 
 	zoneResource := cloudflare.ZoneIdentifier(zoneID)
-	// Get all DNS records
+	// Get all dns records
 	records, _, err := APIClient.ListDNSRecords(ctx, zoneResource, cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		logger.WithError(err).Error("Error getting zone info with ID")
@@ -57,14 +57,13 @@ func DNSPurge(c *cli.Context) error {
 	for _, record := range records {
 		if err := APIClient.DeleteDNSRecord(ctx, zoneResource, record.ID); err != nil {
 			logger.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
-			logger.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
 			errorCount++
 		}
 	}
 	if errorCount == 0 {
-		fmt.Printf("Successfully deleted all %d DNS records\n", len(records))
+		fmt.Printf("Successfully deleted all %d dns records\n", len(records))
 	} else {
-		fmt.Printf("Error deleting %d DNS records.\nPlease review errors and reach out if you believe to be an error with the program", errorCount)
+		fmt.Printf("Error deleting %d dns records.\nPlease review errors and reach out if you believe to be an error with the program", errorCount)
 	}
 	return nil
 }

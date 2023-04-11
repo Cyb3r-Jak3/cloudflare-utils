@@ -66,6 +66,11 @@ func main() {
 				EnvVars: []string{"CLOUDFLARE_ZONE_NAME"},
 			},
 			&cli.StringFlag{
+				Name:    zoneIDFlag,
+				Usage:   "Zone ID of your zone",
+				EnvVars: []string{"CLOUDFLARE_ZONE_ID"},
+			},
+			&cli.StringFlag{
 				Name:    accountIDFlag,
 				Usage:   "Account ID",
 				EnvVars: []string{"CLOUDFLARE_ACCOUNT_ID"},

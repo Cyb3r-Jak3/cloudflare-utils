@@ -23,6 +23,7 @@ func BuildPurgeDeploymentsCommand() *cli.Command {
 				Name:     projectNameFlag,
 				Aliases:  []string{"p"},
 				Usage:    "Pages project to delete the alias from",
+				EnvVars:  []string{"CF_PAGES_PROJECT"},
 				Required: true,
 			},
 			&cli.BoolFlag{

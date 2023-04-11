@@ -23,12 +23,14 @@ func BuildDeleteBranchCommand() *cli.Command {
 				Aliases:  []string{"p"},
 				Usage:    "Pages project to delete the alias from",
 				Required: true,
+				EnvVars:  []string{"CF_PAGES_PROJECT"},
 			},
 			&cli.StringFlag{
 				Name:     branchNameFlag,
 				Aliases:  []string{"b"},
 				Usage:    "Branch to delete",
 				Required: true,
+				EnvVars:  []string{"CF_PAGES_BRANCH"},
 			},
 			&cli.BoolFlag{
 				Name:  dryRunFlag,
