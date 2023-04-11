@@ -2,7 +2,7 @@
 .idea/**
 .github/**
 documentation/**
-**.yml
+*.yml
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -21,4 +21,7 @@ documentation/**
 
 # Go workspace file
 go.work
-
+LICENSE
+README.md
+.gitignore
+**/dist/*
