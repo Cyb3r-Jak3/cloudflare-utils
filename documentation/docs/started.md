@@ -2,7 +2,7 @@
 
 ## Download
 
-Cloudflare-utils is build for Windows, Mac and Linux and the latest release is available to download from [GitHub](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases). Download the tar/zip file for your operating system and then extract the executable.
+Cloudflare-utils is build for Windows, Mac and Linux and the latest release is available to download from [GitHub](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/latest). Download the tar/zip file for your operating system and then extract the executable.
 
 ### Additional Installation Methods
 

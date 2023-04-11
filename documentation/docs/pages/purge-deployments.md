@@ -1,4 +1,4 @@
-# Purge Pages Deployments
+# Purge Deployments
 
 The purpose of this program is to offer a quick way to bulk remove all Cloudflare Pages deployments for a project.
 

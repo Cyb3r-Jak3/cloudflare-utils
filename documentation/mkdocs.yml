@@ -35,7 +35,7 @@ nav:
   - started.md
   - DNS:
     - dns/dns-cleaner.md
-    - dns-purge.md
+    - dns/purge.md
   - Pages:
     - pages/prune-deployments.md
     - pages/purge-deployments.md
