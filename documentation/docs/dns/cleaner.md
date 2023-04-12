@@ -19,7 +19,7 @@ You can choose either downloading or uploading with the `download` and `upload` 
 ### 1. Download
 
 When you download DNS records, a file called `dns-records.yml` will be created with contains your DNS records.  
-If you want a different file name then add `--dns-file` with the name of the file you want. It needs to end in either `.yml` or `.yaml`
+If you want a different file name then add `--dns-file` with the name of the file you want.
 
 ##### Download options
 
@@ -27,7 +27,8 @@ If you want a different file name then add `--dns-file` with the name of the fil
 
 `--quick-clean`: Looks through all DNS records for ones that are numeric values and sets those to false.
 
-**Note** Using `--no-keep` with `--quick-clean` is not supported.
+???+ note 
+    Using `--no-keep` with `--quick-clean` is not supported.
 
 ### 2. Edit your records
 
@@ -36,6 +37,12 @@ Open the newly created file and any record that you do not want to keep change `
 ### 3. Apply your changes
 
 Once you have made all the changes you need to apply the changes. You can do this by either running just `dns-cleaner` command or `dns-cleaner upload` command.
+
+##### Upload options
+
+`--dry-run`: See what would be deleted without actually deleting anything.
+
+`--remove-file`: Remove the DNS file after uploading.
 
 Notes:
   * If you changed the name of the file via the flag then you need to point to the same file

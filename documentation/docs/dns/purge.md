@@ -11,5 +11,5 @@ Once you have it downloaded run `cloudflare-utils --api-token <API Token with DN
 
 Optional flags:
 
-- `--dry-run`: If you want to see what would be deleted without actually deleting anything.
-- `--confirm`: If you want to auto remove then add `--confirm` at the end. This will skip the confirmation prompt.
+- `--dry-run`: See what would be deleted without actually deleting anything.
+- `--confirm`: Skip the confirmation prompt.

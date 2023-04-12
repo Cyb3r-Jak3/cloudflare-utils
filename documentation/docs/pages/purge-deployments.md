@@ -25,7 +25,7 @@ Example:
 cloudflare-utils --api-token <API Token with Pages:Edit> --account-id <account ID> purge-deployments --project-name <project name>
 ```
 
-**Note**:
+???+ warning
 
-I have not tested with 1000+ deployments and am not sure how the rate limit will take effect.
-You should use the `--lots-of-deployments` flag if you have more than 1000 deployments as slow down the rate of listing deployments.
+    I have not tested with 1000+ deployments and am not sure how the rate limit will take effect.
+    You should use the `--lots-of-deployments` flag if you have more than 1000 deployments as slow down the rate of listing deployments.
