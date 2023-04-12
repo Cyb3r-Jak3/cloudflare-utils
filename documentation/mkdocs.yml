@@ -31,6 +31,7 @@ theme:
     - search
     - minify:
         minify_html: true
+  logo: assets/images/logo.png
 
 nav:
   - Home: index.md
