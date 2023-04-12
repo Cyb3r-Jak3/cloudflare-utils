@@ -46,18 +46,25 @@ chocolateys:
   - title: "Cloudflare utils"
     authors: "Cyb3r-Jak3"
     project_url: "https://cloudflare-utils.cyberjake.xyz/"
+    docs_url: "https://cloudflare-utils.cyberjake.xyz/"
     license_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils/blob/main/LICENSE"
     summary: "Community created utilities for Cloudflare"
     release_notes: "https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/tag/{{ .Tag }}"
     tags: "cloudflare"
     bug_tracker_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils/issues"
     api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
+    copyright: "2023 Cyb3r-Jak3"
+    package_source_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils"
+    icon_url: "https://raw.githubusercontent.com/Cyb3r-Jak3/cloudflare-utils/main/documentation/docs/assets/images/logo.png"
     description: |
       {{ .ProjectName }} installer package.
       Community created utilities for Cloudflare such as:
-      - deleting all records in a zone
-      - deleting all records in a zone except for a list of records
-      - deleting all Pages deployments for a branch
+      
+      - Deleting all records in a zone
+      - Deleting all records in a zone except for a list of records
+      - Deleting all Pages deployments for a branch
+      
+      Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc. in the United States and other jurisdictions.
 
 release:
   draft: true

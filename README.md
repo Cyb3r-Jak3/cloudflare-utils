@@ -1,20 +1,46 @@
 # Cloudflare Utilities
 
-[![Go Checks](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml) [![Golanglint CI](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml)
-
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Cyb3r-Jak3/cloudflare-utils)](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/latest)
 
-## Tools
+[![Go Checks](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml) [![Golanglint CI](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml)
 
-### DNS Cleaner
+![GitHub all releases](https://img.shields.io/github/downloads/Cyb3r-Jak3/cloudflare-utils/total?label=GitHub%20Total%20Downloads) ![Chocolatey](https://img.shields.io/chocolatey/dt/cloudflare-utils?label=Chocolatey%20Downloads)
 
-**DNS Cleaner** is a tool that downloads DNS records to a YAML file then will you will edit and your records
- 
-Basic Steps:
+## About
 
-1. Download your DNS records `./cloudflare-utils dns-cleaner`
-2. There will be a file called `dns-records.yml`
-3. For any record you do not want to keep change `keep: true` to false
-4. Rerun `./cloudflare-utils dns-cleaner` and all records not marked to keep will be removed. **This tool does not recreate records if they are missing**
+This is a collection of utilities for Cloudflare. The utilities are written in Go and are cross-platform. The utilities are:
+
+* [DNS Cleaner](https://cloudflare-utils.cyberjake.xyz/dns/cleaner/)
+* [DNS Purge](https://cloudflare-utils.cyberjake.xyz/dns/purge/)
+* [Deployment Purge](https://cloudflare-utils.cyberjake.xyz/pages/purge-deployments/)
+* [Deployment Prune](https://cloudflare-utils.cyberjake.xyz/pages/prune-deployments/)
+
+## Installation
+
+### Chocolatey
+
+```powershell
+choco install cloudflare-utils
+```
+
+### GitHub
+
+Download the latest release from the [releases page]()
+
+### Docker
+
+```bash
+docker pull cyb3rjak3/cloudflare-utils
+```
+
+### Go
+
+```bash
+go install github.com/Cyb3r-Jak3/cloudflare-utils/cmd/cloudflare-utils@latest
+```
+
+## Usage
+
+Check the [docs](https://cloudflare-utils.cyberjake.xyz/) for more information.
 
 [Read More](https://cloudflare-utils.cyberjake.xyz/dns-cleaner/)
