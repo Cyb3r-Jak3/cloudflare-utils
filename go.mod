@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Cyb3r-Jak3/common/v5 v5.1.0
-	github.com/cloudflare/cloudflare-go v0.64.0
+	github.com/cloudflare/cloudflare-go v0.65.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.25.1
 	gopkg.in/yaml.v3 v3.0.1
@@ -25,4 +25,4 @@ require (
 )
 
 // Until https://github.com/cloudflare/cloudflare-go/pull/1264 is merged
-replace github.com/cloudflare/cloudflare-go => github.com/Cyb3r-Jak3/cloudflare-go v0.42.1-0.20230411003603-ce92b12ce4ce
+replace github.com/cloudflare/cloudflare-go => github.com/Cyb3r-Jak3/cloudflare-go v0.42.1-0.20230411050916-dfc5234348e1
