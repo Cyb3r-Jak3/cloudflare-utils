@@ -75,7 +75,7 @@ jobs:
         if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
         with:
           username: cyb3rjak3
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Login to GitHub Container Registry
         if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
@@ -110,6 +110,14 @@ jobs:
           file: dist.Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v3
+        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+        with:
+          username: cyb3rjak3
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: cyb3rjak3/cloudflare-utils
 
   Release:
     if: startsWith(github.ref, 'refs/tags/v')
