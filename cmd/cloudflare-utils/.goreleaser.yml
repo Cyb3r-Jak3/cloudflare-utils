@@ -10,10 +10,14 @@ builds:
       - linux
       - windows
       - darwin
+      - freebsd
     goarch:
       - amd64
       - arm
       - arm64
+      - 386
+      - s390x
+      - ppc64le
     binary: cloudflare-utils
     mod_timestamp: '{{ .CommitTimestamp }}'
 
@@ -24,8 +28,11 @@ archives:
         format: zip
     name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 
+checksum:
+  name_template: 'checksums.txt'
+
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{ .Version }}-snapshot-{{ .ShortCommit }}"
 
 changelog:
   sort: asc
@@ -34,6 +41,23 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^chore:'
+
+chocolateys:
+  - title: "Cloudflare utils"
+    authors: "Cyb3r-Jak3"
+    project_url: "https://cloudflare-utils.cyberjake.xyz/"
+    license_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils/blob/main/LICENSE"
+    summary: "Community created utilities for Cloudflare"
+    release_notes: "https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/tag/{{ .Tag }}"
+    tags: "cloudflare"
+    bug_tracker_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils/issues"
+    api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
+    description: |
+      {{ .ProjectName }} installer package.
+      Community created utilities for Cloudflare such as:
+      - deleting all records in a zone
+      - deleting all records in a zone except for a list of records
+      - deleting all Pages deployments for a branch
 
 release:
   draft: true

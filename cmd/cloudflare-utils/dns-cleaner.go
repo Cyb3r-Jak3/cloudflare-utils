@@ -3,12 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/urfave/cli/v2"
-	"gopkg.in/yaml.v3"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/Cyb3r-Jak3/common/v5"
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/urfave/cli/v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -29,35 +31,35 @@ type DNSRecord struct {
 	Content string `yaml:"content"`
 }
 
-// RecordFile is the struct of the YAML DNS file
+// RecordFile is the struct of the YAML DNS file.
 type RecordFile struct {
 	ZoneName string      `yaml:"zone_name"`
 	ZoneID   string      `yaml:"zone_id"`
 	Records  []DNSRecord `yaml:"records"`
 }
 
-// BuildDNSCleanerCommand builds the `dns-cleaner` command for the application
+// BuildDNSCleanerCommand builds the `dns-cleaner` command for the application.
 func BuildDNSCleanerCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "dns-cleaner",
-		Usage:  "Clean DNS records. API Token Requirements: DNS:Edit",
+		Usage:  "Clean dns records.\nAPI Token Requirements: DNS:Edit",
 		Action: DNSCleaner,
 		Subcommands: []*cli.Command{
 			{
 				Name:   downloadSubCommand,
 				Action: DownloadDNS,
-				Usage:  "Download DNS records",
+				Usage:  "Download dns records",
 			},
 			{
 				Name:   uploadSubCommand,
 				Action: UploadDNS,
-				Usage:  "Upload DNS records",
+				Usage:  "Upload dns records",
 			},
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    dnsFileFlag,
-				Usage:   "Path to the dns record file",
+				Usage:   "Path to the DNS record file",
 				Aliases: []string{"f"},
 				EnvVars: []string{"DNS_RECORD_FILE"},
 				Value:   "./dns-records.yml",
@@ -71,7 +73,7 @@ func BuildDNSCleanerCommand() *cli.Command {
 			},
 			&cli.BoolFlag{
 				Name:    quickCleanFlag,
-				Usage:   "Auto marks DNS records that are numeric to be removed",
+				Usage:   "Auto marks dns records that are numeric to be removed",
 				Aliases: []string{"q"},
 				EnvVars: []string{"QUICK_CLEAN"},
 			},
@@ -83,7 +85,12 @@ func BuildDNSCleanerCommand() *cli.Command {
 			},
 			&cli.BoolFlag{
 				Name:  removeDNSFileFlag,
-				Usage: "Remove the DNS file once the upload completes",
+				Usage: "Remove the dns file once the upload completes",
+				Value: false,
+			},
+			&cli.BoolFlag{
+				Name:  dryRunFlag,
+				Usage: "Do not make any changes. Only applies to upload",
 				Value: false,
 			},
 		},
@@ -91,22 +98,19 @@ func BuildDNSCleanerCommand() *cli.Command {
 }
 
 // DNSCleaner is the main action function for the dns-cleaner command.
-// It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records
+// It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records.
 func DNSCleaner(c *cli.Context) error {
-	if err := setup(c); err != nil {
-		return err
-	}
-	log.Info("Running DNS Cleaner")
+	logger.Info("Running DNS Cleaner")
 
-	fileExists := FileExists(c.String(dnsFileFlag))
-	log.Debugf("Existing DNS file: %t", fileExists)
+	fileExists := common.FileExists(c.String(dnsFileFlag))
+	logger.Debugf("Existing DNS file: %t", fileExists)
 	if !fileExists {
-		log.Info("Downloading DNS Records")
+		logger.Info("Downloading DNS Records")
 		if err := DownloadDNS(c); err != nil {
 			return err
 		}
 	} else {
-		log.Info("Uploading DNS Records")
+		logger.Info("Uploading DNS Records")
 		if err := UploadDNS(c); err != nil {
 			return err
 		}
@@ -114,61 +118,45 @@ func DNSCleaner(c *cli.Context) error {
 	return nil
 }
 
-// quickClean checks to see if a DNS record is numeric
+// quickClean checks to see if a DNS record is numeric.
 func quickClean(zoneName, record string) bool {
 	r := strings.Split(record, fmt.Sprintf(".%s", zoneName))[0]
-	log.Debugf("Stripped record: %s", r)
+	logger.Debugf("Stripped record: %s", r)
 	_, err := strconv.Atoi(r)
-	log.Debugf("Error converting: %t", err != nil)
-	// if err != nil there is no number, and we should keep
+	logger.Debugf("Error converting: %t", err != nil)
 	return err != nil
 }
 
-// DownloadDNS downloads current DNS records from Cloudflare
+// DownloadDNS downloads current DNS records from Cloudflare.
 func DownloadDNS(c *cli.Context) error {
-	// Always need to set up
-	if APIClient == nil {
-		if err := setup(c); err != nil {
-			return err
-		}
-	}
-
 	// Make sure that we don't overwrite if told not to
-	if FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
+	if common.FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
 
-	zoneName := c.String(zoneNameFlag)
-	log.Infof("Zone name: %s. DNS file: %s", zoneName, c.String(dnsFileFlag))
-	if zoneName == "" {
-		return errors.New("need zone-name set when downloading DNS")
-	}
-
-	// Get the Zone ID which is what the API calls are made with
-	// Easier to ask for this than having users get the ID
-	// ToDo: Allow for Zone ID input
-	id, err := APIClient.ZoneIDByName(zoneName)
+	zoneID, err := GetZoneID(c, APIClient, logger)
 	if err != nil {
-		log.WithError(err).Debug("Error getting zone id from name")
 		return err
 	}
-	// Get all DNS records
-	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(id), cloudflare.ListDNSRecordsParams{})
+	zoneName := c.String(zoneNameFlag)
+	if zoneName == "" {
+		zoneName = zoneID
+	}
+	// Get all dns records
+	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
-		log.WithError(err).Error("Error getting zone info with ID")
+		logger.WithError(err).Error("Error getting zone info with ID")
 		return err
 	}
 	recordFile := &RecordFile{
-		ZoneID:   id,
+		ZoneID:   zoneID,
 		ZoneName: zoneName,
 	}
 	// Default keep action
 	toKeep := !c.Bool(noKeepFlag)
-	log.Debugf("ToKeep setting: %t", toKeep)
 
 	// If using quick clean to filter out numeric records
 	useQuickClean := c.Bool(quickCleanFlag)
-	log.Debugf("Quick Clean setting: %t", useQuickClean)
 
 	if useQuickClean && !toKeep {
 		return errors.New("using `--quick-clean` is not supported with `--no-keep`")
@@ -192,43 +180,35 @@ func DownloadDNS(c *cli.Context) error {
 	}
 	data, err := yaml.Marshal(&recordFile)
 	if err != nil {
-		log.WithError(err).Error("Error marshalling yaml data")
+		logger.WithError(err).Error("Error marshalling yaml data")
 		return err
 	}
 	// Write out the RecordFile Data
-	if err := os.WriteFile(c.String(dnsFileFlag), data, 0755); err != nil {
-		log.WithError(err).Error("Error writing DNS file")
+	if err := os.WriteFile(c.String(dnsFileFlag), data, 0600); err != nil {
+		logger.WithError(err).Error("Error writing DNS file")
 		return err
 	}
 	return nil
 }
 
-// UploadDNS makes the changes to DNS records based on the DNS file
+// UploadDNS makes the changes to DNS records based on the dns file.
 func UploadDNS(c *cli.Context) error {
-
-	// Always need to set up
-	if APIClient == nil {
-		if err := setup(c); err != nil {
-			return err
-		}
-	}
-
-	// Make sure the DNS File exists
+	// Make sure the dns File exists
 	dnsFilePath := c.String(dnsFileFlag)
-	if !FileExists(c.String(dnsFilePath)) {
+	if !common.FileExists(dnsFilePath) {
 		return fmt.Errorf("no DNS file found at '%s'", dnsFilePath)
 	}
 
-	// Read the DNS file and parse the data
+	// Read the dns file and parse the data
 	file, err := os.ReadFile(dnsFilePath)
 	if err != nil {
-		log.WithError(err).Error("Error reading DNS file")
+		logger.WithError(err).Error("Error reading DNS file")
 		return err
 	}
 
 	recordFile := &RecordFile{}
 	if err := yaml.Unmarshal(file, recordFile); err != nil {
-		log.WithError(err).Error("Error unmarshalling yaml")
+		logger.WithError(err).Error("Error unmarshalling yaml")
 		return err
 	}
 
@@ -238,18 +218,25 @@ func UploadDNS(c *cli.Context) error {
 	for _, record := range recordFile.Records {
 		if !record.Keep {
 			toRemove++
-			if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ResourceIdentifier(zoneID), record.ID); err != nil {
-				log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
+			if c.Bool(dryRunFlag) {
+				fmt.Printf("Dry Run: Would have removed %s,", record.Name)
+				continue
+			}
+			if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
+				logger.WithError(err).WithField("record", record.ID).Error("error deleting DNS record")
 				errorCount++
 			}
 		}
 	}
-	log.Infof("%d total records. %d to removed. %d errors removing records", recordCount, errorCount, toRemove)
+	if c.Bool(dryRunFlag) {
+		return nil
+	}
+	logger.Infof("%d total records. %d to removed. %d errors removing records", recordCount, errorCount, toRemove)
 
-	// Remove DNS record file
+	// Remove dns record file
 	if c.Bool(removeDNSFileFlag) {
 		if err := os.Remove(dnsFilePath); err != nil {
-			log.WithError(err).Warn("Error deleting old DNS file")
+			logger.WithError(err).Warn("Error deleting old DNS file")
 		}
 	}
 	return nil

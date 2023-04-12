@@ -26,6 +26,7 @@ theme:
     - search.share
 
   plugins:
+    - social
     - search
     - minify:
         minify_html: true
@@ -33,9 +34,13 @@ theme:
 nav:
   - Home: index.md
   - started.md
-  - dns-cleaner.md
-  - dns-purge.md
-  - features.md
+  - DNS:
+    - dns/cleaner.md
+    - dns/purge.md
+  - Pages:
+    - pages/prune-deployments.md
+    - pages/purge-deployments.md
+  - roadmap.md
 
 markdown_extensions:
   - admonition
@@ -43,9 +48,9 @@ markdown_extensions:
   - meta
   - toc:
       permalink: true
+  - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
-#  - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true
-#  - footnotes
+  - pymdownx.superfences

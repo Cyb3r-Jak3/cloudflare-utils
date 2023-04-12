@@ -1,22 +1,22 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
-	"strings"
 )
 
 const (
 	confirmFlag = "confirm"
 )
 
-// BuildDNSPurgeCommand creates the dns-purge command
+// BuildDNSPurgeCommand creates the dns-purge command.
 func BuildDNSPurgeCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "dns-purge",
-		Usage: "Deletes all DNS records. API Token Requirements: DNS:Edit",
+		Usage: "Deletes all dns records.\nAPI Token Requirements: DNS:Edit",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  confirmFlag,
@@ -28,55 +28,42 @@ func BuildDNSPurgeCommand() *cli.Command {
 	}
 }
 
-// DNSPurge is a command to delete all DNS records without downloading
+// DNSPurge is a command to delete all dns records without downloading.
 func DNSPurge(c *cli.Context) error {
-	//Always setup
-	if err := setup(c); err != nil {
+	zoneID, err := GetZoneID(c, APIClient, logger)
+	if err != nil {
 		return err
 	}
 
-	zoneName := c.String(zoneNameFlag)
-	if zoneName == "" {
-		return errors.New("need zone-name set when downloading DNS")
-	}
-	// Get the Zone ID which is what the API calls are made with
-	// Easier to ask for this than having users get the ID
-	// ToDo: Allow for Zone ID input
-	id, err := APIClient.ZoneIDByName(zoneName)
+	zoneResource := cloudflare.ZoneIdentifier(zoneID)
+	// Get all dns records
+	records, _, err := APIClient.ListDNSRecords(ctx, zoneResource, cloudflare.ListDNSRecordsParams{})
 	if err != nil {
-		log.WithError(err).Debug("Error getting zone id from name")
-		return err
-	}
-
-	// Get all DNS records
-	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ResourceIdentifier(id), cloudflare.ListDNSRecordsParams{})
-	if err != nil {
-		log.WithError(err).Error("Error getting zone info with ID")
+		logger.WithError(err).Error("Error getting zone info with ID")
 		return err
 	}
 	if !c.Bool(confirmFlag) {
 		var confirmString string
-		fmt.Printf("About to remove %d records.\n Continue (y/n): ", len(records))
+		fmt.Printf("About to remove %d records.\nContinue (y/n): ", len(records))
 		if _, err := fmt.Scanln(&confirmString); err != nil {
 			return err
 		}
-		if !strings.HasPrefix("y", confirmString) {
+		if !strings.EqualFold(confirmString, "y") {
 			fmt.Println("Did not get `y` as input. Exiting")
 			return nil
 		}
-
 	}
 	errorCount := 0
 	for _, record := range records {
-		if err := APIClient.DeleteDNSRecord(ctx, cloudflare.ResourceIdentifier(id), record.ID); err != nil {
-			log.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
+		if err := APIClient.DeleteDNSRecord(ctx, zoneResource, record.ID); err != nil {
+			logger.WithError(err).Errorf("Error deleting record: %s ID %s", record.Name, record.ID)
 			errorCount++
 		}
 	}
 	if errorCount == 0 {
-		fmt.Printf("Successfully deleted all %d DNS records\n", len(records))
+		fmt.Printf("Successfully deleted all %d dns records\n", len(records))
 	} else {
-		fmt.Printf("Error deleting %d DNS records.\nPlease review errors and reach out if you belive to be an error with the program", errorCount)
+		fmt.Printf("Error deleting %d dns records.\nPlease review errors and reach out if you believe to be an error with the program", errorCount)
 	}
 	return nil
 }

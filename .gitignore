@@ -27,3 +27,4 @@ dns-records.yml
 **/dist/*
 
 documentation/site/
+cmd/cloudflare-utils/LICENSE
