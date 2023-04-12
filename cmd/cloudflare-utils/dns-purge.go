@@ -16,7 +16,7 @@ const (
 func BuildDNSPurgeCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "dns-purge",
-		Usage: "Deletes all dns records.\nAPI Token Requirements: dns:Edit",
+		Usage: "Deletes all dns records.\nAPI Token Requirements: DNS:Edit",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  confirmFlag,
