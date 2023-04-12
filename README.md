@@ -41,6 +41,4 @@ go install github.com/Cyb3r-Jak3/cloudflare-utils/cmd/cloudflare-utils@latest
 
 ## Usage
 
-Check the [docs](https://cloudflare-utils.cyberjake.xyz/) for more information.
-
-[Read More](https://cloudflare-utils.cyberjake.xyz/dns-cleaner/)
+Check the [docs](https://cloudflare-utils.cyberjake.xyz/) for more information on how to use the utilities.
