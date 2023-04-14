@@ -55,7 +55,7 @@ chocolateys:
     api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
     copyright: "2023 Cyb3r-Jak3"
     package_source_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils"
-    icon_url: "https://raw.githubusercontent.com/Cyb3r-Jak3/cloudflare-utils/main/documentation/docs/assets/images/logo.png"
+    icon_url: "https://cloudflare-utils.cyberjake.xyz/assets/images/logo.png"
     description: |
       {{ .ProjectName }} installer package.
       Community created utilities for Cloudflare such as:
@@ -63,6 +63,7 @@ chocolateys:
       - Deleting all records in a zone
       - Deleting all records in a zone except for a list of records
       - Deleting all Pages deployments for a branch
+      - Deleting all Pages deployments for project
       
       Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc. in the United States and other jurisdictions.
 
