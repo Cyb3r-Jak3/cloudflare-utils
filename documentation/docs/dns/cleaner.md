@@ -7,9 +7,9 @@ If you are looking to remove all DNS records then check out the [dns-purge featu
 
 - _Zone:DNS:Edit_
 
-It operates in two steps, one to download the records and another to make any requested changes.
-
 ## Running
+
+Clear mode operates in two steps, one to download the records and another to make any requested changes.
 
 #### Default Behavior
 
@@ -44,6 +44,6 @@ Once you have made all the changes you need to apply the changes. You can do thi
 
 `--remove-file`: Remove the DNS file after uploading.
 
-Notes:
+!!! note
   * If you changed the name of the file via the flag then you need to point to the same file
   * Once a DNS record is deleted, then it is gone. This program does not recreate records

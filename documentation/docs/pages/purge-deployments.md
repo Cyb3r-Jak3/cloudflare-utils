@@ -4,7 +4,7 @@ The purpose of this program is to offer a quick way to bulk remove all Cloudflar
 
 **Required API Permissions**:
 
-- _Account:Cloudflare Pages:Edit_
+  - _Account:Cloudflare Pages:Edit_
 
 ## Running
 

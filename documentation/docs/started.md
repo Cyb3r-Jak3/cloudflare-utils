@@ -7,7 +7,9 @@ Cloudflare-utils is build for Windows, Mac and Linux and the latest release is a
 ### Additional Installation Methods
 
 1. Docker 
-   There is also a docker image available at `cyb3rjak3/cloudflare-utils` or `ghcr.io/cyb3r-jak3/cloudflare-utils`
+   There is also a docker image available at:
+   - `cyb3rjak3/cloudflare-utils`
+   - `ghcr.io/cyb3r-jak3/cloudflare-utils`
 2. Chocolatey
    There is also a chocolatey package available at `cloudflare-utils`
 

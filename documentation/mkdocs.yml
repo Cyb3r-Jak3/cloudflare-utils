@@ -24,12 +24,14 @@ theme:
     - search.suggest
     - search.highlight
     - search.share
+    - navigation.footer
 
   plugins:
     - social
     - search
     - minify:
         minify_html: true
+  logo: assets/images/logo.png
 
 nav:
   - Home: index.md
@@ -54,3 +56,13 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.superfences
+
+extra:
+  social:
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/r/cyb3rjak3
+      name: Cyb3r-Jak3 Docker images
+
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/Cyb3r_Jak3
+      name: Cyb3r-Jak3 on Twitter
