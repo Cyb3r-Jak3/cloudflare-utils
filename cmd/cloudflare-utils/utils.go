@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/sourcegraph/conc/pool"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/sirupsen/logrus"
@@ -30,7 +34,7 @@ func SetLogLevel(c *cli.Context, logger *logrus.Logger) {
 }
 
 // GetZoneID gets the zone ID from the CLI flags either by name or ID.
-func GetZoneID(c *cli.Context, apiClient *cloudflare.API, logger *logrus.Logger) (string, error) {
+func GetZoneID(c *cli.Context) (string, error) {
 	zoneName := c.String(zoneNameFlag)
 	zoneID := c.String(zoneIDFlag)
 	if zoneName == "" && zoneID == "" {
@@ -38,9 +42,9 @@ func GetZoneID(c *cli.Context, apiClient *cloudflare.API, logger *logrus.Logger)
 	}
 
 	if zoneID == "" {
-		id, err := apiClient.ZoneIDByName(zoneName)
+		id, err := APIClient.ZoneIDByName(zoneName)
 		if err != nil {
-			logger.WithError(err).Debug("Error getting zone id from name")
+			logger.WithError(err).Error("Error getting zone id from name")
 			return "", err
 		}
 		zoneID = id
@@ -50,7 +54,6 @@ func GetZoneID(c *cli.Context, apiClient *cloudflare.API, logger *logrus.Logger)
 
 type PagesDeploymentPaginationOptions struct {
 	CLIContext      *cli.Context
-	APIClient       *cloudflare.API
 	AccountResource *cloudflare.ResourceContainer
 	ProjectName     string
 }
@@ -63,19 +66,45 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 	if params.CLIContext.Bool(lotsOfDeploymentsFlag) {
 		resultInfo.PerPage = 4
 	}
+	startDeploymentListing := time.Now()
 	for {
-		res, _, err := params.APIClient.ListPagesDeployments(params.CLIContext.Context, params.AccountResource, cloudflare.ListPagesDeploymentsParams{
+		res, _, err := APIClient.ListPagesDeployments(params.CLIContext.Context, params.AccountResource, cloudflare.ListPagesDeploymentsParams{
 			ProjectName: params.ProjectName,
 			ResultInfo:  resultInfo,
 		})
 		if err != nil {
+			if len(deployments) != 0 {
+				logrus.WithError(err).Error("Unable to get all deployments")
+				return deployments, fmt.Errorf("error listing deployments: %w", err)
+			}
 			return []cloudflare.PagesProjectDeployment{}, fmt.Errorf("error listing deployments: %w", err)
 		}
 		deployments = append(deployments, res...)
 		resultInfo = resultInfo.Next()
-		if resultInfo.Done() {
+		if resultInfo.DoneCount() {
 			break
 		}
 	}
+	logrus.Debugf("Got %d deployments in %s", len(deployments), time.Since(startDeploymentListing))
 	return deployments, nil
+}
+
+func BatchPagesDelete(ctx context.Context, rc *cloudflare.ResourceContainer, projectName string, deployments []cloudflare.PagesProjectDeployment) []error {
+	p := pool.NewWithResults[error]()
+	p.WithMaxGoroutines(50)
+	for _, deployment := range deployments {
+		p.Go(func() error {
+			err := APIClient.DeletePagesDeployment(ctx, rc, cloudflare.DeletePagesDeploymentParams{
+				ProjectName:  projectName,
+				DeploymentID: deployment.ID,
+				Force:        true,
+			})
+			if err != nil {
+				logrus.WithError(err).Warningf("Error deletinging deployment: %s", deployment.ID)
+			}
+			return err
+		},
+		)
+	}
+	return p.Wait()
 }
