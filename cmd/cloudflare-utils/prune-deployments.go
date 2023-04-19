@@ -54,7 +54,6 @@ func DeleteBranchDeployments(c *cli.Context) error {
 	allDeployments, err := DeploymentsPaginate(
 		PagesDeploymentPaginationOptions{
 			CLIContext:      c,
-			APIClient:       APIClient,
 			AccountResource: accountResource,
 			ProjectName:     projectName,
 		})

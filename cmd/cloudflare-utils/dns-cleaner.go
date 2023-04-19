@@ -134,7 +134,7 @@ func DownloadDNS(c *cli.Context) error {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
 
-	zoneID, err := GetZoneID(c, APIClient, logger)
+	zoneID, err := GetZoneID(c)
 	if err != nil {
 		return err
 	}

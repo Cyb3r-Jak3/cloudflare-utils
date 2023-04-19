@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime/debug"
 	"sort"
+	"time"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/sirupsen/logrus"
@@ -20,6 +21,7 @@ var (
 	APIClient *cloudflare.API
 	logger    = logrus.New()
 	ctx       = context.Background()
+	startTime = time.Now()
 )
 
 func main() {
@@ -82,18 +84,27 @@ func main() {
 			},
 			&cli.BoolFlag{
 				Name:    "verbose",
+				Usage:   "Enable verbose logging",
 				Aliases: []string{"V"},
 				EnvVars: []string{"LOG_LEVEL_VERBOSE"},
 			},
 			&cli.BoolFlag{
 				Name:    "debug",
+				Usage:   "Enable debug logging",
 				Aliases: []string{"d"},
 				EnvVars: []string{"LOG_LEVEL_DEBUG"},
+			},
+			&cli.BoolFlag{
+				Name:    "trace",
+				EnvVars: []string{"LOG_LEVEL_TRACE"},
+				Hidden:  true,
 			},
 		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
-	if err := app.Run(os.Args); err != nil {
+	err := app.Run(os.Args)
+	logger.Debugf("Running took: %v", time.Since(startTime))
+	if err != nil {
 		fmt.Printf("Error running app: %s\n", err)
 		os.Exit(1)
 	}
@@ -118,11 +129,15 @@ func setup(c *cli.Context) (err error) {
 		rateLimit = 3
 	}
 
-	rateLimiter := cloudflare.UsingRateLimit(rateLimit)
-	userAgent := cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version))
+	cfClientOptions := []cloudflare.Option{
+		cloudflare.UsingRateLimit(rateLimit),
+		cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)),
+		cloudflare.Debug(c.Bool("trace")),
+		cloudflare.UsingLogger(logger),
+	}
 
 	if apiToken != "" {
-		APIClient, err = cloudflare.NewWithAPIToken(apiToken, rateLimiter, userAgent)
+		APIClient, err = cloudflare.NewWithAPIToken(apiToken, cfClientOptions...)
 		if err != nil {
 			logger.WithError(err).Error("Error creating new API instance with token")
 		}
@@ -132,7 +147,7 @@ func setup(c *cli.Context) (err error) {
 			return errors.New("need to have both API Key and Email set for legacy method")
 		}
 		logger.Warning("Using legacy method. Using API tokens is recommended")
-		APIClient, err = cloudflare.New(apiKey, apiEmail, rateLimiter, userAgent)
+		APIClient, err = cloudflare.New(apiKey, apiEmail, cfClientOptions...)
 		if err != nil {
 			logger.WithError(err).Error("Error creating new API instance with legacy method")
 		}

@@ -38,7 +38,7 @@ func BuildPurgeDeploymentsCommand() *cli.Command {
 			},
 			&cli.BoolFlag{
 				Name:  lotsOfDeploymentsFlag,
-				Usage: "If you have a lot of deployments, you may need to use this flag.",
+				Usage: "If you are getting errors getting all of the deployments, you may need to use this flag.",
 				Value: false,
 			},
 		},
@@ -46,6 +46,7 @@ func BuildPurgeDeploymentsCommand() *cli.Command {
 }
 
 func PurgeDeployments(c *cli.Context) error {
+	logger.Debug("Staring purge deployments")
 	accountID := c.String(accountIDFlag)
 	if accountID == "" {
 		return errors.New("`account-id` is required")
@@ -57,7 +58,6 @@ func PurgeDeployments(c *cli.Context) error {
 	allDeployments, err := DeploymentsPaginate(
 		PagesDeploymentPaginationOptions{
 			CLIContext:      c,
-			APIClient:       APIClient,
 			AccountResource: accountResource,
 			ProjectName:     projectName,
 		})
@@ -65,24 +65,34 @@ func PurgeDeployments(c *cli.Context) error {
 		return fmt.Errorf("error listing deployments: %w", err)
 	}
 
+	logger.Debugf("Found %d deployments for project %s", len(allDeployments), projectName)
+
 	dryRun := c.Bool(dryRunFlag)
 	if dryRun {
 		fmt.Printf("Would delete %d deployments for project %s", len(allDeployments), projectName)
 		return nil
 	}
-	forceFlag := c.Bool(forceFlag)
-	errorCount := 0
-	for _, deployment := range allDeployments {
-		err := APIClient.DeletePagesDeployment(c.Context, accountResource, cloudflare.DeletePagesDeploymentParams{
-			ProjectName:  projectName,
-			DeploymentID: deployment.ID,
-			Force:        forceFlag,
-		})
-		if err != nil {
-			logger.WithField("deployment ID", deployment.ID).Errorf("error deleting deployment: %s", err)
-			errorCount++
-		}
-	}
+
+	deleteErrors := BatchPagesDelete(c.Context, accountResource, projectName, allDeployments)
+
+	errorCount := len(deleteErrors)
+
+	//errorCount := 0
+	//for range allDeployments {
+	//	deployment := allDeployments[len(allDeployments)-1]
+	//	err := APIClient.DeletePagesDeployment(c.Context, accountResource, cloudflare.DeletePagesDeploymentParams{
+	//		ProjectName:  projectName,
+	//		DeploymentID: deployment.ID,
+	//		Force:        forceFlag,
+	//	})
+	//	if err != nil {
+	//		logger.WithField("deployment ID", deployment.ID).Errorf("error deleting deployment: %s", err)
+	//		errorCount++
+	//	}
+	//	allDeployments = allDeployments[:len(allDeployments)-1]
+	//	logger.Debugf("Deleted deployment %s", deployment.ID)
+	//	logger.Debugf("Remaining deployments: %d", len(allDeployments))
+	//}
 	if errorCount > 0 {
 		return fmt.Errorf("failed to delete %d deployments", errorCount)
 	}

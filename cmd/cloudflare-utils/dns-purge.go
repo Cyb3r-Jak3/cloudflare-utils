@@ -30,7 +30,7 @@ func BuildDNSPurgeCommand() *cli.Command {
 
 // DNSPurge is a command to delete all dns records without downloading.
 func DNSPurge(c *cli.Context) error {
-	zoneID, err := GetZoneID(c, APIClient, logger)
+	zoneID, err := GetZoneID(c)
 	if err != nil {
 		return err
 	}
