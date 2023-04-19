@@ -100,7 +100,7 @@ func BatchPagesDelete(ctx context.Context, rc *cloudflare.ResourceContainer, pro
 				Force:        true,
 			})
 			if err != nil {
-				logrus.WithError(err).Warning("Error deletinging deployment: %s", deployment.ID)
+				logrus.WithError(err).Warningf("Error deletinging deployment: %s", deployment.ID)
 			}
 			return err
 		},
