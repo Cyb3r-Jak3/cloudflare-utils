@@ -42,3 +42,7 @@ go install github.com/Cyb3r-Jak3/cloudflare-utils/cmd/cloudflare-utils@latest
 ## Usage
 
 Check the [docs](https://cloudflare-utils.cyberjake.xyz/) for more information on how to use the utilities.
+
+## Note
+
+This project is not affiliated with Cloudflare in any way.
