@@ -77,22 +77,6 @@ func PurgeDeployments(c *cli.Context) error {
 
 	errorCount := len(deleteErrors)
 
-	//errorCount := 0
-	//for range allDeployments {
-	//	deployment := allDeployments[len(allDeployments)-1]
-	//	err := APIClient.DeletePagesDeployment(c.Context, accountResource, cloudflare.DeletePagesDeploymentParams{
-	//		ProjectName:  projectName,
-	//		DeploymentID: deployment.ID,
-	//		Force:        forceFlag,
-	//	})
-	//	if err != nil {
-	//		logger.WithField("deployment ID", deployment.ID).Errorf("error deleting deployment: %s", err)
-	//		errorCount++
-	//	}
-	//	allDeployments = allDeployments[:len(allDeployments)-1]
-	//	logger.Debugf("Deleted deployment %s", deployment.ID)
-	//	logger.Debugf("Remaining deployments: %d", len(allDeployments))
-	//}
 	if errorCount > 0 {
 		return fmt.Errorf("failed to delete %d deployments", errorCount)
 	}
