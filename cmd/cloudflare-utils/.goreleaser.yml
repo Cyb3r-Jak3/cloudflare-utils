@@ -43,7 +43,7 @@ changelog:
       - '^chore:'
 
 chocolateys:
-  - title: "Cloudflare utils"
+  - title: "Cloudflare Utils"
     authors: "Cyb3r-Jak3"
     project_url: "https://cloudflare-utils.cyberjake.xyz/"
     docs_url: "https://cloudflare-utils.cyberjake.xyz/"

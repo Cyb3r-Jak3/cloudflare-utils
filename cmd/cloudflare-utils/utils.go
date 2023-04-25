@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 	"time"
@@ -20,6 +22,8 @@ func SetLogLevel(c *cli.Context, logger *logrus.Logger) {
 		logger.SetLevel(logrus.DebugLevel)
 	} else if c.Bool("verbose") {
 		logger.SetLevel(logrus.InfoLevel)
+	} else if c.Bool("trace") {
+		logger.SetLevel(logrus.TraceLevel)
 	} else {
 		switch strings.ToLower(os.Getenv("LOG_LEVEL")) {
 		case "trace":
@@ -74,7 +78,7 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 		})
 		if err != nil {
 			if len(deployments) != 0 {
-				logrus.WithError(err).Error("Unable to get all deployments")
+				logger.WithError(err).Error("Unable to get all deployments")
 				return deployments, fmt.Errorf("error listing deployments: %w", err)
 			}
 			return []cloudflare.PagesProjectDeployment{}, fmt.Errorf("error listing deployments: %w", err)
@@ -85,26 +89,59 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 			break
 		}
 	}
-	logrus.Debugf("Got %d deployments in %s", len(deployments), time.Since(startDeploymentListing))
+	logger.Debugf("Got %d deployments in %s", len(deployments), time.Since(startDeploymentListing))
 	return deployments, nil
 }
 
-func BatchPagesDelete(ctx context.Context, rc *cloudflare.ResourceContainer, projectName string, deployments []cloudflare.PagesProjectDeployment) []error {
-	p := pool.NewWithResults[error]()
+// RapidDNSDelete is a helper function to delete DNS records quickly.
+// Uses a pool of goroutines to delete records in parallel.
+func RapidDNSDelete(ctx context.Context, rc *cloudflare.ResourceContainer, dnsRecords []cloudflare.DNSRecord) []string {
+	p := pool.NewWithResults[string]()
 	p.WithMaxGoroutines(50)
-	for _, deployment := range deployments {
-		p.Go(func() error {
-			err := APIClient.DeletePagesDeployment(ctx, rc, cloudflare.DeletePagesDeploymentParams{
-				ProjectName:  projectName,
-				DeploymentID: deployment.ID,
-				Force:        true,
-			})
+	for _, dnsRecord := range dnsRecords {
+		p.Go(func() string {
+			err := APIClient.DeleteDNSRecord(ctx, rc, dnsRecord.ID)
 			if err != nil {
-				logrus.WithError(err).Warningf("Error deletinging deployment: %s", deployment.ID)
+				logger.WithError(err).Warningf("Error deleting dnsRecord: %s", dnsRecord.ID)
+				return dnsRecord.ID
 			}
-			return err
+			return ""
 		},
 		)
 	}
 	return p.Wait()
+}
+
+// RapidPagesDeploymentDelete is a helper function to delete Pages deployments quickly.
+// Uses a pool of goroutines to delete deployments in parallel.
+func RapidPagesDeploymentDelete(options pruneDeploymentOptions) []string {
+	p := pool.NewWithResults[string]()
+	p.WithMaxGoroutines(50)
+	for _, deployment := range options.SelectedDeployments {
+		p.Go(func() string {
+			err := APIClient.DeletePagesDeployment(options.c.Context, options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
+				ProjectName:  options.ProjectName,
+				DeploymentID: deployment.ID,
+				Force:        true,
+			})
+			if err != nil {
+				logger.WithError(err).Warningf("Error deleting deployment: %s", deployment.ID)
+				return deployment.ID
+			}
+			return ""
+		},
+		)
+	}
+	return p.Wait()
+}
+
+// FileExists is a function to check if the file exists at the path.
+func FileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return false
+		}
+	}
+	return true
 }

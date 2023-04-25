@@ -1,9 +1,5 @@
-github.com/Cyb3r-Jak3/cloudflare-go v0.42.1-0.20230411050916-dfc5234348e1 h1:BMaqBZNQFsOK5w7TVh4ff0i8NrgVKSem4GYZiqoMBco=
-github.com/Cyb3r-Jak3/cloudflare-go v0.42.1-0.20230411050916-dfc5234348e1/go.mod h1:tA44hjU9FfycofKT+lWWMHb/dEq1pRbiVPGuJo1WzLQ=
 github.com/Cyb3r-Jak3/cloudflare-go v0.42.1-0.20230419002028-c9b20db7de2d h1:nJrOXRjRrEBtC7m/fvHrqyw+64SCgs1NkENq77SOHBs=
 github.com/Cyb3r-Jak3/cloudflare-go v0.42.1-0.20230419002028-c9b20db7de2d/go.mod h1:tA44hjU9FfycofKT+lWWMHb/dEq1pRbiVPGuJo1WzLQ=
-github.com/Cyb3r-Jak3/common/v5 v5.1.0 h1:D3Qd3vVRgkwW7rfvEvLtVO+GyMI84Il/Hp2X+X053Ow=
-github.com/Cyb3r-Jak3/common/v5 v5.1.0/go.mod h1:x3qyg/87pgRIs7EZU7fjY2gW2BzT8gUBH9KdBAPKTEE=
 github.com/cpuguy83/go-md2man/v2 v2.0.2 h1:p1EgwI/C7NhT0JmVkwCD2ZBK8j4aeHQX2pMHHBfMQ6w=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
@@ -28,7 +24,6 @@ github.com/mattn/go-colorable v0.1.12 h1:jF+Du6AlPIjs2BiUiQlKOX0rt3SujHxPnksPKZb
 github.com/mattn/go-isatty v0.0.14 h1:yVuAays6BHfxijgZPzw+3Zlu5yQgKGP2/hcQbHb7S9Y=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/rogpeppe/go-internal v1.8.1 h1:geMPLpDpQOgVyCg5z5GoRwLHepNdb71NXb67XFkP+Eg=
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
 github.com/russross/blackfriday/v2 v2.1.0 h1:JIOH55/0cWyOuilr9/qlrm0BSXldqnqwMsf35Ld67mk=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
