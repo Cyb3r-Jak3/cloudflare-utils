@@ -7,7 +7,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.65.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/sourcegraph/conc v0.3.0
-	github.com/urfave/cli/v2 v2.25.1
+	github.com/urfave/cli/v2 v2.25.3
 	gopkg.in/yaml.v3 v3.0.1
 )
 
