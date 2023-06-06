@@ -31,6 +31,7 @@ func SetLogLevel(c *cli.Context, logger *logrus.Logger) {
 		}
 	}
 	logger.Debugf("Log Level set to %v", logger.Level)
+	logger.Debugf("cloudflare-utils: %s", versionString)
 }
 
 // GetZoneID gets the zone ID from the CLI flags either by name or ID.

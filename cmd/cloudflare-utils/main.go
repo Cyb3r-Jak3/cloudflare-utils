@@ -9,29 +9,31 @@ import (
 	"sort"
 	"time"
 
+	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
 var (
-	version   = "DEV"
-	date      = "unknown"
-	goVersion = "unknown"
-	APIClient *cloudflare.API
-	logger    = logrus.New()
-	ctx       = context.Background()
-	startTime = time.Now()
+	version       = "DEV"
+	date          = "unknown"
+	APIClient     *cloudflare.API
+	logger        = logrus.New()
+	ctx           = context.Background()
+	startTime     = time.Now()
+	versionString = fmt.Sprintf("%s (built %s)", version, date)
 )
 
 func main() {
 	if buildInfo, available := debug.ReadBuildInfo(); available {
-		goVersion = buildInfo.GoVersion
+		goVersion := buildInfo.GoVersion
+		versionString = fmt.Sprintf("%s (built %s with %s)", version, date, goVersion)
 	}
 	app := &cli.App{
 		Name:    "cloudflare-utils",
 		Usage:   "Program for quick cloudflare utils",
-		Version: fmt.Sprintf("%s (built %s with %s)", version, date, goVersion),
+		Version: versionString,
 		Suggest: true,
 		Authors: []*cli.Author{
 			{
@@ -112,7 +114,7 @@ func main() {
 
 func setup(c *cli.Context) (err error) {
 	SetLogLevel(c, logger)
-	if c.Args().First() == "help" {
+	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) {
 		return nil
 	}
 
