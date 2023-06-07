@@ -4,7 +4,7 @@ DATE ?= $(shell date -u '+%Y-%m-%d %H:%M UTC')
 VERSION_FLAGS := -X "main.version=$(GIT_VERSION)" -X "main.date=$(DATE)"
 
 build:
-	go build -ldflags='$(VERSION_FLAGS)' ./cmd/...
+	go build -ldflags='$(VERSION_FLAGS) -extldflags -static' ./cmd/...
 
 snapshot:
 	cd ./cmd/cloudflare-utils; goreleaser --snapshot --skip-publish --clean
