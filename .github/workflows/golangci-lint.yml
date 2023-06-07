@@ -9,12 +9,14 @@ on:
     paths:
       - '**.go'
       - .github/workflows/golangci-lint.yml
+      - .golangci-lint.yml
   pull_request:
     branches:
       - main
     paths:
       - '**.go'
       - .github/workflows/golangci-lint.yml
+      - .golangci-lint.yml
 
 jobs:
   Lint:
