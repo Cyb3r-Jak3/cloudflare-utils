@@ -93,7 +93,7 @@ func DeleteBranchDeployments(c *cli.Context) error {
 		}
 	}
 	if c.Bool(dryRunFlag) {
-		fmt.Println("Dry run complete")
+		fmt.Printf("Would delete %d deployments for project %s", len(allDeployments), projectName)
 		return nil
 	}
 	if errorCount > 0 {

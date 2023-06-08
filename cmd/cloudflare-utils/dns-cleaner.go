@@ -220,6 +220,11 @@ func UploadDNS(c *cli.Context) error {
 			}
 		}
 	}
+	if c.Bool(dryRunFlag) {
+		fmt.Printf("Would delete %d dns records", toRemove)
+		return nil
+	}
+
 	logger.Infof("%d total records. %d planned to be removed. %d errors removing records", recordCount, toRemove, errorCount)
 
 	if c.Bool(removeDNSFileFlag) {
