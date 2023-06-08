@@ -75,7 +75,7 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 		})
 		if err != nil {
 			if len(deployments) != 0 {
-				logrus.WithError(err).Error("Unable to get all deployments")
+				logrus.WithError(err).Error("Unable to get any deployments")
 				return deployments, fmt.Errorf("error listing deployments: %w", err)
 			}
 			return []cloudflare.PagesProjectDeployment{}, fmt.Errorf("error listing deployments: %w", err)
