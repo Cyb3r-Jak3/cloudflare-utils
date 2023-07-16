@@ -5,6 +5,7 @@ repo_name: Cyb3r-Jak3/cloudflare-utils
 
 theme:
   name: material
+  custom_dir: overrides
   language: en
   palette:
     - media: "(prefers-color-scheme: light)"  # Light mode
@@ -66,3 +67,6 @@ extra:
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/Cyb3r_Jak3
       name: Cyb3r-Jak3 on Twitter
+  analytics:
+    provider: matomo
+    

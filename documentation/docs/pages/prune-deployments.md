@@ -4,7 +4,6 @@
 
 - _Account:Cloudflare Pages:Edit_
 
-
 The purpose of this program is to offer a quick way to bulk remove Cloudflare Pages deployments.
 
 There are three ways to remove deployments:
@@ -13,7 +12,7 @@ There are three ways to remove deployments:
 - Deleting all deployments before a certain time.
 - Deleting all deployments after a certain time.
 
-If you want to delete all deployments for a project, check out [purge deployments](purge-deployments.md) command.
+If you want to delete all deployments for a project, check out the [purge deployments](purge-deployments.md) command.
 
 ## Running
 
@@ -23,11 +22,12 @@ You need to pass the following flags to run this program:
 - `--account-id`: Your account ID where the pages project is located.
 - `--project-name`: The name of the pages project.
 
-You need to pass one of the following flags:
+You need to pass only one of the following flags:
 
 - `--branch`: The alias you want to remove deployments from.
-- `--before`: The date you want to remove deployments before. Format: `YYYY-MM-DDTHH:mm:ss`.
-- `--after`: The date you want to remove deployments after. Format: `YYYY-MM-DDTHH:mm:ss`.
+- `--before`: The date you want to remove deployments before. Format: `YYYY-MM-DDTHH:mm:ss`. Example: `2021-01-01T00:00:00` = January 1st, 2021 at 12:00:00 AM.
+- `--after`: The date you want to remove deployments after. Format: `YYYY-MM-DDTHH:mm:ss`. Example: `2021-01-01T00:00:00` = January 1st, 2021 at 12:00:00 AM.
+- `--time`: Shortcut for deleting times. Use the format of `1<unit>` where unit is one of y (year), M (month), w (week), d (day), h (hour), m (minute), s (second). To delete all deployments older than an hours use `1h`. For more into refer to [time-shortcut](#time-shortcut).
 
 Optional flags:
 
@@ -39,6 +39,8 @@ Example:
 ```shell
 cloudflare-utils --api-token <API Token with Pages:Edit> --account-id <account ID> prune-deployments --project-name <project name> --branch <branch>
 ```
+
+### Time Shortcut
 
 ???+ warning
 

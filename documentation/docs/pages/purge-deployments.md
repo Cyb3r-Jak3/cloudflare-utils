@@ -5,7 +5,7 @@
 - _Account:Cloudflare Pages:Edit_
 
 The purpose of this program is to offer a quick way to bulk remove all Cloudflare Pages deployments for a project.
-If you want to remove deployments for a specific branch, check out [prune deployments](prune-deployments.md) command.
+If you want to remove deployments for a specific branch, check out the [prune deployments](prune-deployments.md) command.
 
 ## Running
 
