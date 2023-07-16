@@ -85,7 +85,7 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 		}
 		deployments = append(deployments, res...)
 		resultInfo = resultInfo.Next()
-		if resultInfo.DoneCount() {
+		if resultInfo.Done() {
 			break
 		}
 	}

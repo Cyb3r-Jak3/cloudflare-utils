@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	branchNameFlag = "branch"
-	beforeFlag     = "before"
-	afterFlag      = "after"
+	branchNameFlag   = "branch"
+	beforeFlag       = "before"
+	afterFlag        = "after"
+	timeShortcutFlag = "time-shortcut"
 )
 
 type pruneDeploymentOptions struct {
@@ -49,6 +50,13 @@ func BuildPruneDeploymentsCommand() *cli.Command {
 				Name:   afterFlag,
 				Usage:  "Time to delete after",
 				Layout: "2006-01-02T15:04:05",
+			},
+			&cli.StringFlag{
+				Name: timeShortcutFlag,
+				Usage: "Shortcut for before and after. " +
+					"Use the format of 1<unit> where unit is one of " +
+					"y (year), M (month), w (week), d (day), h (hour), m (minute), s (second)" +
+					"use a negative number to go back in time. Read the docs for more info",
 			},
 			&cli.BoolFlag{
 				Name:  dryRunFlag,
