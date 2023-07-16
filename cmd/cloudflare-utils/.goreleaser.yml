@@ -6,6 +6,8 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
+    flags:
+    - -trimpath
     goos:
       - linux
       - windows
@@ -15,7 +17,7 @@ builds:
       - amd64
       - arm
       - arm64
-      - 386
+      - '386'
       - s390x
       - ppc64le
     binary: cloudflare-utils
@@ -41,6 +43,17 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^chore:'
+
+signs:
+  - artifacts: all
+    args:
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
 
 chocolateys:
   - title: "Cloudflare Utils"

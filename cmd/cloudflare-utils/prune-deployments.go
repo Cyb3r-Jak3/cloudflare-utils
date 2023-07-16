@@ -12,7 +12,7 @@ const (
 	branchNameFlag   = "branch"
 	beforeFlag       = "before"
 	afterFlag        = "after"
-	timeShortcutFlag = "time-shortcut"
+	timeShortcutFlag = "time"
 )
 
 type pruneDeploymentOptions struct {

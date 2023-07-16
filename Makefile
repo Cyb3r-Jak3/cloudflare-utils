@@ -7,14 +7,12 @@ build:
 	go build -ldflags='$(VERSION_FLAGS)' ./cmd/...
 
 snapshot:
-	cd ./cmd/cloudflare-utils; goreleaser --snapshot --skip-publish --clean
+	cd ./cmd/cloudflare-utils; goreleaser --snapshot --skip-publish --clean --skip-sign
 
 lint:
 	golangci-lint run --config .golangci-lint.yml ./...
 
 test:
-	echo "No tests yet"
-	exit 0
 	go test -race -v -coverprofile="c.out" ./...
 	go tool cover -func="c.out"
 
