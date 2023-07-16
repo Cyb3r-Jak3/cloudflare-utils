@@ -203,7 +203,6 @@ func UploadDNS(c *cli.Context) error {
 		return err
 	}
 
-
 	zoneResource := cloudflare.ZoneIdentifier(recordFile.ZoneID)
 	recordCount, errorCount := len(recordFile.Records), 0
 	var toRemove []cloudflare.DNSRecord
