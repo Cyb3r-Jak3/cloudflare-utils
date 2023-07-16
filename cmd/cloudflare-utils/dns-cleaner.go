@@ -205,17 +205,18 @@ func UploadDNS(c *cli.Context) error {
 
 
 	zoneResource := cloudflare.ZoneIdentifier(recordFile.ZoneID)
-	recordCount, errorCount, toRemove := len(recordFile.Records), 0, 0
+	recordCount, errorCount := len(recordFile.Records), 0
+	var toRemove []cloudflare.DNSRecord
+
 	for _, record := range recordFile.Records {
 		if !record.Keep {
 			if c.Bool(dryRunFlag) {
 				fmt.Printf("Dry Run: Would have removed %s\n", record.Name)
 				continue
 			}
-			if err := APIClient.DeleteDNSRecord(ctx, zoneResource, record.ID); err != nil {
-				logger.WithError(err).WithField("record", record.ID).Error("error deleting DNS record")
-				errorCount++
-			}
+			toRemove = append(toRemove, cloudflare.DNSRecord{
+				ID: record.ID,
+			})
 		}
 	}
 
@@ -224,7 +225,7 @@ func UploadDNS(c *cli.Context) error {
 		return nil
 	}
 
-	errorCount := len(RapidDNSDelete(c.Context, zoneResource, toRemove))
+	errorCount = len(RapidDNSDelete(c.Context, zoneResource, toRemove))
 
 	if errorCount == 0 {
 		fmt.Printf("Successfully deleted all %d dns records\n", len(toRemove))

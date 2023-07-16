@@ -53,18 +53,9 @@ func DNSPurge(c *cli.Context) error {
 			return nil
 		}
 	}
-<<<<<<< HEAD
 	if len(records) == 0 {
 		fmt.Println("No records to delete")
 		return nil
-=======
-	errorCount := 0
-	for _, record := range records {
-		if err := APIClient.DeleteDNSRecord(ctx, zoneResource, record.ID); err != nil {
-			logger.WithError(err).WithField("record", record.ID).Error("Error deleting record")
-			errorCount++
-		}
->>>>>>> main
 	}
 
 	if c.Bool(dryRunFlag) {
