@@ -153,28 +153,36 @@ func PruneBranchDeployments(options pruneDeploymentOptions) (toDelete []cloudfla
 			toDelete = append(toDelete, deployment)
 		}
 	}
-	return toDelete
-}
-
-// PruneTimeDeployments will return a list of deployments to delete based on the time range.
-func PruneTimeDeployments(options pruneDeploymentOptions) (toDelete []cloudflare.PagesProjectDeployment) {
-	beforeTimestamp := options.c.Timestamp(beforeFlag)
-	afterTimestamp := options.c.Timestamp(afterFlag)
-	if beforeTimestamp != nil {
-		logger.Debug("Pruning with before time")
-	} else {
-		logger.Debug("Pruning with  after time")
+	if len(toDelete) == 0 {
+		fmt.Println("No deployments found with branch", selectedBranch)
+		return nil
 	}
-	for _, deployment := range options.SelectedDeployments {
-		if beforeTimestamp != nil {
-			if deployment.CreatedOn.Before(*beforeTimestamp) {
-				toDelete = append(toDelete, deployment)
-			}
-		} else {
-			if deployment.CreatedOn.After(*afterTimestamp) {
-				toDelete = append(toDelete, deployment)
-			}
+
+	errorCount := 0
+	for _, deployment := range toDelete {
+		if c.Bool(dryRunFlag) {
+			fmt.Println("Dry Run: Would delete", deployment.ID)
+			continue
+		}
+		logger.Debugf("Deleting deployment %s", deployment.ID)
+		err := APIClient.DeletePagesDeployment(c.Context, accountResource, cloudflare.DeletePagesDeploymentParams{
+			ProjectName:  projectName,
+			DeploymentID: deployment.ID,
+			Force:        true,
+		})
+		if err != nil {
+			logger.WithError(err).WithField("deployment", deployment.ID).Error("error deleting deployment")
+			errorCount++
 		}
 	}
-	return toDelete
+	if c.Bool(dryRunFlag) {
+		fmt.Printf("Would delete %d deployments for project %s", len(allDeployments), projectName)
+		return nil
+	}
+	if errorCount > 0 {
+		return fmt.Errorf("error deleting %d deployments out of %d", errorCount, len(toDelete))
+	}
+	fmt.Println("Deleted", len(toDelete), "deployments")
+
+	return nil
 }

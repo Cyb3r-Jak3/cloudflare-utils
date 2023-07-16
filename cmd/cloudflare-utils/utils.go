@@ -35,6 +35,7 @@ func SetLogLevel(c *cli.Context, logger *logrus.Logger) {
 		}
 	}
 	logger.Debugf("Log Level set to %v", logger.Level)
+	logger.Debugf("cloudflare-utils: %s", versionString)
 }
 
 // GetZoneID gets the zone ID from the CLI flags either by name or ID.
@@ -78,7 +79,7 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 		})
 		if err != nil {
 			if len(deployments) != 0 {
-				logger.WithError(err).Error("Unable to get all deployments")
+				logger.WithError(err).Error("Unable to get any deployments")
 				return deployments, fmt.Errorf("error listing deployments: %w", err)
 			}
 			return []cloudflare.PagesProjectDeployment{}, fmt.Errorf("error listing deployments: %w", err)

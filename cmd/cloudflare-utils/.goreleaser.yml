@@ -22,6 +22,10 @@ builds:
       - ppc64le
     binary: cloudflare-utils
     mod_timestamp: '{{ .CommitTimestamp }}'
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}'
+      - -extldflags "-static"
+
 
 archives:
   - format: tar.xz
@@ -79,6 +83,59 @@ chocolateys:
       - Deleting all Pages deployments for project
       
       Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc. in the United States and other jurisdictions.
+
+nfpms:
+  -
+    package_name: cloudflare-utils
+
+    # Your app's vendor.
+    vendor: Cyb3rJak3
+
+    # Your app's homepage.
+    homepage: https://cloudflare-utils.cyberjake.xyz/
+
+    # Your app's maintainer (probably you).
+    maintainer: Cyb3rJak3 <git@cyberjake.xyz>
+
+    # Your app's description.
+    description: |-
+      Community created utilities for Cloudflare such as:
+      
+      - Deleting all records in a zone
+      - Deleting all records in a zone except for a list of records
+      - Deleting all Pages deployments for a branch
+      - Deleting all Pages deployments for project
+      
+      Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc. in the United States and other jurisdictions.
+
+    license: Apache 2.0
+
+    formats:
+      - apk
+      - deb
+      - rpm
+
+    provides:
+      - cloudflare-utils
+
+    section: default
+
+    priority: extra
+
+    # Changelog YAML file, see: https://github.com/goreleaser/chglog
+    #
+    # You can use goreleaser/chglog to create the changelog for your project,
+    # pass that changelog yaml file to GoReleaser,
+    # and it should in turn setup it accordingly for the given available
+    # formats (deb and rpm at the moment).
+    #
+    # Experimental.
+    # Since: v1.11
+#    changelog: ./foo.yml
+    contents:
+      - src: LICENSE
+        dst: /usr/share/licenses/{{ .ProjectName }}/LICENSE.md
+
 
 release:
   draft: true
