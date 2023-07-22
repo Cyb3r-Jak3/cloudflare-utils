@@ -3,8 +3,8 @@ module github.com/Cyb3r-Jak3/cloudflare-utils
 go 1.20
 
 require (
-	github.com/cloudflare/cloudflare-go v0.72.0
 	github.com/Cyb3r-Jak3/common/v5 v5.1.0
+	github.com/cloudflare/cloudflare-go v0.73.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/sourcegraph/conc v0.3.0
 	github.com/urfave/cli/v2 v2.25.7
@@ -25,6 +25,3 @@ require (
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )
-
-// Until https://github.com/cloudflare/cloudflare-go/pull/1264 is merged and released.
-replace github.com/cloudflare/cloudflare-go => github.com/cloudflare/cloudflare-go v0.72.1-0.20230713035113-b8dab62e3f9b
