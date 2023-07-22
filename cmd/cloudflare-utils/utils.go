@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"strings"
 	"time"
@@ -134,15 +132,4 @@ func RapidPagesDeploymentDelete(options pruneDeploymentOptions) []string {
 		)
 	}
 	return p.Wait()
-}
-
-// FileExists is a function to check if the file exists at the path.
-func FileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			return false
-		}
-	}
-	return true
 }

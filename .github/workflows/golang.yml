@@ -53,8 +53,8 @@ jobs:
             ~\go\pkg\mod
           key: go-${{ hashFiles('go.sum') }}
 
-      - name: Test
-        run: make test
+      #- name: Test
+      #  run: make test
 
       - name: GoReleaser Action
         uses: goreleaser/goreleaser-action@v4

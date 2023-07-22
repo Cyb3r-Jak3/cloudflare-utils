@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/Cyb3r-Jak3/common/v5"
 	"os"
 	"strconv"
 	"strings"
@@ -101,7 +102,7 @@ func BuildDNSCleanerCommand() *cli.Command {
 func DNSCleaner(c *cli.Context) error {
 	logger.Info("Starting DNS Cleaner")
 
-	fileExists := FileExists(c.String(dnsFileFlag))
+	fileExists := common.FileExists(c.String(dnsFileFlag))
 	logger.Debugf("Existing DNS file: %t", fileExists)
 	if !fileExists {
 		logger.Info("Downloading DNS Records")
@@ -128,7 +129,7 @@ func quickClean(zoneName, record string) bool {
 
 // DownloadDNS downloads current DNS records from Cloudflare.
 func DownloadDNS(c *cli.Context) error {
-	if FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
+	if common.FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
 
@@ -187,7 +188,7 @@ func DownloadDNS(c *cli.Context) error {
 // UploadDNS makes the changes to DNS records based on the dns file.
 func UploadDNS(c *cli.Context) error {
 	dnsFilePath := c.String(dnsFileFlag)
-	if !FileExists(dnsFilePath) {
+	if !common.FileExists(dnsFilePath) {
 		return fmt.Errorf("no DNS file found at '%s'", dnsFilePath)
 	}
 
