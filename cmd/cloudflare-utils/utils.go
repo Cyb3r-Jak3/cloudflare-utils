@@ -115,7 +115,11 @@ func RapidDNSDelete(ctx context.Context, rc *cloudflare.ResourceContainer, dnsRe
 // Uses a pool of goroutines to delete deployments in parallel.
 func RapidPagesDeploymentDelete(options pruneDeploymentOptions) []string {
 	p := pool.NewWithResults[string]()
-	p.WithMaxGoroutines(50)
+	maxGoRoutines := 50
+	if options.c.Bool(lotsOfDeploymentsFlag) {
+		maxGoRoutines = 10
+	}
+	p.WithMaxGoroutines(maxGoRoutines)
 	for _, deployment := range options.SelectedDeployments {
 		p.Go(func() string {
 			err := APIClient.DeletePagesDeployment(options.c.Context, options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
