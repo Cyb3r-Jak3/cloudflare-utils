@@ -1,4 +1,4 @@
-# Purge Deployments
+# Purge Pages Deployments
 
 **Required API Permissions**:
 
