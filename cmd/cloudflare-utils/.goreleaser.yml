@@ -6,6 +6,8 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
+    flags:
+      - -trimpath
     goos:
       - linux
       - windows
@@ -15,7 +17,7 @@ builds:
       - amd64
       - arm
       - arm64
-      - 386
+      - '386'
       - s390x
       - ppc64le
     binary: cloudflare-utils
@@ -46,8 +48,19 @@ changelog:
       - '^test:'
       - '^chore:'
 
+signs:
+  - artifacts: all
+    args:
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+
 chocolateys:
-  - title: "Cloudflare utils"
+  - title: "Cloudflare Utils"
     authors: "Cyb3r-Jak3"
     project_url: "https://cloudflare-utils.cyberjake.xyz/"
     docs_url: "https://cloudflare-utils.cyberjake.xyz/"
@@ -68,6 +81,7 @@ chocolateys:
       - Deleting all records in a zone except for a list of records
       - Deleting all Pages deployments for a branch
       - Deleting all Pages deployments for project
+      - Deleting all Pages deployments based on time
       
       Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc. in the United States and other jurisdictions.
 
@@ -126,3 +140,6 @@ nfpms:
 
 release:
   draft: true
+
+#sboms:
+#  - artifacts: archive

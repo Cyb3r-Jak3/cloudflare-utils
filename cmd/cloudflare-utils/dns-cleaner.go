@@ -100,7 +100,7 @@ func BuildDNSCleanerCommand() *cli.Command {
 // DNSCleaner is the main action function for the dns-cleaner command.
 // It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records.
 func DNSCleaner(c *cli.Context) error {
-	logger.Info("Running DNS Cleaner")
+	logger.Info("Starting DNS Cleaner")
 
 	fileExists := common.FileExists(c.String(dnsFileFlag))
 	logger.Debugf("Existing DNS file: %t", fileExists)
@@ -129,7 +129,6 @@ func quickClean(zoneName, record string) bool {
 
 // DownloadDNS downloads current DNS records from Cloudflare.
 func DownloadDNS(c *cli.Context) error {
-	// Make sure that we don't overwrite if told not to
 	if common.FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
@@ -206,27 +205,35 @@ func UploadDNS(c *cli.Context) error {
 	}
 
 	zoneResource := cloudflare.ZoneIdentifier(recordFile.ZoneID)
-	recordCount, errorCount, toRemove := len(recordFile.Records), 0, 0
+	recordCount, errorCount := len(recordFile.Records), 0
+	var toRemove []cloudflare.DNSRecord
+
 	for _, record := range recordFile.Records {
 		if !record.Keep {
-			toRemove++
 			if c.Bool(dryRunFlag) {
-				fmt.Printf("Dry Run: Would have removed %s,", record.Name)
+				fmt.Printf("Dry Run: Would have removed %s\n", record.Name)
 				continue
 			}
-			if err := APIClient.DeleteDNSRecord(ctx, zoneResource, record.ID); err != nil {
-				logger.WithError(err).WithField("record", record.ID).Error("error deleting DNS record")
-				errorCount++
-			}
+			toRemove = append(toRemove, cloudflare.DNSRecord{
+				ID: record.ID,
+			})
 		}
 	}
+
 	if c.Bool(dryRunFlag) {
-		fmt.Printf("Would delete %d dns records", toRemove)
+		fmt.Printf("Dry Run: Would have removed %d records\n", len(toRemove))
 		return nil
 	}
 
-	logger.Infof("%d total records. %d planned to be removed. %d errors removing records", recordCount, toRemove, errorCount)
+	errorCount = len(RapidDNSDelete(c.Context, zoneResource, toRemove))
 
+	if errorCount == 0 {
+		fmt.Printf("Successfully deleted all %d dns records\n", len(toRemove))
+	} else {
+		fmt.Printf("Error deleting %d dns records.\nPlease review errors and reach out if you believe to be an error with the program", errorCount)
+	}
+
+	logger.Infof("%d total records. %d to removed. %d errors removing records", recordCount, len(toRemove), errorCount)
 	if c.Bool(removeDNSFileFlag) {
 		if err := os.Remove(dnsFilePath); err != nil {
 			logger.WithError(err).Warn("Error deleting old DNS file")

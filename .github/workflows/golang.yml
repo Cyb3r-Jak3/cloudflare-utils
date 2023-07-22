@@ -36,10 +36,14 @@ jobs:
       GO111MODULE: on
 
     steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version-file: go.mod
           cache: false
 
       - uses: actions/cache@v3
@@ -49,14 +53,17 @@ jobs:
             ~\go\pkg\mod
           key: go-${{ hashFiles('go.sum') }}
 
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Install Syft
+        run: choco install syft --yes
+
+      #- name: Test
+      #  run: make test
 
       - name: GoReleaser Action
         uses: goreleaser/goreleaser-action@v4
         with:
           version: latest
-          args: --snapshot --skip-publish --clean
+          args: --snapshot --skip-publish --clean --skip-sign
           workdir: cmd/cloudflare-utils
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -128,11 +135,17 @@ jobs:
       GO111MODULE: on
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version-file: go.mod
           cache: false
+
+      - name: Install Syft
+        run: choco install syft --yes
 
       - uses: actions/cache@v3
         with:
@@ -141,8 +154,12 @@ jobs:
             ~\go\pkg\mod
           key: go-${{ hashFiles('go.sum') }}
 
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4

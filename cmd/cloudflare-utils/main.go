@@ -45,7 +45,7 @@ func main() {
 		Commands: []*cli.Command{
 			BuildDNSCleanerCommand(),
 			BuildDNSPurgeCommand(),
-			BuildDeleteBranchCommand(),
+			BuildPruneDeploymentsCommand(),
 			BuildPurgeDeploymentsCommand(),
 		},
 		Flags: []cli.Flag{
@@ -80,9 +80,10 @@ func main() {
 				EnvVars: []string{"CLOUDFLARE_ACCOUNT_ID"},
 			},
 			&cli.Float64Flag{
-				Name:  "rate-limit",
-				Usage: "Rate limit for API calls.\nDefault is 4 which matches the Cloudflare API limit of 1200 calls per 5 minutes",
-				Value: 4,
+				Name:   "rate-limit",
+				Usage:  "Rate limit for API calls.\nDefault is 4 which matches the Cloudflare API limit of 1200 calls per 5 minutes",
+				Value:  4,
+				Hidden: true,
 			},
 			&cli.BoolFlag{
 				Name:    "verbose",

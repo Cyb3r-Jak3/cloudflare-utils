@@ -30,6 +30,7 @@ func BuildDNSPurgeCommand() *cli.Command {
 
 // DNSPurge is a command to delete all dns records without downloading.
 func DNSPurge(c *cli.Context) error {
+	logger.Info("Starting DNS Purge")
 	zoneID, err := GetZoneID(c)
 	if err != nil {
 		return err
@@ -52,13 +53,19 @@ func DNSPurge(c *cli.Context) error {
 			return nil
 		}
 	}
-	errorCount := 0
-	for _, record := range records {
-		if err := APIClient.DeleteDNSRecord(ctx, zoneResource, record.ID); err != nil {
-			logger.WithError(err).WithField("record", record.ID).Error("Error deleting record")
-			errorCount++
-		}
+	if len(records) == 0 {
+		fmt.Println("No records to delete")
+		return nil
 	}
+
+	if c.Bool(dryRunFlag) {
+		fmt.Printf("Dry run: Would have deleted %d records\n", len(records))
+		return nil
+	}
+
+	errors := RapidDNSDelete(c.Context, zoneResource, records)
+	errorCount := len(errors)
+
 	if errorCount == 0 {
 		fmt.Printf("Successfully deleted all %d dns records\n", len(records))
 	} else {

@@ -10,13 +10,23 @@ import (
 
 const (
 	branchNameFlag = "branch"
+	beforeFlag     = "before"
+	afterFlag      = "after"
+	//timeShortcutFlag = "time" Not implemented yet.
 )
 
-func BuildDeleteBranchCommand() *cli.Command {
+type pruneDeploymentOptions struct {
+	c                   *cli.Context
+	ResourceContainer   *cloudflare.ResourceContainer
+	ProjectName         string
+	SelectedDeployments []cloudflare.PagesProjectDeployment
+}
+
+func BuildPruneDeploymentsCommand() *cli.Command {
 	return &cli.Command{
-		Name:   "delete-branch-deployments",
-		Usage:  "Delete add deployments for a branch\nAPI Token Requirements: Pages:Edit",
-		Action: DeleteBranchDeployments,
+		Name:   "prune-deployments",
+		Usage:  "Prune deployments by either branch of time\nAPI Token Requirements: Pages:Edit",
+		Action: PruneDeploymentsScreen,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     projectNameFlag,
@@ -26,12 +36,28 @@ func BuildDeleteBranchCommand() *cli.Command {
 				EnvVars:  []string{"CF_PAGES_PROJECT"},
 			},
 			&cli.StringFlag{
-				Name:     branchNameFlag,
-				Aliases:  []string{"b"},
-				Usage:    "Branch to delete",
-				Required: true,
-				EnvVars:  []string{"CF_PAGES_BRANCH"},
+				Name:    branchNameFlag,
+				Aliases: []string{"b"},
+				Usage:   "Branch to delete",
+				EnvVars: []string{"CF_PAGES_BRANCH"},
 			},
+			&cli.TimestampFlag{
+				Name:   beforeFlag,
+				Usage:  "Time to delete before",
+				Layout: "2006-01-02T15:04:05",
+			},
+			&cli.TimestampFlag{
+				Name:   afterFlag,
+				Usage:  "Time to delete after",
+				Layout: "2006-01-02T15:04:05",
+			},
+			//&cli.DurationFlag{
+			//	Name: timeShortcutFlag,
+			//	Usage: "Shortcut for before and after. " +
+			//		"Use the format of 1<unit> where unit is one of " +
+			//		"y (year), M (month), w (week), d (day), h (hour), m (minute), s (second)" +
+			//		"use a negative number to go back in time. Read the docs for more info",
+			//},
 			&cli.BoolFlag{
 				Name:  dryRunFlag,
 				Usage: "Don't actually delete anything. Just print what would be deleted",
@@ -41,15 +67,32 @@ func BuildDeleteBranchCommand() *cli.Command {
 	}
 }
 
-func DeleteBranchDeployments(c *cli.Context) error {
+// PruneDeploymentsScreen is the entry point for the prune-deployments command.
+// It handles parsing the CLI arguments, and then calls PruneDeploymentsRoot.
+func PruneDeploymentsScreen(c *cli.Context) error {
+	logger.Info("Staring prune deployments")
 	accountID := c.String(accountIDFlag)
 	if accountID == "" {
-		return errors.New("`account-id` is required")
+		return errors.New("`account-id` is required for pages commands")
 	}
-	accountResource := cloudflare.AccountIdentifier(accountID)
 
+	if c.String(branchNameFlag) != "" && (!c.Timestamp(beforeFlag).IsZero() || !c.Timestamp(afterFlag).IsZero()) {
+		return errors.New("cannot specify both a branch and a time range")
+	}
+
+	beforeTime := c.Timestamp(beforeFlag)
+	afterTime := c.Timestamp(afterFlag)
+
+	if c.String(branchNameFlag) == "" && beforeTime == nil && afterTime == nil {
+		return errors.New("need to specify either a branch or a time")
+	}
+	return PruneDeploymentsRoot(c)
+}
+
+// PruneDeploymentsRoot is the main function for pruning and purging deployments.
+func PruneDeploymentsRoot(c *cli.Context) error {
+	accountResource := cloudflare.AccountIdentifier(c.String(accountIDFlag))
 	projectName := c.String(projectNameFlag)
-	selectedBranch := c.String(branchNameFlag)
 
 	allDeployments, err := DeploymentsPaginate(
 		PagesDeploymentPaginationOptions{
@@ -61,8 +104,48 @@ func DeleteBranchDeployments(c *cli.Context) error {
 		return fmt.Errorf("error listing deployments: %w", err)
 	}
 
+	options := pruneDeploymentOptions{
+		c:                   c,
+		ResourceContainer:   accountResource,
+		ProjectName:         projectName,
+		SelectedDeployments: allDeployments,
+	}
+
 	var toDelete []cloudflare.PagesProjectDeployment
-	for _, deployment := range allDeployments {
+
+	if c.String(branchNameFlag) != "" {
+		logger.Info("Pruning by branch")
+		toDelete = PruneBranchDeployments(options)
+	} else if c.Timestamp(beforeFlag) != nil || c.Timestamp(afterFlag) != nil {
+		logger.Info("Pruning by time")
+		toDelete = PruneTimeDeployments(options)
+	} else {
+		logger.Info("Purging all deployments")
+		toDelete = options.SelectedDeployments
+	}
+
+	if len(toDelete) == 0 {
+		fmt.Println("Found no deployments to delete")
+		return nil
+	}
+
+	if c.Bool(dryRunFlag) {
+		fmt.Printf("Dry Run: would delete %d deployments\n", len(toDelete))
+		return nil
+	}
+
+	failedDeletes := RapidPagesDeploymentDelete(options)
+	if len(failedDeletes) > 0 {
+		return fmt.Errorf("failed to delete %d deployments", len(failedDeletes))
+	}
+	return nil
+}
+
+// PruneBranchDeployments will return a list of deployments to delete based on the branch name.
+func PruneBranchDeployments(options pruneDeploymentOptions) (toDelete []cloudflare.PagesProjectDeployment) {
+	selectedBranch := options.c.String(branchNameFlag)
+
+	for _, deployment := range options.SelectedDeployments {
 		if deployment.DeploymentTrigger.Metadata == nil {
 			continue
 		}
@@ -70,36 +153,28 @@ func DeleteBranchDeployments(c *cli.Context) error {
 			toDelete = append(toDelete, deployment)
 		}
 	}
-	if len(toDelete) == 0 {
-		fmt.Println("No deployments found with branch", selectedBranch)
-		return nil
-	}
+	return toDelete
+}
 
-	errorCount := 0
-	for _, deployment := range toDelete {
-		if c.Bool(dryRunFlag) {
-			fmt.Println("Dry Run: Would delete", deployment.ID)
-			continue
+// PruneTimeDeployments will return a list of deployments to delete based on the time range.
+func PruneTimeDeployments(options pruneDeploymentOptions) (toDelete []cloudflare.PagesProjectDeployment) {
+	beforeTimestamp := options.c.Timestamp(beforeFlag)
+	afterTimestamp := options.c.Timestamp(afterFlag)
+	if beforeTimestamp != nil {
+		logger.Debug("Pruning with before time")
+	} else {
+		logger.Debug("Pruning with  after time")
+	}
+	for _, deployment := range options.SelectedDeployments {
+		if beforeTimestamp != nil {
+			if deployment.CreatedOn.Before(*beforeTimestamp) {
+				toDelete = append(toDelete, deployment)
+			}
+		} else {
+			if deployment.CreatedOn.After(*afterTimestamp) {
+				toDelete = append(toDelete, deployment)
+			}
 		}
-		logger.Debugf("Deleting deployment %s", deployment.ID)
-		err := APIClient.DeletePagesDeployment(c.Context, accountResource, cloudflare.DeletePagesDeploymentParams{
-			ProjectName:  projectName,
-			DeploymentID: deployment.ID,
-			Force:        true,
-		})
-		if err != nil {
-			logger.WithError(err).WithField("deployment", deployment.ID).Error("error deleting deployment")
-			errorCount++
-		}
 	}
-	if c.Bool(dryRunFlag) {
-		fmt.Printf("Would delete %d deployments for project %s", len(allDeployments), projectName)
-		return nil
-	}
-	if errorCount > 0 {
-		return fmt.Errorf("error deleting %d deployments out of %d", errorCount, len(toDelete))
-	}
-	fmt.Println("Deleted", len(toDelete), "deployments")
-
-	return nil
+	return toDelete
 }
