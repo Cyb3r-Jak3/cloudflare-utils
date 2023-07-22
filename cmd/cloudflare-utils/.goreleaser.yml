@@ -141,5 +141,5 @@ nfpms:
 release:
   draft: true
 
-sboms:
-  - artifacts: archive
+#sboms:
+#  - artifacts: archive
