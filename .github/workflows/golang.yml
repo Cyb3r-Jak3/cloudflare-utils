@@ -53,6 +53,9 @@ jobs:
             ~\go\pkg\mod
           key: go-${{ hashFiles('go.sum') }}
 
+      - name: Install Syft
+        run: choco install syft --yes
+
       #- name: Test
       #  run: make test
 
@@ -140,6 +143,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
+
+      - name: Install Syft
+        run: choco install syft --yes
 
       - uses: actions/cache@v3
         with:
