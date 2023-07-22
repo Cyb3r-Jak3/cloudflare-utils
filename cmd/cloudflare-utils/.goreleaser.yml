@@ -81,6 +81,7 @@ chocolateys:
       - Deleting all records in a zone except for a list of records
       - Deleting all Pages deployments for a branch
       - Deleting all Pages deployments for project
+      - Deleting all Pages deployments based on time
       
       Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc. in the United States and other jurisdictions.
 

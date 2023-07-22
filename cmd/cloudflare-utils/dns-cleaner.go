@@ -3,11 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/Cyb3r-Jak3/common/v5"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
