@@ -73,15 +73,14 @@ chocolateys:
     copyright: "2023 Cyb3r-Jak3"
     package_source_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils"
     icon_url: "https://cloudflare-utils.cyberjake.xyz/assets/images/logo.png"
-    description: |
-      {{ .ProjectName }} installer package.
+    description: &description |
       Community created utilities for Cloudflare such as:
       
       - Deleting all records in a zone
       - Deleting all records in a zone except for a list of records
       - Deleting all Pages deployments for a branch
       - Deleting all Pages deployments for project
-      - Deleting all Pages deployments based on time
+      - Deleting all Pages deployments before or after a time
       
       Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc. in the United States and other jurisdictions.
 
@@ -99,15 +98,8 @@ nfpms:
     maintainer: Cyb3rJak3 <git@cyberjake.xyz>
 
     # Your app's description.
-    description: |-
-      Community created utilities for Cloudflare such as:
-      
-      - Deleting all records in a zone
-      - Deleting all records in a zone except for a list of records
-      - Deleting all Pages deployments for a branch
-      - Deleting all Pages deployments for project
-      
-      Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc. in the United States and other jurisdictions.
+    description:
+      *description
 
     license: Apache 2.0
 
@@ -140,6 +132,3 @@ nfpms:
 
 release:
   draft: true
-
-#sboms:
-#  - artifacts: archive
