@@ -21,4 +21,4 @@ jobs:
           monitor_path: /cyb3rjak3/cloudflare-utils
           github_token: ${{ secrets.GITHUB_TOKEN  }}
           files: |
-            .exe$
+            .zip$

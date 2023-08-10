@@ -59,6 +59,9 @@ jobs:
       #- name: Test
       #  run: make test
 
+      - name: Download AutoComplete file
+        run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v2.25.7/autocomplete/bash_autocomplete -OutFile bash_completion
+
       - name: GoReleaser Action
         uses: goreleaser/goreleaser-action@v4
         with:
@@ -155,6 +158,9 @@ jobs:
             ~\AppData\Local\go-build
             ~\go\pkg\mod
           key: go-${{ hashFiles('go.sum') }}
+
+      - name: Download AutoComplete file
+        run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v2.25.7/autocomplete/bash_autocomplete -OutFile bash_completion
 
       - name: Import GPG key
         id: import_gpg
