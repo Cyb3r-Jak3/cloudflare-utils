@@ -27,8 +27,7 @@ var (
 
 func main() {
 	if buildInfo, available := debug.ReadBuildInfo(); available {
-		goVersion := buildInfo.GoVersion
-		versionString = fmt.Sprintf("%s (built %s with %s)", version, date, goVersion)
+		versionString = fmt.Sprintf("%s (built %s with %s)", version, date, buildInfo.GoVersion)
 	}
 	app := &cli.App{
 		Name:    "cloudflare-utils",
