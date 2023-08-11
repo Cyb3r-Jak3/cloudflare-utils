@@ -2,6 +2,8 @@ before:
   hooks:
     - go mod tidy
     - cp ../../LICENSE .
+    - cp ../../README.md .
+    - cp ../../bash_completion .
 
 builds:
   - env:
@@ -88,16 +90,12 @@ nfpms:
   -
     package_name: cloudflare-utils
 
-    # Your app's vendor.
     vendor: Cyb3rJak3
 
-    # Your app's homepage.
     homepage: https://cloudflare-utils.cyberjake.xyz/
 
-    # Your app's maintainer (probably you).
     maintainer: Cyb3rJak3 <git@cyberjake.xyz>
 
-    # Your app's description.
     description:
       *description
 
@@ -128,7 +126,16 @@ nfpms:
     contents:
       - src: LICENSE
         dst: /usr/share/licenses/{{ .ProjectName }}/LICENSE.md
+      - src: README.md
+        dst: /usr/share/doc/{{ .ProjectName }}/README.md
+      - src: bash_completion
+        dst: /etc/bash_completion.d/{{ .ProjectName }}
 
+blobs:
+  - provider: s3
+    region: auto
+    endpoint: https://8be772befd147a8df540aae0fa15c047.r2.cloudflarestorage.com
+    bucket: public-files
 
 release:
   draft: true

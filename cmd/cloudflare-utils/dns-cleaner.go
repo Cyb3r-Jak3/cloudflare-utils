@@ -38,8 +38,8 @@ type RecordFile struct {
 	Records  []DNSRecord `yaml:"records"`
 }
 
-// BuildDNSCleanerCommand builds the `dns-cleaner` command for the application.
-func BuildDNSCleanerCommand() *cli.Command {
+// buildDNSCleanerCommand builds the `dns-cleaner` command for the application.
+func buildDNSCleanerCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "dns-cleaner",
 		Usage:  "Clean dns records.\nAPI Token Requirements: DNS:Edit",

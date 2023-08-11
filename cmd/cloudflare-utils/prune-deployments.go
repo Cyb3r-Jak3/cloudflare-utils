@@ -22,7 +22,7 @@ type pruneDeploymentOptions struct {
 	SelectedDeployments []cloudflare.PagesProjectDeployment
 }
 
-func BuildPruneDeploymentsCommand() *cli.Command {
+func buildPruneDeploymentsCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "prune-deployments",
 		Usage:  "Prune deployments by either branch of time\nAPI Token Requirements: Pages:Edit",
