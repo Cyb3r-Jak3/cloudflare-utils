@@ -9,7 +9,7 @@ const (
 	lotsOfDeploymentsFlag = "lots-of-deployments"
 )
 
-func BuildPurgeDeploymentsCommand() *cli.Command {
+func buildPurgeDeploymentsCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "purge-deployments",
 		Usage:  "Delete all deployments for a branch\nAPI Token Requirements: Pages:Edit",

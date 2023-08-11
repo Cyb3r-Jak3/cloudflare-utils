@@ -41,12 +41,12 @@ func main() {
 				Email: "git@cyberjake.xyz",
 			},
 		},
-		Before: setup,
 		Commands: []*cli.Command{
-			BuildDNSCleanerCommand(),
-			BuildDNSPurgeCommand(),
-			BuildPruneDeploymentsCommand(),
-			BuildPurgeDeploymentsCommand(),
+			buildDNSCleanerCommand(),
+			buildDNSPurgeCommand(),
+			buildPruneDeploymentsCommand(),
+			buildPurgeDeploymentsCommand(),
+			buildGenerateDocsCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -115,7 +115,7 @@ func main() {
 
 func setup(c *cli.Context) (err error) {
 	SetLogLevel(c, logger)
-	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) {
+	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Command.Name == "generate-doc" {
 		return nil
 	}
 
@@ -157,4 +157,49 @@ func setup(c *cli.Context) (err error) {
 	}
 
 	return err
+}
+
+func buildGenerateDocsCommand() *cli.Command {
+	return &cli.Command{
+		Name:   "generate-doc",
+		Hidden: true,
+		Before: setup,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "output",
+				Aliases: []string{"o"},
+				Usage:   "Output file",
+			},
+			&cli.StringFlag{
+				Name:    "format",
+				Aliases: []string{"f"},
+				Usage:   "Output format",
+				Value:   "man",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			logger.Trace("Generating docs")
+			formatString := c.String("format")
+			if !common.StringSearch(formatString, []string{"man", "markdown"}) {
+				return errors.New("invalid format")
+			}
+
+			var output string
+			var err error
+			if formatString == "man" {
+				output, err = c.App.ToMan()
+			} else {
+				output, err = c.App.ToMarkdown()
+			}
+			if err != nil {
+				return err
+			}
+			if c.String("output") != "" {
+				err = os.WriteFile(c.String("output"), []byte(output), 0644)
+			} else {
+				fmt.Fprintln(os.Stdout, output)
+			}
+			return nil
+		},
+	}
 }

@@ -12,11 +12,11 @@ const (
 	confirmFlag = "confirm"
 )
 
-// BuildDNSPurgeCommand creates the dns-purge command.
-func BuildDNSPurgeCommand() *cli.Command {
+// buildDNSPurgeCommand creates the dns-purge command.
+func buildDNSPurgeCommand() *cli.Command {
 	return &cli.Command{
-		Name:  "dns-purge",
-		Usage: "Deletes all dns records.\nAPI Token Requirements: DNS:Edit",
+		Name:   "dns-purge",
+		Usage:  "Deletes all dns records.\nAPI Token Requirements: DNS:Edit",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  confirmFlag,
