@@ -194,7 +194,10 @@ func buildGenerateDocsCommand() *cli.Command {
 				return err
 			}
 			if c.String("output") != "" {
-				err = os.WriteFile(c.String("output"), []byte(output), 0644)
+				err = os.WriteFile(c.String("output"), []byte(output), 0600)
+				if err != nil {
+					return fmt.Errorf("error writing to output file: %s", err)
+				}
 			} else {
 				fmt.Fprintln(os.Stdout, output)
 			}
