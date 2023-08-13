@@ -40,7 +40,7 @@ func main() {
 				Email: "git@cyberjake.xyz",
 			},
 		},
-		Before: setup,		
+		Before: setup,
 		Commands: []*cli.Command{
 			buildDNSCleanerCommand(),
 			buildDNSPurgeCommand(),
