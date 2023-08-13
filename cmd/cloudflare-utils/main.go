@@ -40,6 +40,7 @@ func main() {
 				Email: "git@cyberjake.xyz",
 			},
 		},
+		Before: setup,		
 		Commands: []*cli.Command{
 			buildDNSCleanerCommand(),
 			buildDNSPurgeCommand(),
@@ -162,7 +163,6 @@ func buildGenerateDocsCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "generate-doc",
 		Hidden: true,
-		Before: setup,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "output",
