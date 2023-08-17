@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"strings"
@@ -224,13 +225,19 @@ func UploadDNS(c *cli.Context) error {
 		fmt.Printf("Dry Run: Would have removed %d records\n", len(toRemove))
 		return nil
 	}
-
-	errorCount = len(RapidDNSDelete(c.Context, zoneResource, toRemove))
+	removeErrors := RapidDNSDelete(c.Context, zoneResource, toRemove)
+	errorCount = len(removeErrors)
 
 	if errorCount == 0 {
 		fmt.Printf("Successfully deleted all %d dns records\n", len(toRemove))
 	} else {
 		fmt.Printf("Error deleting %d dns records.\nPlease review errors and reach out if you believe to be an error with the program", errorCount)
+		if logger.IsLevelEnabled(logrus.DebugLevel) {
+			fmt.Println("Errors:")
+			for _, err := range removeErrors {
+				logger.Debugf("Error deleting record: %s", err)
+			}
+		}
 	}
 
 	logger.Infof("%d total records. %d to removed. %d errors removing records", recordCount, len(toRemove), errorCount)

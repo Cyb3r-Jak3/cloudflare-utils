@@ -101,7 +101,7 @@ func RapidDNSDelete(ctx context.Context, rc *cloudflare.ResourceContainer, dnsRe
 		p.Go(func() string {
 			err := APIClient.DeleteDNSRecord(ctx, rc, dnsRecord.ID)
 			if err != nil {
-				logger.WithError(err).Warningf("Error deleting dnsRecord: %s", dnsRecord.ID)
+				logrus.WithError(err).Warningf("Error deleting dnsRecord: %s", dnsRecord.ID)
 				return dnsRecord.ID
 			}
 			return ""

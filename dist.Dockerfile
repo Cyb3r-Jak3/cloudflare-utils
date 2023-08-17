@@ -1,13 +1,4 @@
-FROM golang:1.20-alpine AS builder
-
-WORKDIR /usr/app
-ENV CGO_ENABLED=0
-RUN apk update && apk -U --no-cache add git make build-base ca-certificates && git config --global --add safe.directory '*'
-COPY . .
-RUN make build
-
-FROM scratch
-COPY --from=builder /usr/app/cloudflare-utils /
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+FROM gcr.io/distroless/static-debian11:nonroot
+COPY cloudflare-utils /
 ENTRYPOINT ["/cloudflare-utils"]
 CMD ["--help"]

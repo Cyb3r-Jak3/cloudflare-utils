@@ -137,5 +137,46 @@ blobs:
     endpoint: https://8be772befd147a8df540aae0fa15c047.r2.cloudflarestorage.com
     bucket: public-files
 
+dockers:
+  - image_templates:
+      - "cyb3rjak3/cloudflare-utils-amd64"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils-amd64"
+    dockerfile: ../../dist.Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.description=Helpful Cloudflare utility program"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "cyb3rjak3/cloudflare-utils-armd64"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils-arm64"
+    dockerfile: ../../dist.Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.description=Helpful Cloudflare utility program"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/amd64"
+    goarch: arm64
+
+docker_manifests:
+  - name_template: "cyb3rjak3/cloudflare-utils:{{ .Version }}"
+    image_templates:
+      - "cyb3rjak3/cloudflare-utils-amd64"
+      - "cyb3rjak3/cloudflare-utils-arm64"
+  - name_template: "ghcr.io/cyb3r-jak3/cloudflare-utils:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils-amd64"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils-arm64"
+
 release:
   draft: true
