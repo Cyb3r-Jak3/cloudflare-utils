@@ -62,6 +62,12 @@ jobs:
       - name: Download AutoComplete file
         run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v2.25.7/autocomplete/bash_autocomplete -OutFile bash_completion
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: GoReleaser Action
         uses: goreleaser/goreleaser-action@v4
         with:
