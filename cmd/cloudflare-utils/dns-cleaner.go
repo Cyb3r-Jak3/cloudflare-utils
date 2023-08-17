@@ -3,13 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
 )
