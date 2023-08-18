@@ -94,30 +94,33 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 
 // RapidDNSDelete is a helper function to delete DNS records quickly.
 // Uses a pool of goroutines to delete records in parallel.
-func RapidDNSDelete(ctx context.Context, rc *cloudflare.ResourceContainer, dnsRecords []cloudflare.DNSRecord) []string {
-	p := pool.NewWithResults[string]()
-	p.WithMaxGoroutines(50)
+func RapidDNSDelete(ctx context.Context, rc *cloudflare.ResourceContainer, dnsRecords []cloudflare.DNSRecord) map[string]string {
+	p := pool.NewWithResults[bool]()
+	results := make(map[string]string)
+	p.WithMaxGoroutines(10)
 	for _, dnsRecord := range dnsRecords {
-		p.Go(func() string {
+		p.Go(func() bool {
 			err := APIClient.DeleteDNSRecord(ctx, rc, dnsRecord.ID)
 			if err != nil {
 				logger.WithError(err).Warningf("Error deleting dnsRecord: %s", dnsRecord.ID)
-				return dnsRecord.ID
+				results[dnsRecord.ID] = err.Error()
+				return false
 			}
-			return ""
+			return true
 		},
 		)
 	}
-	return p.Wait()
+	p.Wait()
+	return results
 }
 
 // RapidPagesDeploymentDelete is a helper function to delete Pages deployments quickly.
 // Uses a pool of goroutines to delete deployments in parallel.
 func RapidPagesDeploymentDelete(options pruneDeploymentOptions) []string {
 	p := pool.NewWithResults[string]()
-	maxGoRoutines := 50
+	maxGoRoutines := 10
 	if options.c.Bool(lotsOfDeploymentsFlag) {
-		maxGoRoutines = 10
+		maxGoRoutines = 5
 	}
 	p.WithMaxGoroutines(maxGoRoutines)
 	for _, deployment := range options.SelectedDeployments {

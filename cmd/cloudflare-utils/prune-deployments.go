@@ -114,13 +114,13 @@ func PruneDeploymentsRoot(c *cli.Context) error {
 	var toDelete []cloudflare.PagesProjectDeployment
 
 	if c.String(branchNameFlag) != "" {
-		logger.Info("Pruning by branch")
+		logger.Infoln("Pruning by branch")
 		toDelete = PruneBranchDeployments(options)
 	} else if c.Timestamp(beforeFlag) != nil || c.Timestamp(afterFlag) != nil {
-		logger.Info("Pruning by time")
+		logger.Infoln("Pruning by time")
 		toDelete = PruneTimeDeployments(options)
 	} else {
-		logger.Info("Purging all deployments")
+		logger.Infoln("Purging all deployments")
 		toDelete = options.SelectedDeployments
 	}
 
@@ -161,9 +161,9 @@ func PruneTimeDeployments(options pruneDeploymentOptions) (toDelete []cloudflare
 	beforeTimestamp := options.c.Timestamp(beforeFlag)
 	afterTimestamp := options.c.Timestamp(afterFlag)
 	if beforeTimestamp != nil {
-		logger.Debug("Pruning with before time")
+		logger.Debugln("Pruning with before time")
 	} else {
-		logger.Debug("Pruning with  after time")
+		logger.Debugln("Pruning with  after time")
 	}
 	for _, deployment := range options.SelectedDeployments {
 		if beforeTimestamp != nil {
