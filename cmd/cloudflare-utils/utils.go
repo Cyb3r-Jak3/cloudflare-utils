@@ -14,6 +14,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+const maxGoRoutines = 10
+
 // SetLogLevel sets the log level based on the CLI flags.
 func SetLogLevel(c *cli.Context, logger *logrus.Logger) {
 	if c.Bool("debug") {
@@ -32,8 +34,8 @@ func SetLogLevel(c *cli.Context, logger *logrus.Logger) {
 			logger.SetLevel(logrus.WarnLevel)
 		}
 	}
-	logger.Debugf("Log Level set to %v", logger.Level)
-	logger.Debugf("cloudflare-utils: %s", versionString)
+	logger.Debugf("Log Level set to %v\n", logger.Level)
+	logger.Debugf("cloudflare-utils: %s\n", versionString)
 }
 
 // GetZoneID gets the zone ID from the CLI flags either by name or ID.
@@ -47,7 +49,7 @@ func GetZoneID(c *cli.Context) (string, error) {
 	if zoneID == "" {
 		id, err := APIClient.ZoneIDByName(zoneName)
 		if err != nil {
-			logger.WithError(err).Error("Error getting zone id from name")
+			logger.WithError(err).Errorln("Error getting zone id from name")
 			return "", err
 		}
 		zoneID = id
@@ -77,7 +79,7 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 		})
 		if err != nil {
 			if len(deployments) != 0 {
-				logger.WithError(err).Error("Unable to get any deployments")
+				logger.WithError(err).Errorln("Unable to get any deployments")
 				return deployments, fmt.Errorf("error listing deployments: %w", err)
 			}
 			return []cloudflare.PagesProjectDeployment{}, fmt.Errorf("error listing deployments: %w", err)
@@ -88,52 +90,58 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 			break
 		}
 	}
-	logger.Debugf("Got %d deployments in %s", len(deployments), time.Since(startDeploymentListing))
+	logger.Debugf("Got %d deployments in %s\n", len(deployments), time.Since(startDeploymentListing))
 	return deployments, nil
 }
 
 // RapidDNSDelete is a helper function to delete DNS records quickly.
 // Uses a pool of goroutines to delete records in parallel.
-func RapidDNSDelete(ctx context.Context, rc *cloudflare.ResourceContainer, dnsRecords []cloudflare.DNSRecord) []string {
-	p := pool.NewWithResults[string]()
-	p.WithMaxGoroutines(50)
+func RapidDNSDelete(ctx context.Context, rc *cloudflare.ResourceContainer, dnsRecords []cloudflare.DNSRecord) map[string]error {
+	p := pool.NewWithResults[bool]()
+	results := make(map[string]error)
+	p.WithMaxGoroutines(maxGoRoutines)
 	for _, dnsRecord := range dnsRecords {
-		p.Go(func() string {
+		p.Go(func() bool {
 			err := APIClient.DeleteDNSRecord(ctx, rc, dnsRecord.ID)
 			if err != nil {
-				logger.WithError(err).Warningf("Error deleting dnsRecord: %s", dnsRecord.ID)
-				return dnsRecord.ID
+				logger.WithError(err).Warningf("Error deleting DNS record: %s\n", dnsRecord.ID)
+				results[dnsRecord.ID] = err
+				return false
 			}
-			return ""
+			return true
 		},
 		)
 	}
-	return p.Wait()
+	p.Wait()
+	return results
 }
 
 // RapidPagesDeploymentDelete is a helper function to delete Pages deployments quickly.
 // Uses a pool of goroutines to delete deployments in parallel.
-func RapidPagesDeploymentDelete(options pruneDeploymentOptions) []string {
-	p := pool.NewWithResults[string]()
-	maxGoRoutines := 50
+func RapidPagesDeploymentDelete(options pruneDeploymentOptions) map[string]error {
+	p := pool.NewWithResults[bool]()
+	goRoutines := maxGoRoutines
 	if options.c.Bool(lotsOfDeploymentsFlag) {
-		maxGoRoutines = 10
+		goRoutines = 5
 	}
-	p.WithMaxGoroutines(maxGoRoutines)
+	results := make(map[string]error)
+	p.WithMaxGoroutines(goRoutines)
 	for _, deployment := range options.SelectedDeployments {
-		p.Go(func() string {
+		p.Go(func() bool {
 			err := APIClient.DeletePagesDeployment(options.c.Context, options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
 				ProjectName:  options.ProjectName,
 				DeploymentID: deployment.ID,
 				Force:        true,
 			})
 			if err != nil {
-				logger.WithError(err).Warningf("Error deleting deployment: %s", deployment.ID)
-				return deployment.ID
+				logger.WithError(err).Warningf("Error deleting deployment: %s\n", deployment.ID)
+				results[deployment.ID] = err
+				return false
 			}
-			return ""
+			return true
 		},
 		)
 	}
-	return p.Wait()
+	p.Wait()
+	return results
 }

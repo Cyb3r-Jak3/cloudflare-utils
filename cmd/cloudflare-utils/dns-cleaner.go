@@ -9,6 +9,7 @@ import (
 
 	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
 )
@@ -100,17 +101,17 @@ func buildDNSCleanerCommand() *cli.Command {
 // DNSCleaner is the main action function for the dns-cleaner command.
 // It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records.
 func DNSCleaner(c *cli.Context) error {
-	logger.Info("Starting DNS Cleaner")
+	logger.Infoln("Starting DNS Cleaner")
 
 	fileExists := common.FileExists(c.String(dnsFileFlag))
-	logger.Debugf("Existing DNS file: %t", fileExists)
+	logger.Debugf("Existing DNS file: %t\n", fileExists)
 	if !fileExists {
-		logger.Info("Downloading DNS Records")
+		logger.Infoln("Downloading DNS Records")
 		if err := DownloadDNS(c); err != nil {
 			return err
 		}
 	} else {
-		logger.Info("Uploading DNS Records")
+		logger.Infoln("Uploading DNS Records")
 		if err := UploadDNS(c); err != nil {
 			return err
 		}
@@ -121,9 +122,9 @@ func DNSCleaner(c *cli.Context) error {
 // quickClean checks to see if a DNS record is numeric.
 func quickClean(zoneName, record string) bool {
 	r := strings.Split(record, fmt.Sprintf(".%s", zoneName))[0]
-	logger.Debugf("Stripped record: %s", r)
+	logger.Debugf("Stripped record: %s\n", r)
 	_, err := strconv.Atoi(r)
-	logger.Debugf("Error converting: %t", err != nil)
+	logger.Debugf("Error converting: %t\n", err != nil)
 	return err != nil
 }
 
@@ -143,7 +144,7 @@ func DownloadDNS(c *cli.Context) error {
 	}
 	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
 	if err != nil {
-		logger.WithError(err).Error("Error getting zone info with ID")
+		logger.WithError(err).Errorln("Error getting zone info with ID")
 		return err
 	}
 	recordFile := &RecordFile{
@@ -175,11 +176,11 @@ func DownloadDNS(c *cli.Context) error {
 	}
 	data, err := yaml.Marshal(&recordFile)
 	if err != nil {
-		logger.WithError(err).Error("Error marshalling yaml data")
+		logger.WithError(err).Errorln("Error marshalling yaml data")
 		return err
 	}
 	if err := os.WriteFile(c.String(dnsFileFlag), data, 0600); err != nil {
-		logger.WithError(err).Error("Error writing DNS file")
+		logger.WithError(err).Errorln("Error writing DNS file")
 		return err
 	}
 	return nil
@@ -194,13 +195,13 @@ func UploadDNS(c *cli.Context) error {
 
 	file, err := os.ReadFile(dnsFilePath)
 	if err != nil {
-		logger.WithError(err).Error("Error reading DNS file")
+		logger.WithError(err).Errorln("Error reading DNS file")
 		return err
 	}
 
 	recordFile := &RecordFile{}
 	if err := yaml.Unmarshal(file, recordFile); err != nil {
-		logger.WithError(err).Error("Error unmarshalling yaml")
+		logger.WithError(err).Errorln("Error unmarshalling yaml")
 		return err
 	}
 
@@ -224,19 +225,25 @@ func UploadDNS(c *cli.Context) error {
 		fmt.Printf("Dry Run: Would have removed %d records\n", len(toRemove))
 		return nil
 	}
-
-	errorCount = len(RapidDNSDelete(c.Context, zoneResource, toRemove))
+	removeErrors := RapidDNSDelete(c.Context, zoneResource, toRemove)
+	errorCount = len(removeErrors)
 
 	if errorCount == 0 {
 		fmt.Printf("Successfully deleted all %d dns records\n", len(toRemove))
 	} else {
-		fmt.Printf("Error deleting %d dns records.\nPlease review errors and reach out if you believe to be an error with the program", errorCount)
+		fmt.Printf("Error deleting %d dns records.\nPlease review errors and reach out if you believe to be an error with the program\n", errorCount)
+		if logger.IsLevelEnabled(logrus.InfoLevel) {
+			logger.Infoln("Errors:")
+			for deleteID, deleteErr := range removeErrors {
+				logger.Debugf("Error deleting record: %s: %s\n", deleteID, deleteErr)
+			}
+		}
 	}
 
 	logger.Infof("%d total records. %d to removed. %d errors removing records", recordCount, len(toRemove), errorCount)
 	if c.Bool(removeDNSFileFlag) {
 		if err := os.Remove(dnsFilePath); err != nil {
-			logger.WithError(err).Warn("Error deleting old DNS file")
+			logger.WithError(err).Warnln("Error deleting old DNS file")
 		}
 	}
 	return nil
