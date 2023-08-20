@@ -234,8 +234,8 @@ func UploadDNS(c *cli.Context) error {
 		fmt.Printf("Error deleting %d dns records.\nPlease review errors and reach out if you believe to be an error with the program\n", errorCount)
 		if logger.IsLevelEnabled(logrus.DebugLevel) {
 			logger.Debugln("Errors:")
-			for _, deleteID := range removeErrors {
-				logger.Debugf("Error deleting record: %s\n", deleteID)
+			for deleteID, deleteErr := range removeErrors {
+				logger.Debugf("Error deleting record: %s: %s\n", deleteID, deleteErr)
 			}
 		}
 	}
