@@ -29,53 +29,53 @@ concurrency:
 
 
 jobs:
-  Snapshot:
-    if: ${{ startsWith(github.ref, 'refs/tags/v') == false }}
-    runs-on: windows-latest
-    env:
-      GO111MODULE: on
-
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version-file: go.mod
-          cache: false
-
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~\AppData\Local\go-build
-            ~\go\pkg\mod
-          key: go-${{ hashFiles('go.sum') }}
-
-      - name: Install Syft
-        run: choco install syft --yes
-
-      #- name: Test
-      #  run: make test
-
-      - name: Download AutoComplete file
-        run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v2.25.7/autocomplete/bash_autocomplete -OutFile bash_completion
-
-      - name: GoReleaser Action
-        uses: goreleaser/goreleaser-action@v4
-        with:
-          version: latest
-          args: --snapshot --skip-publish --clean --skip-sign
-          workdir: cmd/cloudflare-utils
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload assets
-        uses: actions/upload-artifact@v3
-        with:
-          name: cloudflare-utils
-          path: cmd/cloudflare-utils/dist/*
+#  Snapshot:
+#    if: ${{ startsWith(github.ref, 'refs/tags/v') == false }}
+#    runs-on: windows-latest
+#    env:
+#      GO111MODULE: on
+#
+#    steps:
+#
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Install Go
+#        uses: actions/setup-go@v4
+#        with:
+#          go-version-file: go.mod
+#          cache: false
+#
+#      - uses: actions/cache@v3
+#        with:
+#          path: |
+#            ~\AppData\Local\go-build
+#            ~\go\pkg\mod
+#          key: go-${{ hashFiles('go.sum') }}
+#
+#      - name: Install Syft
+#        run: choco install syft --yes
+#
+#      #- name: Test
+#      #  run: make test
+#
+#      - name: Download AutoComplete file
+#        run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v2.25.7/autocomplete/bash_autocomplete -OutFile bash_completion
+#
+#      - name: GoReleaser Action
+#        uses: goreleaser/goreleaser-action@v4
+#        with:
+#          version: latest
+#          args: --snapshot --skip-publish --clean --skip-sign
+#          workdir: cmd/cloudflare-utils
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Upload assets
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: cloudflare-utils
+#          path: cmd/cloudflare-utils/dist/*
 
   Docker:
     runs-on: ubuntu-latest
@@ -131,8 +131,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: cyb3rjak3/cloudflare-utils
 
-  Release:
-    if: startsWith(github.ref, 'refs/tags/v')
+  GoReleaser:
     runs-on: windows-latest
     env:
       GO111MODULE: on
@@ -162,8 +161,26 @@ jobs:
       - name: Download AutoComplete file
         run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v2.25.7/autocomplete/bash_autocomplete -OutFile bash_completion
 
+      - name: GoReleaser Action
+        if: github.ref_type == 'branch'
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          version: latest
+          args: --snapshot --skip-publish --clean --skip-sign
+          workdir: cmd/cloudflare-utils
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload assets
+        if: github.ref_type == 'branch'
+        uses: actions/upload-artifact@v3
+        with:
+          name: cloudflare-utils
+          path: cmd/cloudflare-utils/dist/*
+
       - name: Import GPG key
         id: import_gpg
+        if: github.ref_type == 'tag'
         uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -171,6 +188,7 @@ jobs:
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
+        if: github.ref_type == 'tag'
         with:
           version: latest
           args: release --clean
