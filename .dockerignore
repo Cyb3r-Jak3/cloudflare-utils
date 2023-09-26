@@ -24,5 +24,4 @@ go.work
 LICENSE
 README.md
 .gitignore
-**/dist/*
 cloudflare-utils

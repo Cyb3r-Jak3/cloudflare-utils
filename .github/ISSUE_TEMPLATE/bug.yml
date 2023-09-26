@@ -49,8 +49,7 @@ body:
       label: Link to debug output
       description: |
         A link to the output (https://gist.github.com) provided from setting the log leve to trace. Either with the `--trace` flag or
-        and environment variable `LOG_LEVEL_TRACE=true` before running
-        **Do not truncate or trim the output as the surrounding context 
+        and environment variable `LOG_LEVEL_TRACE=true` before running. **Do not truncate or trim the output as the surrounding context 
         is useful for debugging and without it, maintainers are restricted in what assistance and 
         diagnosis they can provide**. 
 
