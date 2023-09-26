@@ -130,7 +130,7 @@ func PruneDeploymentsRoot(c *cli.Context) error {
 	}
 
 	if c.Bool(dryRunFlag) {
-		fmt.Printf("Dry Run: would delete %d deployments\n", len(toDelete))
+		fmt.Printf("Dry Run: would delete %d deployments", len(toDelete))
 		return nil
 	}
 
