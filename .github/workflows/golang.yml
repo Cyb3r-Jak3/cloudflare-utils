@@ -63,7 +63,7 @@ jobs:
         run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v2.25.7/autocomplete/bash_autocomplete -OutFile bash_completion
 
       - name: GoReleaser Action
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
           args: --snapshot --skip-publish --clean --skip-sign
@@ -170,7 +170,7 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
           args: release --clean
