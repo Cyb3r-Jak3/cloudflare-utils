@@ -99,7 +99,7 @@ jobs:
 
       - name: Docker Meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: cyb3rjak3/cloudflare-utils,ghcr.io/cyb3r-jak3/cloudflare-utils
 
