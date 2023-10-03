@@ -1,0 +1,62 @@
+name: "\U0001F41B Bug report"
+description: "When something isn't working as expected or documented"
+labels: ["bug"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Confirmation
+      description: Please make sure to have followed the following checks.
+      options:
+        - label: My issue isn't already found on the issue tracker.
+          required: true
+        - label: I have replicated my issue using the latest version of cloudflare-utils and it is still present.
+          required: true
+  - type: input
+    attributes:
+      label: cloudflare-utils version
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Go environment
+      description: Output from `go env`.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected output
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Actual output
+      description: What actually happened?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: How can your issue be replicated?
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Link to debug output
+      description: |
+        A link to the output (https://gist.github.com) provided from setting the log leve to trace. Either with the `--trace` flag or
+        and environment variable `LOG_LEVEL_TRACE=true` before running. **Do not truncate or trim the output as the surrounding context 
+        is useful for debugging and without it, maintainers are restricted in what assistance and 
+        diagnosis they can provide**. 
+
+        Be sure to redact or sanitise any sensitive information (such as API keys or tokens) in 
+        your logs. https://jacobbednarz.com/tf-log-redactor/ is an online tool that will handle
+        redacting the sensitive Cloudflare details from your log output for you if you don't want
+        to manually do it. Versions newer than v1.0.0 automatically redacts all Cloudflare
+        credentials but not account or zone IDs.
+    validations:
+      required: true

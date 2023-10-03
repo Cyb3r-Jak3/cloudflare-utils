@@ -100,7 +100,6 @@ func main() {
 			&cli.BoolFlag{
 				Name:    "trace",
 				EnvVars: []string{"LOG_LEVEL_TRACE"},
-				Hidden:  true,
 			},
 		},
 	}
@@ -144,6 +143,17 @@ func setup(c *cli.Context) (err error) {
 		if err != nil {
 			logger.WithError(err).Error("Error creating new API instance with token")
 		}
+		verified, err := APIClient.VerifyAPIToken(ctx)
+		if err != nil {
+			logger.WithError(err).Error("Error verifying API token")
+			return err
+		}
+		permissions, err := APIClient.GetAPIToken(ctx, verified.ID)
+		if err != nil {
+			logger.WithError(err).Error("Error getting API token")
+			return err
+		}
+		logger.Debugf("API Token Polices: %#v\n", permissions.Policies)
 	}
 	if apiEmail != "" || apiKey != "" {
 		if apiEmail == "" || apiKey == "" {

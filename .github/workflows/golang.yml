@@ -66,7 +66,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
-          args: --snapshot --skip-publish --clean --skip-sign
+          args: --snapshot --clean --skip=publish,sign
           workdir: cmd/cloudflare-utils
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

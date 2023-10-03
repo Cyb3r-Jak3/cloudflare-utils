@@ -34,8 +34,8 @@ func SetLogLevel(c *cli.Context, logger *logrus.Logger) {
 			logger.SetLevel(logrus.WarnLevel)
 		}
 	}
-	logger.Debugf("Log Level set to %v\n", logger.Level)
-	logger.Debugf("cloudflare-utils: %s\n", versionString)
+	logger.Debugf("Log Level set to %v", logger.Level)
+	logger.Debugf("cloudflare-utils: %s", versionString)
 }
 
 // GetZoneID gets the zone ID from the CLI flags either by name or ID.
@@ -49,6 +49,16 @@ func GetZoneID(c *cli.Context) (string, error) {
 	if zoneID == "" {
 		id, err := APIClient.ZoneIDByName(zoneName)
 		if err != nil {
+			if logrus.DebugLevel >= logger.Level {
+				zones, lErr := APIClient.ListZones(c.Context)
+				if lErr != nil {
+					logger.WithError(err).Debugln("Error listing zones")
+				}
+				logger.Debugf("Got %d zones", len(zones))
+				for _, zone := range zones {
+					logger.Debugf("Zone: %s", zone.Name)
+				}
+			}
 			logger.WithError(err).Errorln("Error getting zone id from name")
 			return "", err
 		}
