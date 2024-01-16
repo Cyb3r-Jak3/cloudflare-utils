@@ -45,5 +45,8 @@ func buildPurgeDeploymentsCommand() *cli.Command {
 // It just calls PruneDeploymentsRoot.
 func PurgeDeploymentsScreen(c *cli.Context) error {
 	logger.Info("Staring purge deployments")
+	if err := CheckAPITokenPermission(c.Context, PagesWrite); err != nil {
+		return err
+	}
 	return PruneDeploymentsRoot(c)
 }

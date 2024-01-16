@@ -61,6 +61,9 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 
+sboms:
+  - artifacts: archive
+
 chocolateys:
   - title: "Cloudflare Utils"
     authors: "Cyb3r-Jak3"
