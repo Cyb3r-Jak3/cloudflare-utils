@@ -2,6 +2,8 @@
 
 **Required API Permissions**:
 
+[Token Quick Link](https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22page%22%2C%22type%22%3A%22edit%22%7D%5D&name=Cloudflare+Utils%3A+Page+Write)
+
 - _Account:Cloudflare Pages:Edit_
 
 The purpose of this program is to offer a quick way to bulk remove Cloudflare Pages deployments.

@@ -4,6 +4,9 @@
 
 - _Zone:DNS:Edit_
 
+[Token Quick Link](https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22dns%22%2C%22type%22%3A%22edit%22%7D%5D&name=Cloudflare+Utils%3A+DNS+Write)
+
+
 The purpose of DNS cleaner is to offer a quick way to bulk remove DNS records that you don't want.  
 If you are looking to remove all DNS records then check out the [dns-purge feature](purge.md)
 
