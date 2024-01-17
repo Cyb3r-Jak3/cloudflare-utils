@@ -170,6 +170,10 @@ var apiPermissionMap = map[APIPermissionName]string{
 }
 
 func CheckAPITokenPermission(ctx context.Context, permission APIPermissionName) error {
+	if APIClient.APIToken == "" {
+		logger.Debug("No API Token set. Skipping permission check")
+		return nil
+	}
 	if logger.Level >= logrus.DebugLevel {
 		logger.Debugf("Checking API Token permission: %s", permission)
 	} else {
