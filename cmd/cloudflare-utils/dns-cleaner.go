@@ -103,6 +103,10 @@ func buildDNSCleanerCommand() *cli.Command {
 func DNSCleaner(c *cli.Context) error {
 	logger.Infoln("Starting DNS Cleaner")
 
+	if err := CheckAPITokenPermission(c.Context, DNSWrite); err != nil {
+		return err
+	}
+
 	fileExists := common.FileExists(c.String(dnsFileFlag))
 	logger.Debugf("Existing DNS file: %t\n", fileExists)
 	if !fileExists {

@@ -43,6 +43,7 @@ nav:
     - pages/prune-deployments.md
     - pages/purge-deployments.md
   - roadmap.md
+  - troubleshooting.md
 
 markdown_extensions:
   - admonition

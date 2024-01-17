@@ -71,6 +71,9 @@ func buildPruneDeploymentsCommand() *cli.Command {
 // It handles parsing the CLI arguments, and then calls PruneDeploymentsRoot.
 func PruneDeploymentsScreen(c *cli.Context) error {
 	logger.Info("Staring prune deployments")
+	if err := CheckAPITokenPermission(c.Context, PagesWrite); err != nil {
+		return err
+	}
 	accountID := c.String(accountIDFlag)
 	if accountID == "" {
 		return errors.New("`account-id` is required for pages commands")

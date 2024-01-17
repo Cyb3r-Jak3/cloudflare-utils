@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -154,4 +155,64 @@ func RapidPagesDeploymentDelete(options pruneDeploymentOptions) map[string]error
 	}
 	p.Wait()
 	return results
+}
+
+type APIPermissionName string
+
+const (
+	DNSWrite   APIPermissionName = "DNSWrite"
+	PagesWrite APIPermissionName = "PagesWrite"
+)
+
+var apiPermissionMap = map[APIPermissionName]string{
+	DNSWrite:   "4755a26eedb94da69e1066d98aa820be",
+	PagesWrite: "8d28297797f24fb8a0c332fe0866ec89",
+}
+
+func CheckAPITokenPermission(ctx context.Context, permission APIPermissionName) error {
+	if APIClient.APIToken == "" {
+		logger.Debug("No API Token set. Skipping permission check")
+		return nil
+	}
+	if logger.Level >= logrus.DebugLevel {
+		logger.Debugf("Checking API Token permission: %s", permission)
+	} else {
+		return nil
+	}
+	token, err := VerifyAPIToken(ctx)
+	if err != nil {
+		if strings.Contains(err.Error(), "API token is not authorized to check if it has the correct permissions") {
+			return nil
+		}
+		return err
+	}
+	permissionID := apiPermissionMap[permission]
+	if permissionID == "" {
+		return fmt.Errorf("unknown permission %s", permission)
+	}
+
+	for _, policy := range token.Policies {
+		if policy.ID == permissionID {
+			return nil
+		}
+	}
+	return fmt.Errorf("API Token does not have permission %s", permission)
+}
+
+func VerifyAPIToken(ctx context.Context) (cloudflare.APIToken, error) {
+	verified, err := APIClient.VerifyAPIToken(ctx)
+	if err != nil {
+		logger.WithError(err).Error("Error verifying API token")
+		return cloudflare.APIToken{}, err
+	}
+	permissions, err := APIClient.GetAPIToken(ctx, verified.ID)
+	if err != nil {
+		if strings.Contains(err.Error(), "Unauthorized to access requested resource") {
+			logger.Debug("API token is not authorized to check if it has the correct permissions")
+			return cloudflare.APIToken{}, errors.New("API token is not authorized to check if it has the correct permissions")
+		}
+		logger.WithError(err).Debug("Error getting API token permissions")
+		return cloudflare.APIToken{}, err
+	}
+	return permissions, nil
 }

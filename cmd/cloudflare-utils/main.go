@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime/debug"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/Cyb3r-Jak3/common/v5"
@@ -114,13 +115,13 @@ func main() {
 
 func setup(c *cli.Context) (err error) {
 	SetLogLevel(c, logger)
-	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Command.Name == "generate-doc" {
+	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Command.Name == "generate-doc" || c.Command.Name == "" || len(c.Args().Slice()) == 0 {
 		return nil
 	}
 
-	apiToken := c.String(apiTokenFlag)
-	apiEmail := c.String(apiEmailFlag)
-	apiKey := c.String(apiKeyFlag)
+	apiToken := strings.TrimSpace(c.String(apiTokenFlag))
+	apiEmail := strings.TrimSpace(c.String(apiEmailFlag))
+	apiKey := strings.TrimSpace(c.String(apiKeyFlag))
 
 	if apiToken == "" && apiEmail == "" && apiKey == "" {
 		return errors.New("no authentication method detected")
@@ -130,11 +131,10 @@ func setup(c *cli.Context) (err error) {
 	if c.Bool(lotsOfDeploymentsFlag) {
 		rateLimit = 3
 	}
-
 	cfClientOptions := []cloudflare.Option{
 		cloudflare.UsingRateLimit(rateLimit),
 		cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)),
-		cloudflare.Debug(c.Bool("trace")),
+		cloudflare.Debug(logger.Level == logrus.TraceLevel),
 		cloudflare.UsingLogger(logger),
 	}
 
@@ -143,17 +143,6 @@ func setup(c *cli.Context) (err error) {
 		if err != nil {
 			logger.WithError(err).Error("Error creating new API instance with token")
 		}
-		verified, err := APIClient.VerifyAPIToken(ctx)
-		if err != nil {
-			logger.WithError(err).Error("Error verifying API token")
-			return err
-		}
-		permissions, err := APIClient.GetAPIToken(ctx, verified.ID)
-		if err != nil {
-			logger.WithError(err).Error("Error getting API token")
-			return err
-		}
-		logger.Debugf("API Token Polices: %#v\n", permissions.Policies)
 	}
 	if apiEmail != "" || apiKey != "" {
 		if apiEmail == "" || apiKey == "" {
