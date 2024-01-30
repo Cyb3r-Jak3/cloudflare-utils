@@ -1,9 +1,5 @@
 # DNS Cleaner
 
-**Required API Permissions**:
-
-- _Zone:DNS:Edit_
-
 The purpose of DNS cleaner is to offer a quick way to bulk remove DNS records that you don't want.  
 If you are looking to remove all DNS records then check out the [dns-purge feature](purge.md)
 
@@ -48,3 +44,10 @@ Once you have made all the changes you need to apply the changes. You can do thi
 !!! note
   * If you changed the name of the file via the flag then you need to point to the same file
   * Once a DNS record is deleted, then it is gone. This program does not recreate records
+
+#### Required API Permissions**
+
+[Token Quick Link](https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22dns%22%2C%22type%22%3A%22edit%22%7D%5D&name=Cloudflare+Utils%3A+DNS+Write)
+
+- _Zone:DNS:Edit_
+
