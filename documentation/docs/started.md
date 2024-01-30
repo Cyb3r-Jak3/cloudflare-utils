@@ -25,7 +25,7 @@ You can also pass your API Token via an environment variable of `CLOUDFLARE_API_
 
 ### API Key
 
-The legacy [API Key](https://developers.cloudflare.com/api/keys/) method is also supported
+The legacy [API Key](https://developers.cloudflare.com/api/keys/) method is also supported but is not recommended.
 
 **To Use**
 

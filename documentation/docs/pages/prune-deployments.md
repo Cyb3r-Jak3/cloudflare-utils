@@ -1,12 +1,6 @@
 # Prune Pages Deployments
 
-**Required API Permissions**:
-
-[Token Quick Link](https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22page%22%2C%22type%22%3A%22edit%22%7D%5D&name=Cloudflare+Utils%3A+Page+Write)
-
-- _Account:Cloudflare Pages:Edit_
-
-The purpose of this program is to offer a quick way to bulk remove Cloudflare Pages deployments.
+The purpose of this command is to offer a quick way to bulk remove Cloudflare Pages deployments.
 
 There are three ways to remove deployments:
 
@@ -64,3 +58,9 @@ cloudflare-utils --api-token <API Token with Pages:Edit> --account-id <account I
 
     I have only tested this with a project with 20,000 deployments. While doing so, it was able to delete all deployments even though some throw errors.
     It will take a while to run with a lot of deployments so be patient.
+
+#### Required API Permissions
+
+- _Account:Cloudflare Pages:Edit_
+
+[Token Quick Link](https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22page%22%2C%22type%22%3A%22edit%22%7D%5D&name=Cloudflare+Utils%3A+Page+Write)
