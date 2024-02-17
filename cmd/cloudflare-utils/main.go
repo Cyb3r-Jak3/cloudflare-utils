@@ -48,6 +48,7 @@ func main() {
 			buildPruneDeploymentsCommand(),
 			buildPurgeDeploymentsCommand(),
 			buildGenerateDocsCommand(),
+			buildTunnelVersionCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
