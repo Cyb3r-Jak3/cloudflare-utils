@@ -30,4 +30,5 @@ documentation/site/
 cmd/cloudflare-utils/LICENSE
 cmd/cloudflare-utils/README.md
 bash_completion
-# cloudflare-utils
+cloudflare-utils
+!cmd/cloudflare-utils/

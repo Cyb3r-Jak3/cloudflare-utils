@@ -12,7 +12,7 @@ snapshot:
 	cd ./cmd/cloudflare-utils; goreleaser --snapshot  --clean --skip=publish,sign
 
 lint:
-	golangci-lint run --config .golangci-lint.yml ./...
+	golangci-lint run --config .golangci-lint.yml ./cmd/...
 
 test:
 	echo "No tests yet"

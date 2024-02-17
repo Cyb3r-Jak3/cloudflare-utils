@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -160,16 +161,20 @@ func RapidPagesDeploymentDelete(options pruneDeploymentOptions) map[string]error
 type APIPermissionName string
 
 const (
-	DNSWrite   APIPermissionName = "DNSWrite"
-	PagesWrite APIPermissionName = "PagesWrite"
+	DNSWrite    APIPermissionName = "DNSWrite"
+	PagesWrite  APIPermissionName = "PagesWrite"
+	TunnelRead  APIPermissionName = "TunnelRead"
+	TunnelWrite APIPermissionName = "TunnelWrite"
 )
 
 var apiPermissionMap = map[APIPermissionName]string{
-	DNSWrite:   "4755a26eedb94da69e1066d98aa820be",
-	PagesWrite: "8d28297797f24fb8a0c332fe0866ec89",
+	DNSWrite:    "4755a26eedb94da69e1066d98aa820be",
+	PagesWrite:  "8d28297797f24fb8a0c332fe0866ec89",
+	TunnelRead:  "efea2ab8357b47888938f101ae5e053f",
+	TunnelWrite: "c07321b023e944ff818fec44d8203567",
 }
 
-func CheckAPITokenPermission(ctx context.Context, permission APIPermissionName) error {
+func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionName) error {
 	if APIClient.APIToken == "" {
 		logger.Debug("No API Token set. Skipping permission check")
 		return nil
@@ -186,13 +191,13 @@ func CheckAPITokenPermission(ctx context.Context, permission APIPermissionName) 
 		}
 		return err
 	}
-	permissionID := apiPermissionMap[permission]
-	if permissionID == "" {
-		return fmt.Errorf("unknown permission %s", permission)
+	permissionIDMap := make([]string, len(permission))
+	for _, p := range permission {
+		permissionIDMap = append(permissionIDMap, apiPermissionMap[p])
 	}
 
 	for _, policy := range token.Policies {
-		if policy.ID == permissionID {
+		if slices.Contains(permissionIDMap, policy.ID) {
 			return nil
 		}
 	}

@@ -42,8 +42,13 @@ nav:
   - Pages:
     - pages/prune-deployments.md
     - pages/purge-deployments.md
+  - Tunnels:
+    - tunnels/list-versions.md
   - roadmap.md
   - troubleshooting.md
+
+copyright: |
+  &copy; 2022-2024 Cyb3r-Jak3. All rights reserved.
 
 markdown_extensions:
   - admonition
