@@ -191,7 +191,7 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 		}
 		return err
 	}
-	var permissionIDMap []string
+	permissionIDMap := make([]string, len(permission))
 	for _, p := range permission {
 		permissionIDMap = append(permissionIDMap, apiPermissionMap[p])
 	}
