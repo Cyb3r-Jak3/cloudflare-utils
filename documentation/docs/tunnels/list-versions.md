@@ -4,7 +4,7 @@ The purpose of tunnel version is to offer a quick way to check which tunnels are
 
 ## Running
 
-Once you have it downloaded run `cloudflare-utils --api-token <API Token with DNS:Edit> --account-id <account id> tunnel-versions`. It will return a list of all out of date tunnels and their versions.
+Once you have it downloaded run `cloudflare-utils --api-token <API Token with Cloudflare Tunnel:Read> --account-id <account id> tunnel-versions`. It will print a list of all out of date tunnels and their versions.
 
 Optional flags:
 
@@ -13,7 +13,7 @@ Optional flags:
 - `healthy-only`: If you want to only see healthy tunnels in the list.
 
 
-#### Required API Permissions**
+#### Required API Permissions
 
 [Token Quick Link](https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22argotunnel%22%2C%22type%22%3A%22read%22%7D%5D&name=Cloudflare+Utils%3A+Tunnels+Read)
 
