@@ -2,7 +2,7 @@
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Cyb3r-Jak3/cloudflare-utils)](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/latest)
 
-[![Go Checks](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml) [![Golanglint CI](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml)
+[![Go Checks](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml) [![GolangLint CI](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml)
 
 ![GitHub all releases](https://img.shields.io/github/downloads/Cyb3r-Jak3/cloudflare-utils/total?label=GitHub%20Total%20Downloads) ![Chocolatey](https://img.shields.io/chocolatey/dt/cloudflare-utils?label=Chocolatey%20Downloads)
 
@@ -14,6 +14,7 @@ This is a collection of utilities for Cloudflare. The utilities are written in G
 * [DNS Purge](https://cloudflare-utils.cyberjake.xyz/dns/purge/)
 * [Deployment Purge](https://cloudflare-utils.cyberjake.xyz/pages/purge-deployments/)
 * [Deployment Prune](https://cloudflare-utils.cyberjake.xyz/pages/prune-deployments/)
+* [List Tunnel Version](https://cloudflare-utils.cyberjake.xyz/tunnels/list-versions/)
 
 ## Installation
 
@@ -25,7 +26,7 @@ choco install cloudflare-utils
 
 ### GitHub
 
-Download the latest release from the [releases page]()
+Download the latest release from the [releases page](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/latest)
 
 ### Docker
 

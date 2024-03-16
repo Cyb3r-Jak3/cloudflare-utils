@@ -23,5 +23,5 @@ test:
 docs:
 	cd documentation && mkdocs build
 
-doc-serve:
+docs-serve:
 	cd documentation && docker run --rm -v $(DOCS_DIR):/docs -p 8000:8000 ghcr.io/squidfunk/mkdocs-material:9.5.4
