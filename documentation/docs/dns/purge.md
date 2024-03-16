@@ -8,7 +8,6 @@ Once you have it downloaded run `cloudflare-utils --api-token <API Token with DN
 
 Optional flags:
 
-- `--dry-run`: See what would be deleted without actually deleting anything.
 - `--confirm`: Skip the confirmation prompt.
 
 

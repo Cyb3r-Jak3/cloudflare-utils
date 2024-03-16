@@ -62,11 +62,6 @@ func DNSPurge(c *cli.Context) error {
 		return nil
 	}
 
-	if c.Bool(dryRunFlag) {
-		fmt.Printf("Dry run: Would have deleted %d records\n", len(records))
-		return nil
-	}
-
 	errors := RapidDNSDelete(c.Context, zoneResource, records)
 	errorCount := len(errors)
 
