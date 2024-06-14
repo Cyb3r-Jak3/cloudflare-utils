@@ -11,6 +11,7 @@ on:
       - 'go.mod'
       - '**.go'
       - .github/workflows/golang.yml
+      - './cmd/cloudflare-utils/.goreleaser.yml'
   pull_request:
     branches:
       - main
@@ -40,6 +41,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Go
         uses: actions/setup-go@v5
@@ -66,7 +69,7 @@ jobs:
       - name: GoReleaser Action
         uses: goreleaser/goreleaser-action@v5
         with:
-          version: latest
+          version: '~> v2'
           args: --snapshot --clean --skip=publish,sign
           workdir: cmd/cloudflare-utils
         env:
@@ -123,6 +126,7 @@ jobs:
           file: dist.Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          sbom: true
 
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v4
@@ -173,7 +177,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
-          version: latest
+          version: '~> v2'
           args: release --clean
           workdir: cmd/cloudflare-utils
         env:
