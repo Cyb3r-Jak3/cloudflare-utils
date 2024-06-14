@@ -124,6 +124,7 @@ jobs:
           file: dist.Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          sbom: true
 
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v4
