@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/Cyb3r-Jak3/common/v5 v5.2.0
 	github.com/cloudflare/cloudflare-go v0.98.0
+	github.com/cloudflare/cloudflare-go/v2 v2.3.0
 	github.com/google/go-github/v58 v58.0.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/sourcegraph/conc v0.3.0
