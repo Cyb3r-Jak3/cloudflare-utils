@@ -3,5 +3,6 @@
   "extends": [
     "config:recommended"
   ],
-  "prHourlyLimit": 10
+  "prHourlyLimit": 10,
+  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"]
 }
