@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/Cyb3r-Jak3/common/v5 v5.2.0
-	github.com/cloudflare/cloudflare-go v0.100.0
+	github.com/cloudflare/cloudflare-go v0.101.0
 	github.com/google/go-github/v63 v63.0.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/sourcegraph/conc v0.3.0
@@ -16,8 +16,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
