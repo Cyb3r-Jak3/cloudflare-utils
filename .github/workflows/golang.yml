@@ -115,15 +115,20 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: cloudflare-utils
 
       - name: Build
         uses: docker/build-push-action@v6
+        id: build
         with:
+          context: cloudflare-utils
           push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
           platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/arm/v6, linux/386
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: dist.Dockerfile
+          file: cloudflare-utils/dist.Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
           sbom: true
@@ -135,6 +140,16 @@ jobs:
           username: cyb3rjak3
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: cyb3rjak3/cloudflare-utils
+          readme-filepath: cloudflare-utils/README.md
+
+      - name: GitHub Container Attestation
+        uses: actions/attest-build-provenance@v1
+        id: attest
+        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+        with:
+          subject-name: ghcr.io/cyb3r-jak3/cloudflare-utils
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
 
   Release:
     if: startsWith(github.ref, 'refs/tags/v')
