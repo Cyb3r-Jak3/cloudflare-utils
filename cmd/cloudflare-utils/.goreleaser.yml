@@ -41,7 +41,7 @@ checksum:
   name_template: 'checksums.txt'
 
 snapshot:
-  name_template: "{{ .Version }}-snapshot-{{ .ShortCommit }}"
+  version_template: "{{ .Version }}-snapshot-{{ .ShortCommit }}"
 
 changelog:
   sort: asc
@@ -76,7 +76,7 @@ chocolateys:
     tags: "cloudflare"
     bug_tracker_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils/issues"
     api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
-    copyright: "2023 Cyb3r-Jak3"
+    copyright: "2023-2024 Cyb3r-Jak3"
     package_source_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils"
     icon_url: "https://cloudflare-utils.cyberjake.xyz/assets/images/logo.png"
     description: &description |
@@ -93,30 +93,19 @@ chocolateys:
 nfpms:
   -
     package_name: cloudflare-utils
-
     vendor: Cyb3rJak3
-
     homepage: https://cloudflare-utils.cyberjake.xyz/
-
     maintainer: Cyb3rJak3 <git@cyberjake.xyz>
-
-    description:
-      *description
-
+    description: *description
     license: Apache 2.0
-
     formats:
       - apk
       - deb
       - rpm
-
     provides:
       - cloudflare-utils
-
     section: default
-
     priority: extra
-
     # Changelog YAML file, see: https://github.com/goreleaser/chglog
     #
     # You can use goreleaser/chglog to create the changelog for your project,
@@ -143,3 +132,14 @@ blobs:
 
 release:
   draft: true
+
+brew:
+  - name: cloudflare-utils
+    description: *description
+    license: Apache 2.0
+    homepage: "https://cloudflare-utils.cyberjake.xyz/"
+    repository:
+      owner: Cyb3r-Jak3
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+
