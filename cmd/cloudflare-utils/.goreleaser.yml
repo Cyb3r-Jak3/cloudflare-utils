@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 before:
   hooks:
@@ -133,7 +134,7 @@ blobs:
 release:
   draft: true
 
-brew:
+brews:
   - name: cloudflare-utils
     description: *description
     license: Apache 2.0
