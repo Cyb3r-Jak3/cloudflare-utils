@@ -146,4 +146,4 @@ brews:
     repository:
       owner: Cyb3r-Jak3
       name: homebrew-tap
-      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+      token: "{{ .Env.GITHUB_TOKEN }}"
