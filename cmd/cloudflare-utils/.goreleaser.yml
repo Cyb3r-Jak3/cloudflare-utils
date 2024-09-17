@@ -142,6 +142,7 @@ brews:
     description: *description
     license: Apache 2.0
     homepage: "https://cloudflare-utils.cyberjake.xyz/"
+    directory: Formula
     repository:
       owner: Cyb3r-Jak3
       name: homebrew-tap
