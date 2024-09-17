@@ -55,6 +55,8 @@ jobs:
             ~\AppData\Local\go-build
             ~\go\pkg\mod
           key: go-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            go-
 
       - name: Install Syft
         run: choco install syft --yes

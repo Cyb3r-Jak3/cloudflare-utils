@@ -24,6 +24,9 @@ builds:
       - '386'
       - s390x
       - ppc64le
+      - riscv64
+      - mips64
+      - mips64le
     binary: cloudflare-utils
     mod_timestamp: '{{ .CommitTimestamp }}'
     ldflags:

@@ -1,6 +1,6 @@
 module github.com/Cyb3r-Jak3/cloudflare-utils
 
-go 1.21
+go 1.23
 
 require (
 	github.com/Cyb3r-Jak3/common/v5 v5.2.0
