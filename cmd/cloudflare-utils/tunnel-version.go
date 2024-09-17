@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-github/v63/github"
+	"github.com/google/go-github/v65/github"
 	"github.com/urfave/cli/v2"
 )
 
