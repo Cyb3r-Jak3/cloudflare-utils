@@ -9,7 +9,9 @@ Cloudflare-utils is build for Windows, Mac and Linux and the latest release is a
 1. Docker
     - `cyb3rjak3/cloudflare-utils`
     - `ghcr.io/cyb3r-jak3/cloudflare-utils`
+    - `mine.jfrog.cyberjake.xyz/cloudflare-utils`
 2. Chocolatey: [cloudflare-utils](https://community.chocolatey.org/packages/cloudflare-utils)
+3. Homebrew: `brew install cyb3r-jak3/cyberjake/cloudflare-utils`
 
 ## Authentication
 
