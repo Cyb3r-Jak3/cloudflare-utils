@@ -40,6 +40,12 @@ docker pull cyb3rjak3/cloudflare-utils
 go install github.com/Cyb3r-Jak3/cloudflare-utils/cmd/cloudflare-utils@latest
 ```
 
+### Homebrew
+
+```bash
+brew install cyb3r-jak3/cyberjake/cloudflare-utils
+```
+
 ## Usage
 
 Check the [docs](https://cloudflare-utils.cyberjake.xyz/) for more information on how to use the utilities.
