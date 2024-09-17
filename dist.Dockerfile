@@ -1,12 +1,14 @@
-FROM golang:1.23-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.23-alpine AS builder
 
 WORKDIR /usr/app
 ENV CGO_ENABLED=0
 RUN  --mount=type=cache,target=/var/cache/apk,sharing=locked apk update && apk -U --no-cache add git make build-base ca-certificates && git config --global --add safe.directory '*'
 COPY . .
-RUN go mod download
+
 ENV GOCACHE=/root/.cache/go-build
-RUN --mount=type=cache,target="/root/.cache/go-build" make build
+ARG TARGETOS
+ARG TARGETARCH
+RUN --mount=type=cache,target="/root/.cache/go-build" --mount=type=cache,target=/go/pkg GOOS=${TARGETOS} GOARCH=${TARGETARCH} make build
 
 FROM scratch
 COPY --from=builder /usr/app/cloudflare-utils /
