@@ -92,7 +92,7 @@ chocolateys:
       - Deleting all Pages deployments for project
       - Deleting all Pages deployments before or after a time
       
-      Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc. in the United States and other jurisdictions.
+      Cloudflare and the Cloudflare logo are trademarks and/or registered trademarks of Cloudflare, Inc.
 
 nfpms:
   -
@@ -101,7 +101,7 @@ nfpms:
     homepage: https://cloudflare-utils.cyberjake.xyz/
     maintainer: Cyb3rJak3 <git@cyberjake.xyz>
     description: *description
-    license: Apache 2.0
+    license: &license Apache-2.0
     formats:
       - apk
       - deb
@@ -140,7 +140,7 @@ release:
 brews:
   - name: cloudflare-utils
     description: *description
-    license: Apache 2.0
+    license: *license
     homepage: "https://cloudflare-utils.cyberjake.xyz/"
     directory: Formula
     repository:
