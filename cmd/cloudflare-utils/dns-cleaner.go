@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Cyb3r-Jak3/common/v5"
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/cloudflare/cloudflare-go/v3"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
