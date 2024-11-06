@@ -1,7 +1,7 @@
 github.com/Cyb3r-Jak3/common/v5 v5.2.0 h1:HvKEl7FzvVrqbpF9Ebz9esTpik6ay6D3+Klus0wtct0=
 github.com/Cyb3r-Jak3/common/v5 v5.2.0/go.mod h1:x3qyg/87pgRIs7EZU7fjY2gW2BzT8gUBH9KdBAPKTEE=
-github.com/cloudflare/cloudflare-go v0.108.0 h1:C4Skfjd8I8X3uEOGmQUT4/iGyZcWdkIU7HwvMoLkEE0=
-github.com/cloudflare/cloudflare-go v0.108.0/go.mod h1:m492eNahT/9MsN7Ppnoge8AaI7QhVFtEgVm3I9HJFeU=
+github.com/cloudflare/cloudflare-go v0.109.0 h1:Wjp+RfJD1lidIFUlrTBqUQnCBrUnmVsLxgzWYiURueg=
+github.com/cloudflare/cloudflare-go v0.109.0/go.mod h1:m492eNahT/9MsN7Ppnoge8AaI7QhVFtEgVm3I9HJFeU=
 github.com/cpuguy83/go-md2man/v2 v2.0.5 h1:ZtcqGrnekaHpVLArFSe4HK5DoKx1T0rq2DwVB0alcyc=
 github.com/cpuguy83/go-md2man/v2 v2.0.5/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
