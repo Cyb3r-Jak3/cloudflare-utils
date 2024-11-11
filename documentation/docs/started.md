@@ -9,7 +9,6 @@ Cloudflare-utils is build for Windows, Mac and Linux and the latest release is a
 1. Docker
     - `cyb3rjak3/cloudflare-utils`
     - `ghcr.io/cyb3r-jak3/cloudflare-utils`
-    - `mine.jfrog.cyberjake.xyz/cloudflare-utils`
 2. Chocolatey: [cloudflare-utils](https://community.chocolatey.org/packages/cloudflare-utils)
 3. Homebrew: `brew install cyb3r-jak3/cyberjake/cloudflare-utils`
 
@@ -31,7 +30,7 @@ The legacy [API Key](https://developers.cloudflare.com/api/keys/) method is also
 
 **To Use**
 
-`cloudflare-utils --api-email <Email Here> --api-key <API Key Here>`
+`cloudflare-utils --api-token <API Token Here>`
 
 You can pass your API email and key with environment variables of `CLOUDFLARE_API_EMAIL` and `CLOUDFLARE_API_KEY`
 
