@@ -22,7 +22,7 @@ If you want a different file name then add `--dns-file` with the name of the fil
 
 `--no-keep`: Changes the default keep value to false
 
-`--quick-clean`: Looks through all DNS records for ones that are numeric values and sets those to false.
+`--quick-clean`: Looks through all DNS records for ones that are numeric values and sets those to be removed.
 
 ???+ note 
     Using `--no-keep` with `--quick-clean` is not supported.
