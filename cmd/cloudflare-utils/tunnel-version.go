@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/cloudflare/cloudflare-go/v4"
 	"github.com/google/go-github/v68/github"
 	"github.com/urfave/cli/v2"
 )
