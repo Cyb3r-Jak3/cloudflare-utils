@@ -24,6 +24,9 @@ permissions:
   security-events: write
   actions: write
   packages: write
+  contents: read
+  id-token: write
+  attestations: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -47,16 +50,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-          cache: false
-
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~\AppData\Local\go-build
-            ~\go\pkg\mod
-          key: go-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            go-
+          cache: true
 
       - name: Install Syft
         run: choco install syft --yes
@@ -98,18 +92,10 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-          cache: false
+          cache: true
 
       - name: Install Syft
         run: choco install syft --yes
-
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~\AppData\Local\go-build
-            ~\go\pkg\mod
-          key: go-${{ hashFiles('go.sum') }}
-
       - name: Download AutoComplete file
         run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v2.25.7/autocomplete/bash_autocomplete -OutFile bash_completion
 
@@ -132,3 +118,7 @@ jobs:
           CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-checksums: ./cmd/cloudflare-utils/dist/checksums.txt

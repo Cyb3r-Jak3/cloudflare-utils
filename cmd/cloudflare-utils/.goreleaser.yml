@@ -30,15 +30,15 @@ builds:
     binary: cloudflare-utils
     mod_timestamp: '{{ .CommitTimestamp }}'
     ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}'
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
       - -extldflags "-static"
 
 
 archives:
-  - format: tar.xz
+  - formats: ['tar.xz']
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ['zip']
     name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 
 checksum:
