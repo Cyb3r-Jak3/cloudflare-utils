@@ -1,16 +1,19 @@
+# $schema: https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+
 run:
-  skip-dirs-use-default: true
 
   modules-download-mode: readonly
+
+issues:
+  exclude: exclude-dirs-use-default
 
 linters:
   enable:
     - staticcheck
-    - exportloopref
     - dupl
     - govet
     - goconst
-    - tenv
+    - usetesting
     - ineffassign
     - bodyclose
     - gosec
@@ -23,7 +26,7 @@ linters:
     - goprintffuncname
     - gosimple
     - gocyclo
-    - exportloopref
+    - copyloopvar
     - goimports
     - misspell
     - godot
@@ -33,4 +36,5 @@ linters:
     - govet
 
 output:
-  format: colored-line-number
+  formats:
+    - colored-line-number
