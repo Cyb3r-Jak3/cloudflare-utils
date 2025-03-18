@@ -37,4 +37,7 @@ linters:
 
 output:
   formats:
-    - colored-line-number
+    - format: colored-line-number
+      path: stderr
+    - format: github-actions
+      path: stdout
