@@ -2,7 +2,7 @@ module github.com/Cyb3r-Jak3/cloudflare-utils
 
 go 1.23.0
 
-toolchain go1.23.7
+toolchain go1.24.2
 
 require (
 	github.com/Cyb3r-Jak3/common/v5 v5.2.0
