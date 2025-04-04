@@ -1,43 +1,50 @@
-# $schema: https://golangci-lint.run/jsonschema/golangci.jsonschema.json
-
+version: "2"
 run:
-
   modules-download-mode: readonly
-
-issues:
-  exclude: exclude-dirs-use-default
-
-linters:
-  enable:
-    - staticcheck
-    - dupl
-    - govet
-    - goconst
-    - usetesting
-    - ineffassign
-    - bodyclose
-    - gosec
-    - prealloc
-    - unused
-    - gofmt
-    - revive
-    - stylecheck
-    - whitespace
-    - goprintffuncname
-    - gosimple
-    - gocyclo
-    - copyloopvar
-    - goimports
-    - misspell
-    - godot
-    - reassign
-    - unconvert
-    - nilerr
-    - govet
-
 output:
   formats:
-    - format: colored-line-number
+    text:
       path: stderr
-    - format: github-actions
-      path: stdout
+linters:
+  enable:
+    - bodyclose
+    - copyloopvar
+    - dupl
+    - goconst
+    - gocyclo
+    - godot
+    - goprintffuncname
+    - gosec
+    - misspell
+    - nilerr
+    - prealloc
+    - reassign
+    - revive
+    - staticcheck
+    - unconvert
+    - usetesting
+    - whitespace
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - path: (.+)\.go$
+        text: exclude-dirs-use-default
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
