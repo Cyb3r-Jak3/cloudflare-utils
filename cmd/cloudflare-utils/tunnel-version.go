@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-github/v70/github"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const (
@@ -24,20 +25,20 @@ func buildTunnelVersionCommand() *cli.Command {
 				Name:    allTunnelsFlag,
 				Aliases: []string{"a"},
 				Usage:   "Reports versions of all connectors not just outdated ones",
-				EnvVars: []string{"ALL_TUNNELS"},
+				Sources: cli.EnvVars("ALL_TUNNELS"),
 			},
 			&cli.BoolFlag{
 				Name:    includeDeletedFlag,
 				Aliases: []string{"d"},
 				Usage:   "Include deleted tunnels in the report",
-				EnvVars: []string{"INCLUDE_DELETED_TUNNELS"},
+				Sources: cli.EnvVars("INCLUDE_DELETED_TUNNELS"),
 				Value:   false,
 			},
 			&cli.BoolFlag{
 				Name:    activeOnlyFlag,
 				Aliases: []string{"o"},
 				Usage:   "Only report on healthy tunnels",
-				EnvVars: []string{"ACTIVE_TUNNELS_ONLY"},
+				Sources: cli.EnvVars("ACTIVE_ONLY_TUNNELS"),
 				Value:   false,
 			},
 		},
@@ -53,9 +54,9 @@ func GetLatestVersion() (string, error) {
 	return *release.TagName, nil
 }
 
-func TunnelVersionAction(c *cli.Context) error {
+func TunnelVersionAction(ctx context.Context, c *cli.Command) error {
 	accountRC := cloudflare.AccountIdentifier(c.String(accountIDFlag))
-	tunnels, _, err := APIClient.ListTunnels(c.Context, accountRC, cloudflare.TunnelListParams{
+	tunnels, _, err := APIClient.ListTunnels(ctx, accountRC, cloudflare.TunnelListParams{
 		IsDeleted: cloudflare.BoolPtr(c.Bool(includeDeletedFlag)),
 	})
 	if err != nil {

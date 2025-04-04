@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const (
@@ -16,7 +17,8 @@ const (
 )
 
 type pruneDeploymentOptions struct {
-	c                   *cli.Context
+	c                   *cli.Command
+	ctx                 context.Context
 	ResourceContainer   *cloudflare.ResourceContainer
 	ProjectName         string
 	SelectedDeployments []cloudflare.PagesProjectDeployment
@@ -33,23 +35,27 @@ func buildPruneDeploymentsCommand() *cli.Command {
 				Aliases:  []string{"p"},
 				Usage:    "Pages project to delete the alias from",
 				Required: true,
-				EnvVars:  []string{"CF_PAGES_PROJECT"},
+				Sources:  cli.EnvVars("CF_PAGES_PROJECT"),
 			},
 			&cli.StringFlag{
 				Name:    branchNameFlag,
 				Aliases: []string{"b"},
 				Usage:   "Branch to delete",
-				EnvVars: []string{"CF_PAGES_BRANCH"},
+				Sources: cli.EnvVars("CF_PAGES_BRANCH"),
 			},
 			&cli.TimestampFlag{
-				Name:   beforeFlag,
-				Usage:  "Time to delete before",
-				Layout: "2006-01-02T15:04:05",
+				Name:  beforeFlag,
+				Usage: "Time to delete before",
+				Config: cli.TimestampConfig{
+					Layouts: []string{"2006-01-02T15:04:05"},
+				},
 			},
 			&cli.TimestampFlag{
-				Name:   afterFlag,
-				Usage:  "Time to delete after",
-				Layout: "2006-01-02T15:04:05",
+				Name:  afterFlag,
+				Usage: "Time to delete after",
+				Config: cli.TimestampConfig{
+					Layouts: []string{"2006-01-02T15:04:05"},
+				},
 			},
 			//&cli.DurationFlag{
 			//	Name: timeShortcutFlag,
@@ -69,9 +75,9 @@ func buildPruneDeploymentsCommand() *cli.Command {
 
 // PruneDeploymentsScreen is the entry point for the prune-deployments command.
 // It handles parsing the CLI arguments, and then calls PruneDeploymentsRoot.
-func PruneDeploymentsScreen(c *cli.Context) error {
+func PruneDeploymentsScreen(ctx context.Context, c *cli.Command) error {
 	logger.Info("Staring prune deployments")
-	if err := CheckAPITokenPermission(c.Context, PagesWrite); err != nil {
+	if err := CheckAPITokenPermission(ctx, PagesWrite); err != nil {
 		return err
 	}
 	accountID := c.String(accountIDFlag)
@@ -86,20 +92,21 @@ func PruneDeploymentsScreen(c *cli.Context) error {
 	beforeTime := c.Timestamp(beforeFlag)
 	afterTime := c.Timestamp(afterFlag)
 
-	if c.String(branchNameFlag) == "" && beforeTime == nil && afterTime == nil {
+	if c.String(branchNameFlag) == "" && beforeTime.IsZero() && afterTime.IsZero() {
 		return errors.New("need to specify either a branch or a time")
 	}
-	return PruneDeploymentsRoot(c)
+	return PruneDeploymentsRoot(ctx, c)
 }
 
 // PruneDeploymentsRoot is the main function for pruning and purging deployments.
-func PruneDeploymentsRoot(c *cli.Context) error {
+func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 	accountResource := cloudflare.AccountIdentifier(c.String(accountIDFlag))
 	projectName := c.String(projectNameFlag)
 
 	allDeployments, err := DeploymentsPaginate(
 		PagesDeploymentPaginationOptions{
 			CLIContext:      c,
+			ctx:             ctx,
 			AccountResource: accountResource,
 			ProjectName:     projectName,
 		})
@@ -119,7 +126,7 @@ func PruneDeploymentsRoot(c *cli.Context) error {
 	if c.String(branchNameFlag) != "" {
 		logger.Infoln("Pruning by branch")
 		toDelete = PruneBranchDeployments(options)
-	} else if c.Timestamp(beforeFlag) != nil || c.Timestamp(afterFlag) != nil {
+	} else if !c.Timestamp(beforeFlag).IsZero() || !c.Timestamp(afterFlag).IsZero() {
 		logger.Infoln("Pruning by time")
 		toDelete = PruneTimeDeployments(options)
 	} else {
@@ -163,18 +170,18 @@ func PruneBranchDeployments(options pruneDeploymentOptions) (toDelete []cloudfla
 func PruneTimeDeployments(options pruneDeploymentOptions) (toDelete []cloudflare.PagesProjectDeployment) {
 	beforeTimestamp := options.c.Timestamp(beforeFlag)
 	afterTimestamp := options.c.Timestamp(afterFlag)
-	if beforeTimestamp != nil {
+	if !beforeTimestamp.IsZero() {
 		logger.Debugln("Pruning with before time")
 	} else {
 		logger.Debugln("Pruning with  after time")
 	}
 	for _, deployment := range options.SelectedDeployments {
-		if beforeTimestamp != nil {
-			if deployment.CreatedOn.Before(*beforeTimestamp) {
+		if !beforeTimestamp.IsZero() {
+			if deployment.CreatedOn.Before(beforeTimestamp) {
 				toDelete = append(toDelete, deployment)
 			}
 		} else {
-			if deployment.CreatedOn.After(*afterTimestamp) {
+			if deployment.CreatedOn.After(afterTimestamp) {
 				toDelete = append(toDelete, deployment)
 			}
 		}
