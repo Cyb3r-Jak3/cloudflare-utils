@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -45,7 +46,7 @@ func buildDNSCleanerCommand() *cli.Command {
 		Name:   "dns-cleaner",
 		Usage:  "Clean dns records.\nAPI Token Requirements: DNS:Edit",
 		Action: DNSCleaner,
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			{
 				Name:   downloadSubCommand,
 				Action: DownloadDNS,
@@ -62,21 +63,21 @@ func buildDNSCleanerCommand() *cli.Command {
 				Name:    dnsFileFlag,
 				Usage:   "Path to the DNS record file",
 				Aliases: []string{"f"},
-				EnvVars: []string{"DNS_RECORD_FILE"},
+				Sources: cli.EnvVars("DNS_RECORD_FILE"),
 				Value:   "./dns-records.yml",
 			},
 			&cli.BoolFlag{
 				Name:    noKeepFlag,
 				Usage:   "Mark records for removal by default",
 				Aliases: []string{"k"},
-				EnvVars: []string{"NO_KEEP"},
+				Sources: cli.EnvVars("NO_KEEP"),
 				Value:   false,
 			},
 			&cli.BoolFlag{
 				Name:    quickCleanFlag,
 				Usage:   "Auto marks dns records that are numeric to be removed",
 				Aliases: []string{"q"},
-				EnvVars: []string{"QUICK_CLEAN"},
+				Sources: cli.EnvVars("QUICK_CLEAN"),
 			},
 			&cli.BoolFlag{
 				Name:    noOverwriteFlag,
@@ -100,10 +101,10 @@ func buildDNSCleanerCommand() *cli.Command {
 
 // DNSCleaner is the main action function for the dns-cleaner command.
 // It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records.
-func DNSCleaner(c *cli.Context) error {
+func DNSCleaner(ctx context.Context, c *cli.Command) error {
 	logger.Infoln("Starting DNS Cleaner")
 
-	if err := CheckAPITokenPermission(c.Context, DNSWrite); err != nil {
+	if err := CheckAPITokenPermission(ctx, DNSWrite); err != nil {
 		return err
 	}
 
@@ -111,12 +112,12 @@ func DNSCleaner(c *cli.Context) error {
 	logger.Debugf("Existing DNS file: %t\n", fileExists)
 	if !fileExists {
 		logger.Infoln("Downloading DNS Records")
-		if err := DownloadDNS(c); err != nil {
+		if err := DownloadDNS(ctx, c); err != nil {
 			return err
 		}
 	} else {
 		logger.Infoln("Uploading DNS Records")
-		if err := UploadDNS(c); err != nil {
+		if err := UploadDNS(ctx, c); err != nil {
 			return err
 		}
 	}
@@ -133,12 +134,12 @@ func quickClean(zoneName, record string) bool {
 }
 
 // DownloadDNS downloads current DNS records from Cloudflare.
-func DownloadDNS(c *cli.Context) error {
+func DownloadDNS(ctx context.Context, c *cli.Command) error {
 	if common.FileExists(c.String(dnsFileFlag)) && c.Bool(noOverwriteFlag) {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
 
-	zoneID, err := GetZoneID(c)
+	zoneID, err := GetZoneID(ctx, c)
 	if err != nil {
 		return err
 	}
@@ -191,7 +192,7 @@ func DownloadDNS(c *cli.Context) error {
 }
 
 // UploadDNS makes the changes to DNS records based on the dns file.
-func UploadDNS(c *cli.Context) error {
+func UploadDNS(ctx context.Context, c *cli.Command) error {
 	dnsFilePath := c.String(dnsFileFlag)
 	if !common.FileExists(dnsFilePath) {
 		return fmt.Errorf("no DNS file found at '%s'", dnsFilePath)
@@ -229,7 +230,7 @@ func UploadDNS(c *cli.Context) error {
 		fmt.Printf("Dry Run: Would have removed %d records\n", len(toRemove))
 		return nil
 	}
-	removeErrors := RapidDNSDelete(c.Context, zoneResource, toRemove)
+	removeErrors := RapidDNSDelete(ctx, zoneResource, toRemove)
 	errorCount = len(removeErrors)
 
 	if errorCount == 0 {

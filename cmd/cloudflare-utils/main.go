@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/mail"
 	"os"
 	"runtime/debug"
 	"sort"
@@ -13,6 +14,7 @@ import (
 	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/sirupsen/logrus"
+	docs "github.com/urfave/cli-docs/v3"
 	"github.com/urfave/cli/v3"
 )
 
@@ -30,15 +32,15 @@ func main() {
 	if buildInfo, available := debug.ReadBuildInfo(); available {
 		versionString = fmt.Sprintf("%s (built %s with %s)", version, date, buildInfo.GoVersion)
 	}
-	app := &cli.App{
+	app := &cli.Command{
 		Name:    "cloudflare-utils",
 		Usage:   "Program for quick cloudflare utils",
 		Version: versionString,
 		Suggest: true,
-		Authors: []*cli.Author{
-			{
-				Name:  "Cyb3r-Jak3",
-				Email: "git@cyberjake.xyz",
+		Authors: []any{
+			&mail.Address{
+				Name:    "Cyb3r-Jak3",
+				Address: "git@cyberjake.xyz",
 			},
 		},
 		Before: setup,
@@ -54,34 +56,34 @@ func main() {
 			&cli.StringFlag{
 				Name:    apiTokenFlag,
 				Usage:   "A scoped API token (preferred)",
-				EnvVars: []string{"CLOUDFLARE_API_TOKEN"},
+				Sources: cli.EnvVars("CLOUDFLARE_API_TOKEN"),
 			},
 			&cli.StringFlag{
 				Name:    apiEmailFlag,
 				Usage:   "Cloudflare API email (legacy)",
-				EnvVars: []string{"CLOUDFLARE_API_EMAIL"},
+				Sources: cli.EnvVars("CLOUDFLARE_API_EMAIL"),
 			},
 			&cli.StringFlag{
 				Name:    apiKeyFlag,
 				Usage:   "Cloudflare Global API key (legacy)",
-				EnvVars: []string{"CLOUDFLARE_API_KEY"},
+				Sources: cli.EnvVars("CLOUDFLARE_API_KEY"),
 			},
 			&cli.StringFlag{
 				Name:    zoneNameFlag,
 				Usage:   "Domain name of your zone",
-				EnvVars: []string{"CLOUDFLARE_ZONE_NAME"},
+				Sources: cli.EnvVars("CLOUDFLARE_ZONE_NAME"),
 			},
 			&cli.StringFlag{
 				Name:    zoneIDFlag,
 				Usage:   "Zone ID of your zone",
-				EnvVars: []string{"CLOUDFLARE_ZONE_ID"},
+				Sources: cli.EnvVars("CLOUDFLARE_ZONE_ID"),
 			},
 			&cli.StringFlag{
 				Name:    accountIDFlag,
 				Usage:   "Account ID",
-				EnvVars: []string{"CLOUDFLARE_ACCOUNT_ID"},
+				Sources: cli.EnvVars("CLOUDFLARE_ACCOUNT_ID"),
 			},
-			&cli.Float64Flag{
+			&cli.FloatFlag{
 				Name:   "rate-limit",
 				Usage:  "Rate limit for API calls.\nDefault is 4 which matches the Cloudflare API limit of 1200 calls per 5 minutes",
 				Value:  4,
@@ -91,22 +93,22 @@ func main() {
 				Name:    "verbose",
 				Usage:   "Enable verbose logging",
 				Aliases: []string{"V"},
-				EnvVars: []string{"LOG_LEVEL_VERBOSE"},
+				Sources: cli.EnvVars("LOG_LEVEL_VERBOSE"),
 			},
 			&cli.BoolFlag{
 				Name:    "debug",
 				Usage:   "Enable debug logging",
 				Aliases: []string{"d"},
-				EnvVars: []string{"LOG_LEVEL_DEBUG"},
+				Sources: cli.EnvVars("LOG_LEVEL_DEBUG"),
 			},
 			&cli.BoolFlag{
 				Name:    "trace",
-				EnvVars: []string{"LOG_LEVEL_TRACE"},
+				Sources: cli.EnvVars("LOG_LEVEL_TRACE"),
 			},
 		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
-	err := app.Run(os.Args)
+	err := app.Run(context.Background(), os.Args)
 	logger.Debugf("Running took: %v", time.Since(startTime))
 	if err != nil {
 		fmt.Printf("Error running app: %s\n", err)
@@ -114,10 +116,10 @@ func main() {
 	}
 }
 
-func setup(c *cli.Context) (err error) {
+func setup(ctx context.Context, c *cli.Command) (context context.Context, err error) {
 	SetLogLevel(c, logger)
-	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Command.Name == "generate-doc" || c.Command.Name == "" || len(c.Args().Slice()) == 0 {
-		return nil
+	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Name == "generate-doc" || c.Name == "" || len(c.Args().Slice()) == 0 {
+		return ctx, nil
 	}
 
 	apiToken := strings.TrimSpace(c.String(apiTokenFlag))
@@ -125,10 +127,10 @@ func setup(c *cli.Context) (err error) {
 	apiKey := strings.TrimSpace(c.String(apiKeyFlag))
 
 	if apiToken == "" && apiEmail == "" && apiKey == "" {
-		return errors.New("no authentication method detected")
+		return ctx, errors.New("no authentication method detected")
 	}
 
-	rateLimit := c.Float64("rate-limit")
+	rateLimit := c.Float("rate-limit")
 	if c.Bool(lotsOfDeploymentsFlag) {
 		rateLimit = 3
 	}
@@ -147,7 +149,7 @@ func setup(c *cli.Context) (err error) {
 	}
 	if apiEmail != "" || apiKey != "" {
 		if apiEmail == "" || apiKey == "" {
-			return errors.New("need to have both API Key and Email set for legacy method")
+			return ctx, errors.New("need to have both API Key and Email set for legacy method")
 		}
 		logger.Warning("Using legacy method. Using API tokens is recommended")
 		APIClient, err = cloudflare.New(apiKey, apiEmail, cfClientOptions...)
@@ -156,7 +158,7 @@ func setup(c *cli.Context) (err error) {
 		}
 	}
 
-	return err
+	return ctx, err
 }
 
 func buildGenerateDocsCommand() *cli.Command {
@@ -176,7 +178,7 @@ func buildGenerateDocsCommand() *cli.Command {
 				Value:   "man",
 			},
 		},
-		Action: func(c *cli.Context) error {
+		Action: func(_ context.Context, c *cli.Command) error {
 			logger.Trace("Generating docs")
 			formatString := c.String("format")
 			if !common.StringSearch(formatString, []string{"man", "markdown"}) {
@@ -186,9 +188,9 @@ func buildGenerateDocsCommand() *cli.Command {
 			var output string
 			var err error
 			if formatString == "man" {
-				output, err = c.App.ToMan()
+				output, err = docs.ToMan(c)
 			} else {
-				output, err = c.App.ToMarkdown()
+				output, err = docs.ToMarkdown(c)
 			}
 			if err != nil {
 				return err

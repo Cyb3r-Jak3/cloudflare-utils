@@ -19,7 +19,7 @@ import (
 const maxGoRoutines = 10
 
 // SetLogLevel sets the log level based on the CLI flags.
-func SetLogLevel(c *cli.Context, logger *logrus.Logger) {
+func SetLogLevel(c *cli.Command, logger *logrus.Logger) {
 	if c.Bool("debug") {
 		logger.SetLevel(logrus.DebugLevel)
 	} else if c.Bool("verbose") {
@@ -41,7 +41,7 @@ func SetLogLevel(c *cli.Context, logger *logrus.Logger) {
 }
 
 // GetZoneID gets the zone ID from the CLI flags either by name or ID.
-func GetZoneID(c *cli.Context) (string, error) {
+func GetZoneID(ctx context.Context, c *cli.Command) (string, error) {
 	zoneName := c.String(zoneNameFlag)
 	zoneID := c.String(zoneIDFlag)
 	if zoneName == "" && zoneID == "" {
@@ -52,7 +52,7 @@ func GetZoneID(c *cli.Context) (string, error) {
 		id, err := APIClient.ZoneIDByName(zoneName)
 		if err != nil {
 			if logrus.DebugLevel >= logger.Level {
-				zones, lErr := APIClient.ListZones(c.Context)
+				zones, lErr := APIClient.ListZones(ctx)
 				if lErr != nil {
 					logger.WithError(err).Debugln("Error listing zones")
 				}
@@ -70,7 +70,8 @@ func GetZoneID(c *cli.Context) (string, error) {
 }
 
 type PagesDeploymentPaginationOptions struct {
-	CLIContext      *cli.Context
+	CLIContext      *cli.Command
+	ctx             context.Context
 	AccountResource *cloudflare.ResourceContainer
 	ProjectName     string
 }
@@ -85,7 +86,7 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 	}
 	startDeploymentListing := time.Now()
 	for {
-		res, _, err := APIClient.ListPagesDeployments(params.CLIContext.Context, params.AccountResource, cloudflare.ListPagesDeploymentsParams{
+		res, _, err := APIClient.ListPagesDeployments(params.ctx, params.AccountResource, cloudflare.ListPagesDeploymentsParams{
 			ProjectName: params.ProjectName,
 			ResultInfo:  resultInfo,
 		})
@@ -140,7 +141,7 @@ func RapidPagesDeploymentDelete(options pruneDeploymentOptions) map[string]error
 	p.WithMaxGoroutines(goRoutines)
 	for _, deployment := range options.SelectedDeployments {
 		p.Go(func() bool {
-			err := APIClient.DeletePagesDeployment(options.c.Context, options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
+			err := APIClient.DeletePagesDeployment(options.ctx, options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
 				ProjectName:  options.ProjectName,
 				DeploymentID: deployment.ID,
 				Force:        true,

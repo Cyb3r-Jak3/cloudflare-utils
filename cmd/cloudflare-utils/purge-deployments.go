@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/urfave/cli/v3"
 )
 
@@ -19,7 +21,7 @@ func buildPurgeDeploymentsCommand() *cli.Command {
 				Name:     projectNameFlag,
 				Aliases:  []string{"p"},
 				Usage:    "Pages project to delete the alias from",
-				EnvVars:  []string{"CF_PAGES_PROJECT"},
+				Sources:  cli.EnvVars("CF_PAGES_PROJECT"),
 				Required: true,
 			},
 			&cli.BoolFlag{
@@ -43,10 +45,10 @@ func buildPurgeDeploymentsCommand() *cli.Command {
 
 // PurgeDeploymentsScreen is the entry point for the purge-deployments command
 // It just calls PruneDeploymentsRoot.
-func PurgeDeploymentsScreen(c *cli.Context) error {
+func PurgeDeploymentsScreen(ctx context.Context, c *cli.Command) error {
 	logger.Info("Staring purge deployments")
-	if err := CheckAPITokenPermission(c.Context, PagesWrite); err != nil {
+	if err := CheckAPITokenPermission(ctx, PagesWrite); err != nil {
 		return err
 	}
-	return PruneDeploymentsRoot(c)
+	return PruneDeploymentsRoot(ctx, c)
 }

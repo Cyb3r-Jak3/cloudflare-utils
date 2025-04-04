@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -29,13 +30,13 @@ func buildDNSPurgeCommand() *cli.Command {
 }
 
 // DNSPurge is a command to delete all dns records without downloading.
-func DNSPurge(c *cli.Context) error {
+func DNSPurge(ctx context.Context, c *cli.Command) error {
 	logger.Info("Starting DNS Purge")
-	if err := CheckAPITokenPermission(c.Context, DNSWrite); err != nil {
+	if err := CheckAPITokenPermission(ctx, DNSWrite); err != nil {
 		return err
 	}
 
-	zoneID, err := GetZoneID(c)
+	zoneID, err := GetZoneID(ctx, c)
 	if err != nil {
 		return err
 	}
@@ -62,7 +63,7 @@ func DNSPurge(c *cli.Context) error {
 		return nil
 	}
 
-	errors := RapidDNSDelete(c.Context, zoneResource, records)
+	errors := RapidDNSDelete(ctx, zoneResource, records)
 	errorCount := len(errors)
 
 	if errorCount == 0 {
