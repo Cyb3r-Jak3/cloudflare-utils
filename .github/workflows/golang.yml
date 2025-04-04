@@ -59,7 +59,7 @@ jobs:
       #  run: make test
 
       - name: Download AutoComplete file
-        run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v2.25.7/autocomplete/bash_autocomplete -OutFile bash_completion
+        run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v3.1.1/autocomplete/bash_autocomplete -OutFile bash_completion
 
       - name: GoReleaser Action
         uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552 # v6

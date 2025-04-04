@@ -30,7 +30,7 @@ builds:
     binary: cloudflare-utils
     mod_timestamp: '{{ .CommitTimestamp }}'
     ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}
       - -extldflags "-static"
 
 

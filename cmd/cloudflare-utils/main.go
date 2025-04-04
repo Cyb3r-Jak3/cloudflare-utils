@@ -106,6 +106,7 @@ func main() {
 				Sources: cli.EnvVars("LOG_LEVEL_TRACE"),
 			},
 		},
+		EnableShellCompletion: true,
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	err := app.Run(context.Background(), os.Args)
