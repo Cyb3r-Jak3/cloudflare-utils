@@ -1,8 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    "schedule:earlyMondays"
   ],
   "prHourlyLimit": 10,
-  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"]
+  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
+  "reviewers": ["Cyb3r-Jak3"],
+  "assignees": ["Cyb3r-Jak3"],
+  "labels": ["dependencies", "renovate"]
 }
