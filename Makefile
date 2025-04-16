@@ -17,7 +17,7 @@ lint:
 test:
 	echo "No tests yet"
 	exit 0
-	go test -race -v -coverprofile="c.out" ./...
+	go test -race -coverprofile="coverage.out" ./...
 	go tool cover -func="c.out"
 
 docs:

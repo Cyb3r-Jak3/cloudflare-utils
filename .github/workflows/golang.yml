@@ -55,8 +55,8 @@ jobs:
       - name: Install Syft
         run: choco install syft --yes
 
-      #- name: Test
-      #  run: make test
+      - name: Test
+        run: make test
 
       - name: Download AutoComplete file
         run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v3.1.1/autocomplete/bash_autocomplete -OutFile bash_completion

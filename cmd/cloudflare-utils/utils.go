@@ -182,8 +182,6 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 	}
 	if logger.Level >= logrus.DebugLevel {
 		logger.Debugf("Checking API Token permission: %s", permission)
-	} else {
-		return nil
 	}
 	token, err := VerifyAPIToken(ctx)
 	if err != nil {
