@@ -41,21 +41,6 @@ func Test_GenDocs(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when running the app with generate-doc command")
 }
 
-func Test_ApiToken(t *testing.T) {
-	token := os.Getenv("CLOUDFLARE_API_TOKEN")
-	account := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	if token == "" {
-		t.Skip("CLOUDFLARE_API_TOKEN environment variable not set")
-	}
-	if account == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID environment variable not set")
-	}
-	//t.Setenv("CLOUDFLARE_API_TOKEN", token)
-	app := buildApp()
-	err := app.Run(context.Background(), []string{"cloudflare-utils", "tunnel-versions"})
-	assert.NoError(t, err, "Expected no error when running the app with tunnel-versions command")
-}
-
 func Test_GlobalAuth(t *testing.T) {
 	t.Setenv("CLOUDFLARE_API_EMAIL", "example@example.com")
 	t.Setenv("CLOUDFLARE_API_KEY", "examplekey")

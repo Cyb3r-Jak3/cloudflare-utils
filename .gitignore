@@ -32,3 +32,4 @@ cmd/cloudflare-utils/README.md
 bash_completion
 cloudflare-utils
 !cmd/cloudflare-utils/
+coverage.*

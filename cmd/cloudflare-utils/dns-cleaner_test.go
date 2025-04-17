@@ -7,6 +7,30 @@ import (
 	"testing"
 )
 
+func Test_DNSCleanerRootDownload(t *testing.T) {
+	token := os.Getenv("CLOUDFLARE_API_TOKEN")
+	zone := os.Getenv("CLOUDFLARE_ZONE_NAME")
+	if token == "" {
+		t.Skip("CLOUDFLARE_API_TOKEN environment variable not set")
+	}
+	if zone == "" {
+		t.Skip("CLOUDFLARE_ZONE_NAME environment variable not set")
+	}
+	app := buildApp()
+	err := app.Run(context.Background(), []string{"cloudflare-utils", "--trace", "dns-cleaner", "--zone-name", zone, "--dns-file", "test.yaml"})
+	assert.NoError(t, err, "Expected no error when running the app with dns-cleaner download command")
+	// Check if the file was created
+	if _, err := os.Stat("test.yaml"); os.IsNotExist(err) {
+		t.Errorf("File test.yaml was not created")
+	} else {
+		// Remove the file after the test
+		err := os.Remove("test.yaml")
+		if err != nil {
+			t.Errorf("Error removing test.yaml: %v", err)
+		}
+	}
+}
+
 func Test_DNSCleanerDownload(t *testing.T) {
 	token := os.Getenv("CLOUDFLARE_API_TOKEN")
 	zone := os.Getenv("CLOUDFLARE_ZONE_NAME")
@@ -18,7 +42,7 @@ func Test_DNSCleanerDownload(t *testing.T) {
 	}
 	//t.Setenv("CLOUDFLARE_API_TOKEN", token)
 	app := buildApp()
-	err := app.Run(context.Background(), []string{"cloudflare-utils", "dns-cleaner", "download", "--zone-name", zone, "--dns-file", "test.yaml"})
+	err := app.Run(context.Background(), []string{"cloudflare-utils", "--trace", "dns-cleaner", "download", "--zone-name", zone, "--dns-file", "test.yaml"})
 	assert.NoError(t, err, "Expected no error when running the app with dns-cleaner download command")
 	// Check if the file was created
 	if _, err := os.Stat("test.yaml"); os.IsNotExist(err) {
