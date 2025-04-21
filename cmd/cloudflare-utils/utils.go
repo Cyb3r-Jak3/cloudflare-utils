@@ -203,7 +203,6 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 			}
 		}
 	}
-	//for policyPermission := range policy {
 	return fmt.Errorf("API Token does not have permission %s", permission)
 }
 

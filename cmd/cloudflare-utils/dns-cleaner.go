@@ -143,7 +143,7 @@ func DownloadDNS(ctx context.Context, c *cli.Command) error {
 	if err != nil {
 		return err
 	}
-	zoneName := c.String(zoneNameFlag)
+	zoneName := strings.TrimSpace(c.String(zoneNameFlag))
 	if zoneName == "" {
 		zoneName = zoneID
 	}
