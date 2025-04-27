@@ -84,6 +84,16 @@ jobs:
           name: cloudflare-utils
           path: dist/*
 
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp dist/ s3://github-actions-artifacts/cloudflare-utils-snapshots/${{ github.sha }} --recursive
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL_S3: https://8be772befd147a8df540aae0fa15c047.r2.cloudflarestorage.com
+          
+
   Release:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: windows-latest
