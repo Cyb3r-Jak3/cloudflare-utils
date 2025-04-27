@@ -11,7 +11,7 @@ on:
       - 'go.mod'
       - '**.go'
       - .github/workflows/golang.yml
-      - './cmd/cloudflare-utils/.goreleaser.yml'
+      - '.goreleaser.yml'
   pull_request:
     branches:
       - main
@@ -75,7 +75,6 @@ jobs:
         with:
           version: '~> v2'
           args: --snapshot --clean --skip=publish,sign
-          workdir: cmd/cloudflare-utils
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -120,7 +119,6 @@ jobs:
         with:
           version: '~> v2'
           args: release --clean
-          workdir: cmd/cloudflare-utils
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
