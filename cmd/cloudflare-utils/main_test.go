@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/cloudflare/cloudflare-go"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/cloudflare/cloudflare-go"
 
 	"github.com/stretchr/testify/assert"
 )
