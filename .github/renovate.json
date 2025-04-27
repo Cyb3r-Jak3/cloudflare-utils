@@ -6,5 +6,5 @@
     "schedule:earlyMondays",
     "github>Cyb3r-Jak3/renovate-configs//assign-me.json"
   ],
-  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
+  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"]
 }
