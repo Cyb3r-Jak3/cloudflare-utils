@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"os"
 	"strings"
 	"testing"
@@ -38,7 +37,7 @@ func makeTestRecords(t *testing.T) {
 		},
 	}
 	for _, record := range dnsRecords {
-		_, createErr := api.CreateDNSRecord(context.Background(), zoneRC, cloudflare.CreateDNSRecordParams{
+		_, createErr := api.CreateDNSRecord(t.Context(), zoneRC, cloudflare.CreateDNSRecordParams{
 			Type:    record.Type,
 			Name:    record.Name,
 			Content: record.Content,
@@ -47,9 +46,8 @@ func makeTestRecords(t *testing.T) {
 			if strings.Contains(createErr.Error(), "An identical record already exists") {
 				t.Logf("DNS record already exists: %s", createErr)
 				continue
-			} else {
-				t.Errorf("Failed to create DNS record: %v", createErr)
 			}
+			t.Errorf("Failed to create DNS record: %v", createErr)
 		}
 	}
 }
