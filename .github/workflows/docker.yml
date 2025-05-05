@@ -95,7 +95,7 @@ jobs:
           readme-filepath: cloudflare-utils/README.md
 
       - name: GitHub Container Attestation
-        uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2
+        uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
         id: attest
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         with:
