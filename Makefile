@@ -15,10 +15,8 @@ lint:
 	golangci-lint run --config .golangci-lint.yml ./cmd/...
 
 test:
-	echo "No tests yet"
-	exit 0
-	go test -race -v -coverprofile="c.out" ./...
-	go tool cover -func="c.out"
+	go test -coverprofile="coverage.txt" -covermode=atomic ./...
+	go tool cover -func="coverage.txt"
 
 docs:
 	cd documentation && mkdocs build

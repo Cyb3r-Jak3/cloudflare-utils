@@ -3,12 +3,10 @@ version: 2
 before:
   hooks:
     - go mod tidy
-    - cp ../../LICENSE .
-    - cp ../../README.md .
-    - cp ../../bash_completion .
 
 builds:
-  - env:
+  - main: "./cmd/cloudflare-utils/"
+    env:
       - CGO_ENABLED=0
     flags:
       - -trimpath
@@ -36,6 +34,8 @@ builds:
 
 archives:
   - formats: ['tar.xz']
+    files:
+        - README.md
     format_overrides:
       - goos: windows
         formats: ['zip']

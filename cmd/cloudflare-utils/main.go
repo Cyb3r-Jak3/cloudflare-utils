@@ -28,7 +28,7 @@ var (
 	versionString = fmt.Sprintf("%s (built %s)", version, date)
 )
 
-func main() {
+func buildApp() *cli.Command {
 	if buildInfo, available := debug.ReadBuildInfo(); available {
 		versionString = fmt.Sprintf("%s (built %s with %s)", version, date, buildInfo.GoVersion)
 	}
@@ -109,6 +109,11 @@ func main() {
 		EnableShellCompletion: true,
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
+	return app
+}
+
+func main() {
+	app := buildApp()
 	err := app.Run(context.Background(), os.Args)
 	logger.Debugf("Running took: %v", time.Since(startTime))
 	if err != nil {

@@ -45,7 +45,7 @@ func buildTunnelVersionCommand() *cli.Command {
 	}
 }
 
-func GetLatestVersion() (string, error) {
+func GetLatestTunnelVersion() (string, error) {
 	gClient := github.NewClient(nil)
 	release, _, err := gClient.Repositories.GetLatestRelease(ctx, "cloudflare", "cloudflared")
 	if err != nil {
@@ -55,6 +55,9 @@ func GetLatestVersion() (string, error) {
 }
 
 func TunnelVersionAction(ctx context.Context, c *cli.Command) error {
+	if err := CheckAPITokenPermission(ctx, TunnelRead); err != nil {
+		return err
+	}
 	accountRC := cloudflare.AccountIdentifier(c.String(accountIDFlag))
 	tunnels, _, err := APIClient.ListTunnels(ctx, accountRC, cloudflare.TunnelListParams{
 		IsDeleted: cloudflare.BoolPtr(c.Bool(includeDeletedFlag)),
@@ -73,7 +76,7 @@ func TunnelVersionAction(ctx context.Context, c *cli.Command) error {
 		tunnels = screenedTunnels
 	}
 
-	latestVersion, err := GetLatestVersion()
+	latestVersion, err := GetLatestTunnelVersion()
 	if err != nil {
 		logger.WithError(err).Error("Error getting latest release of cloudflared from github")
 		return err
