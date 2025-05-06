@@ -86,7 +86,7 @@ jobs:
           provenance: mode=max
 
       - name: Docker Hub Description
-        uses: peter-evans/dockerhub-description@432a30c9e07499fd01da9f8a49f0faf9e0ca5b77 # v4
+        uses: peter-evans/dockerhub-description@432a30c9e07499fd01da9f8a49f0faf9e0ca5b77 # v4.0.2
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         with:
           username: cyb3rjak3
