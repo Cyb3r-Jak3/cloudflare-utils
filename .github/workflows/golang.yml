@@ -71,6 +71,10 @@ jobs:
         with:
           use_oidc: true
 
+      - uses: codecov/test-results-action@v1
+        with:
+          use_oidc: true
+
       - name: Download AutoComplete file
         run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v3.1.1/autocomplete/bash_autocomplete -OutFile bash_completion
 
