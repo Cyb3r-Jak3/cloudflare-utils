@@ -52,6 +52,9 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@v1.12.2
+
       - name: Install Syft
         run: choco install syft --yes
 
