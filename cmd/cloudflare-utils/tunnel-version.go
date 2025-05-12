@@ -13,6 +13,7 @@ const (
 	allTunnelsFlag     = "all-tunnels"
 	includeDeletedFlag = "include-deleted"
 	activeOnlyFlag     = "healthy-only"
+	githubTokenFlag    = "github-token"
 )
 
 func buildTunnelVersionCommand() *cli.Command {
@@ -41,12 +42,22 @@ func buildTunnelVersionCommand() *cli.Command {
 				Sources: cli.EnvVars("ACTIVE_ONLY_TUNNELS"),
 				Value:   false,
 			},
+			&cli.StringFlag{
+				Name:    githubTokenFlag,
+				Aliases: []string{"gh"},
+				Usage:   "GitHub token to use for getting the latest version of cloudflared. Helps with rate limiting of GitHub API",
+				Sources: cli.EnvVars("GITHUB_TOKEN"),
+				Value:   "",
+			},
 		},
 	}
 }
 
-func GetLatestTunnelVersion() (string, error) {
+func GetLatestTunnelVersion(token string) (string, error) {
 	gClient := github.NewClient(nil)
+	if token != "" {
+		gClient = github.NewClient(nil).WithAuthToken(token)
+	}
 	release, _, err := gClient.Repositories.GetLatestRelease(ctx, "cloudflare", "cloudflared")
 	if err != nil {
 		return "", err
@@ -75,8 +86,8 @@ func TunnelVersionAction(ctx context.Context, c *cli.Command) error {
 		}
 		tunnels = screenedTunnels
 	}
-
-	latestVersion, err := GetLatestTunnelVersion()
+	githubToken := c.String(githubTokenFlag)
+	latestVersion, err := GetLatestTunnelVersion(githubToken)
 	if err != nil {
 		logger.WithError(err).Error("Error getting latest release of cloudflared from github")
 		return err
