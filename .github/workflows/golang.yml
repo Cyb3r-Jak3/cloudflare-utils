@@ -52,6 +52,9 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@v1.12.2
+
       - name: Install Syft
         run: choco install syft --yes
 
@@ -61,9 +64,15 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.TEST_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ZONE_NAME: ${{ secrets.TEST_CLOUDFLARE_ZONE_NAME }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.TEST_CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@ad3126e916f78f00edff4ed0317cf185271ccc2d # v5.4.2
+        with:
+          use_oidc: true
+
+      - name: Upload test results to Codecov
+        uses: codecov/test-results-action@v1
         with:
           use_oidc: true
 

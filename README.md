@@ -2,9 +2,10 @@
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Cyb3r-Jak3/cloudflare-utils)](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/latest)
 
-[![Go Checks](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml) [![GolangLint CI](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml)
+[![Go Checks](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golang.yml) [![GolangLint CI](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Cyb3r-Jak3/cloudflare-utils/actions/workflows/golangci-lint.yml) [![codecov](https://codecov.io/gh/Cyb3r-Jak3/cloudflare-utils/graph/badge.svg?token=p1NsbLftFq)](https://codecov.io/gh/Cyb3r-Jak3/cloudflare-utils)
 
 ![GitHub all releases](https://img.shields.io/github/downloads/Cyb3r-Jak3/cloudflare-utils/total?label=GitHub%20Total%20Downloads) ![Chocolatey](https://img.shields.io/chocolatey/dt/cloudflare-utils?label=Chocolatey%20Downloads)
+
 
 ## About
 

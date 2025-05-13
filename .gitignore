@@ -33,3 +33,4 @@ bash_completion
 cloudflare-utils
 !cmd/cloudflare-utils/
 coverage.*
+junit.xml
