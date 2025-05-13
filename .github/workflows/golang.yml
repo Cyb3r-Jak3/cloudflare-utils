@@ -71,7 +71,8 @@ jobs:
         with:
           use_oidc: true
 
-      - uses: codecov/test-results-action@v1
+      - name: Upload test results to Codecov
+        uses: codecov/test-results-action@v1
         with:
           use_oidc: true
 
