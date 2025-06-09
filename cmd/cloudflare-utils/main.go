@@ -159,7 +159,7 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 
 	rateLimit := c.Float("rate-limit")
 	if c.Bool(lotsOfDeploymentsFlag) {
-		rateLimit = 3
+		rateLimit = 20 // Increase the rate limit for commands that may need to make many API calls, like pruning deployments.
 	}
 	cfClientOptions := []cloudflare.Option{
 		cloudflare.UsingRateLimit(rateLimit),
