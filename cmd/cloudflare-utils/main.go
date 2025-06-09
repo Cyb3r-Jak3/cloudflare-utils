@@ -7,6 +7,7 @@ import (
 	"net/mail"
 	"os"
 	"runtime/debug"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -105,6 +106,10 @@ func buildApp() *cli.Command {
 				Name:    "trace",
 				Sources: cli.EnvVars("LOG_LEVEL_TRACE"),
 			},
+			&cli.BoolFlag{
+				Name:  "with-base-url",
+				Usage: "Use base URL for API requests. Useful for testing with a local Cloudflare API mock",
+			},
 		},
 		EnableShellCompletion: true,
 	}
@@ -124,6 +129,22 @@ func main() {
 
 func setup(ctx context.Context, c *cli.Command) (context context.Context, err error) {
 	SetLogLevel(c, logger)
+
+	sanitizedFlags := make(map[string]string)
+	for _, name := range c.FlagNames() {
+		value := c.String(name)
+		if slices.Contains([]string{apiTokenFlag, apiEmailFlag, apiKeyFlag}, name) {
+			if value != "" {
+				sanitizedFlags[name] = "[REDACTED]"
+			} else {
+				sanitizedFlags[name] = ""
+			}
+		} else {
+			sanitizedFlags[name] = value
+		}
+	}
+	logger.Debugf("Running %s with flags: %v", c.Name, sanitizedFlags)
+
 	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Name == "generate-doc" || c.Name == "" || len(c.Args().Slice()) == 0 {
 		return ctx, nil
 	}

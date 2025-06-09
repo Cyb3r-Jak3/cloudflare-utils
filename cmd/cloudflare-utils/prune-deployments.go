@@ -74,7 +74,7 @@ func buildPruneDeploymentsCommand() *cli.Command {
 }
 
 // PruneDeploymentsScreen is the entry point for the prune-deployments command.
-// It handles parsing the CLI arguments, and then calls PruneDeploymentsRoot.
+// It handles parsing the CLI arguments and then calls PruneDeploymentsRoot.
 func PruneDeploymentsScreen(ctx context.Context, c *cli.Command) error {
 	logger.Info("Staring prune deployments")
 	if err := CheckAPITokenPermission(ctx, PagesWrite); err != nil {
@@ -173,7 +173,7 @@ func PruneTimeDeployments(options pruneDeploymentOptions) (toDelete []cloudflare
 	if !beforeTimestamp.IsZero() {
 		logger.Debugln("Pruning with before time")
 	} else {
-		logger.Debugln("Pruning with  after time")
+		logger.Debugln("Pruning with after time")
 	}
 	for _, deployment := range options.SelectedDeployments {
 		if !beforeTimestamp.IsZero() {

@@ -98,8 +98,10 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 			return []cloudflare.PagesProjectDeployment{}, fmt.Errorf("error listing deployments: %w", err)
 		}
 		deployments = append(deployments, res...)
+		logger.Tracef("Current result info: %v\n", resultInfo)
 		resultInfo = resultInfo.Next()
 		if resultInfo.Done() {
+			logger.Tracef("Breaking pagination loop after %d deployments. %v\n", len(deployments), resultInfo)
 			break
 		}
 	}
@@ -110,52 +112,84 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 // RapidDNSDelete is a helper function to delete DNS records quickly.
 // Uses a pool of goroutines to delete records in parallel.
 func RapidDNSDelete(ctx context.Context, rc *cloudflare.ResourceContainer, dnsRecords []cloudflare.DNSRecord) map[string]error {
-	p := pool.NewWithResults[bool]()
-	results := make(map[string]error)
-	p.WithMaxGoroutines(maxGoRoutines)
+	p := pool.NewWithResults[pruneResults]().WithMaxGoroutines(maxGoRoutines).WithContext(ctx)
 	for _, dnsRecord := range dnsRecords {
-		p.Go(func() bool {
-			err := APIClient.DeleteDNSRecord(ctx, rc, dnsRecord.ID)
+		p.Go(func(ctx2 context.Context) (pruneResults, error) {
+			err := APIClient.DeleteDNSRecord(ctx2, rc, dnsRecord.ID)
 			if err != nil {
-				logger.WithError(err).Warningf("Error deleting DNS record: %s\n", dnsRecord.ID)
-				results[dnsRecord.ID] = err
-				return false
+				return pruneResults{
+					ID:      dnsRecord.ID,
+					Success: false,
+					Error:   err,
+				}, fmt.Errorf("error deleting DNS record %s", dnsRecord.ID)
 			}
-			return true
+			return pruneResults{
+				ID:      dnsRecord.ID,
+				Success: true,
+			}, nil
 		},
 		)
 	}
-	p.Wait()
+	runResults, err := p.Wait()
+	if err != nil {
+		logger.WithError(err).Error("Error waiting for DNS record deletion. Some records may not have been deleted")
+		fmt.Println("Some DNS records may not have been deleted due to an error. Please try again and report the issue if it persists.")
+	}
+	results := make(map[string]error)
+
+	for _, result := range runResults {
+		if !result.Success {
+			logger.WithError(result.Error).Warningf("Failed to delete DNS record: %s", result.ID)
+			results[result.ID] = result.Error
+		}
+	}
 	return results
+}
+
+type pruneResults struct {
+	ID      string
+	Success bool
+	Error   error
 }
 
 // RapidPagesDeploymentDelete is a helper function to delete Pages deployments quickly.
 // Uses a pool of goroutines to delete deployments in parallel.
 func RapidPagesDeploymentDelete(options pruneDeploymentOptions) map[string]error {
-	p := pool.NewWithResults[bool]()
 	goRoutines := maxGoRoutines
 	if options.c.Bool(lotsOfDeploymentsFlag) {
 		goRoutines = 5
 	}
-	results := make(map[string]error)
-	p.WithMaxGoroutines(goRoutines)
+	p := pool.NewWithResults[pruneResults]().WithMaxGoroutines(goRoutines).WithContext(options.ctx)
 	for _, deployment := range options.SelectedDeployments {
-		p.Go(func() bool {
-			err := APIClient.DeletePagesDeployment(options.ctx, options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
+		p.Go(func(ctx2 context.Context) (pruneResults, error) {
+			err := APIClient.DeletePagesDeployment(ctx2, options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
 				ProjectName:  options.ProjectName,
 				DeploymentID: deployment.ID,
 				Force:        true,
 			})
 			if err != nil {
-				logger.WithError(err).Warningf("Error deleting deployment: %s\n", deployment.ID)
-				results[deployment.ID] = err
-				return false
+				return pruneResults{
+					ID:      deployment.ID,
+					Success: false,
+					Error:   err,
+				}, fmt.Errorf("error deleting deployment %s: %w", deployment.ID, err)
 			}
-			return true
+			return pruneResults{ID: deployment.ID, Success: true, Error: nil}, nil
 		},
 		)
 	}
-	p.Wait()
+	runResults, err := p.Wait()
+	if err != nil {
+		logger.WithError(err).Error("Error waiting for deployment deletion. Some deployments may not have been deleted")
+		fmt.Println("Some deployments may not have been deleted due to an error. Please try again and report the issue if it persists.")
+	}
+	results := make(map[string]error)
+	for _, result := range runResults {
+		if !result.Success {
+			logger.WithError(result.Error).Warningf("Failed to delete deployment: %s", result.ID)
+			results[result.ID] = result.Error
+		}
+	}
 	return results
 }
 
@@ -175,6 +209,8 @@ var apiPermissionMap = map[APIPermissionName]string{
 	TunnelWrite: "c07321b023e944ff818fec44d8203567",
 }
 
+var APITokenNoPermissionError = errors.New("API Token does not have permission to perform this action")
+
 func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionName) error {
 	if APIClient.APIToken == "" {
 		logger.Debug("No API Token set. Skipping permission check")
@@ -185,7 +221,7 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 	}
 	token, err := VerifyAPIToken(ctx)
 	if err != nil {
-		if strings.Contains(err.Error(), "API token is not authorized to check if it has the correct permissions") {
+		if errors.Is(err, APITokenNoPermissionError) {
 			return nil
 		}
 		return err
@@ -216,7 +252,7 @@ func VerifyAPIToken(ctx context.Context) (cloudflare.APIToken, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), "Unauthorized to access requested resource") {
 			logger.Debug("API token is not authorized to check if it has the correct permissions")
-			return cloudflare.APIToken{}, errors.New("API token is not authorized to check if it has the correct permissions")
+			return cloudflare.APIToken{}, APITokenNoPermissionError
 		}
 		logger.WithError(err).Debug("Error getting API token permissions")
 		return cloudflare.APIToken{}, err
