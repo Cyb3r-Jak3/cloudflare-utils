@@ -192,7 +192,7 @@ func DownloadDNS(ctx context.Context, c *cli.Command) error {
 }
 
 // UploadDNS makes the changes to DNS records based on the dns file.
-func UploadDNS(ctx context.Context, c *cli.Command) error {
+func UploadDNS(_ context.Context, c *cli.Command) error {
 	dnsFilePath := c.String(dnsFileFlag)
 	if !common.FileExists(dnsFilePath) {
 		return fmt.Errorf("no DNS file found at '%s'", dnsFilePath)
@@ -230,7 +230,7 @@ func UploadDNS(ctx context.Context, c *cli.Command) error {
 		fmt.Printf("Dry Run: Would have removed %d records\n", len(toRemove))
 		return nil
 	}
-	removeErrors := RapidDNSDelete(ctx, zoneResource, toRemove)
+	removeErrors := RapidDNSDelete(zoneResource, toRemove)
 	errorCount = len(removeErrors)
 
 	if errorCount == 0 {
