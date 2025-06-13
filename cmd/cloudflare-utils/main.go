@@ -105,6 +105,12 @@ func buildApp() *cli.Command {
 				Name:    "trace",
 				Sources: cli.EnvVars("LOG_LEVEL_TRACE"),
 			},
+			&cli.StringFlag{
+				Name:    "with-base-url",
+				Usage:   "Use base URL for API requests. Useful for testing with a local Cloudflare API mock",
+				Hidden:  true,
+				Sources: cli.EnvVars("CLOUDFLARE_BASE_URL"),
+			},
 		},
 		EnableShellCompletion: true,
 	}
@@ -124,7 +130,7 @@ func main() {
 
 func setup(ctx context.Context, c *cli.Command) (context context.Context, err error) {
 	SetLogLevel(c, logger)
-	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Name == "generate-doc" || c.Name == "" || len(c.Args().Slice()) == 0 {
+	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Args().First() == "generate-doc" || len(c.Args().Slice()) == 0 {
 		return ctx, nil
 	}
 
@@ -137,14 +143,14 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 	}
 
 	rateLimit := c.Float("rate-limit")
-	if c.Bool(lotsOfDeploymentsFlag) {
-		rateLimit = 3
-	}
 	cfClientOptions := []cloudflare.Option{
 		cloudflare.UsingRateLimit(rateLimit),
 		cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)),
 		cloudflare.Debug(logger.Level == logrus.TraceLevel),
 		cloudflare.UsingLogger(logger),
+	}
+	if c.String("with-base-url") != "" {
+		cfClientOptions = append(cfClientOptions, cloudflare.BaseURL(c.String("with-base-url")))
 	}
 
 	if apiToken != "" {
