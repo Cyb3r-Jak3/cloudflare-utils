@@ -58,8 +58,8 @@ func buildPruneDeploymentsCommand() *cli.Command {
 			},
 			//&cli.DurationFlag{
 			//	Name: timeShortcutFlag,
-			//	Usage: "Shortcut for before and after. " +
-			//		"Use the format of 1<unit> where unit is one of " +
+			//	Usage: "Shortcut for before and after. "+
+			//		"Use the format of 1<unit> where the unit is one of "+
 			//		"y (year), M (month), w (week), d (day), h (hour), m (minute), s (second)" +
 			//		"use a negative number to go back in time. Read the docs for more info",
 			//},
@@ -144,6 +144,7 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 	}
 
 	failedDeletes := RapidPagesDeploymentDelete(options)
+	fmt.Printf("Deleted %d deployments\n", len(toDelete)-len(failedDeletes))
 	if len(failedDeletes) > 0 {
 		return fmt.Errorf("failed to delete %d deployments", len(failedDeletes))
 	}
@@ -172,7 +173,7 @@ func PruneTimeDeployments(options pruneDeploymentOptions) (toDelete []cloudflare
 	if !beforeTimestamp.IsZero() {
 		logger.Debugln("Pruning with before time")
 	} else {
-		logger.Debugln("Pruning with  after time")
+		logger.Debugln("Pruning with after time")
 	}
 	for _, deployment := range options.SelectedDeployments {
 		if !beforeTimestamp.IsZero() {

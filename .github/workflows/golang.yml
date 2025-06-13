@@ -2,8 +2,6 @@ name: Go Checks
 
 on:
   push:
-    branches:
-      - '**'
     tags:
       - 'v*'
     paths:

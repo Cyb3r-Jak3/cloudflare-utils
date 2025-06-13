@@ -100,7 +100,7 @@ func buildDNSCleanerCommand() *cli.Command {
 }
 
 // DNSCleaner is the main action function for the dns-cleaner command.
-// It checks if a DNS file exists. If there isn't a DNS file then it downloads records, if there is a file there then it uploads records.
+// It checks if a DNS file exists. If there isn't a DNS file, then it downloads records, if there is a file there, then it uploads records.
 func DNSCleaner(ctx context.Context, c *cli.Command) error {
 	logger.Infoln("Starting DNS Cleaner")
 
