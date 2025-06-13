@@ -47,9 +47,11 @@ func Test_GenDocs(t *testing.T) {
 func Test_GlobalAuth(t *testing.T) {
 	setupTestHTTPServer(t)
 	defer teardownTestHTTPServer()
+	t.Setenv("CLOUDFLARE_API_KEY", "exampleKey")
+	t.Setenv("CLOUDFLARE_API_EMAIL", "exampleEmail")
 	app := buildApp()
 	err := app.Run(t.Context(), []string{"cloudflare-utils", "tunnel-versions"})
-	assert.EqualError(t, err, "Unable to authenticate request (10001)", "Expected error when running the app with tunnel-versions command")
+	assert.NoError(t, err, "Expected no error when running the app with tunnel-versions command and global auth")
 }
 
 var (
