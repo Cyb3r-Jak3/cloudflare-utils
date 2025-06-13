@@ -55,7 +55,6 @@ var sharedPagesFlags = []cli.Flag{
 
 type pruneDeploymentOptions struct {
 	c                   *cli.Command
-	ctx                 context.Context
 	ResourceContainer   *cloudflare.ResourceContainer
 	ProjectName         string
 	SelectedDeployments []cloudflare.PagesProjectDeployment
