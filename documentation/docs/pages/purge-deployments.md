@@ -16,6 +16,7 @@ Optional flags:
 - `--dry-run`: If you want to see what would be deleted without actually deleting anything.
 - `--delete-project`: If you want to delete the Pages project after deleting all deployments. It will delete the project even if there are deployments left.
 - `--lots-of-deployments`: If you have more than 20,000 deployments, this will slow down the rate of listing deployments.
+- `--experimental-delete`: Uses a faster method to delete deployments. This will delete deployments in parallel but has a higher chance of errors and/or crashing.
 
 Example: 
 ```shell

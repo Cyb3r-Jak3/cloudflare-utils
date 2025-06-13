@@ -10,11 +10,48 @@ import (
 )
 
 const (
-	branchNameFlag = "branch"
-	beforeFlag     = "before"
-	afterFlag      = "after"
+	branchNameFlag     = "branch"
+	beforeFlag         = "before"
+	afterFlag          = "after"
+	persistRetry       = "persist-retry"
+	persistRetryAmount = "persist-retry-amount"
 	//timeShortcutFlag = "time" Not implemented yet.
 )
+
+var sharedPagesFlags = []cli.Flag{
+	&cli.BoolFlag{
+		Name:  dryRunFlag,
+		Usage: "Don't actually delete anything. Just print what would be deleted",
+		Value: false,
+	},
+	&cli.BoolFlag{
+		Name:  experimentalDelete,
+		Usage: "Use the experimental delete method. This will delete all deployments in parallel but has a higher chance of crashing.",
+		Value: false,
+	},
+	&cli.BoolFlag{
+		Name:  persistRetry,
+		Usage: "Persist retry. If the delete fails, it will retry until it succeeds",
+		Value: false,
+	},
+	&cli.IntFlag{
+		Name:  persistRetryAmount,
+		Usage: "Number of times to retry the delete if it fails",
+		Value: 10,
+	},
+	&cli.StringFlag{
+		Name:     projectNameFlag,
+		Aliases:  []string{"p"},
+		Usage:    "Pages project to delete the alias from",
+		Required: true,
+		Sources:  cli.EnvVars("CF_PAGES_PROJECT"),
+	},
+	&cli.BoolFlag{
+		Name:  lotsOfDeploymentsFlag,
+		Usage: "If you are getting errors getting all of the deployments, you may need to use this flag.",
+		Value: false,
+	},
+}
 
 type pruneDeploymentOptions struct {
 	c                   *cli.Command
@@ -29,14 +66,7 @@ func buildPruneDeploymentsCommand() *cli.Command {
 		Name:   "prune-deployments",
 		Usage:  "Prune deployments by either branch of time\nAPI Token Requirements: Pages:Edit",
 		Action: PruneDeploymentsScreen,
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     projectNameFlag,
-				Aliases:  []string{"p"},
-				Usage:    "Pages project to delete the alias from",
-				Required: true,
-				Sources:  cli.EnvVars("CF_PAGES_PROJECT"),
-			},
+		Flags: append([]cli.Flag{
 			&cli.StringFlag{
 				Name:    branchNameFlag,
 				Aliases: []string{"b"},
@@ -57,19 +87,15 @@ func buildPruneDeploymentsCommand() *cli.Command {
 					Layouts: []string{"2006-01-02T15:04:05"},
 				},
 			},
-			//&cli.DurationFlag{
-			//	Name: timeShortcutFlag,
-			//	Usage: "Shortcut for before and after. " +
-			//		"Use the format of 1<unit> where unit is one of " +
-			//		"y (year), M (month), w (week), d (day), h (hour), m (minute), s (second)" +
-			//		"use a negative number to go back in time. Read the docs for more info",
-			//},
-			&cli.BoolFlag{
-				Name:  dryRunFlag,
-				Usage: "Don't actually delete anything. Just print what would be deleted",
-				Value: false,
-			},
 		},
+			sharedPagesFlags...),
+		//&cli.DurationFlag{
+		//	Name: timeShortcutFlag,
+		//	Usage: "Shortcut for before and after. " +
+		//		"Use the format of 1<unit> where unit is one of " +
+		//		"y (year), M (month), w (week), d (day), h (hour), m (minute), s (second)" +
+		//		"use a negative number to go back in time. Read the docs for more info",
+		//},
 	}
 }
 
@@ -143,10 +169,37 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 		fmt.Printf("Dry Run: would delete %d deployments", len(toDelete))
 		return nil
 	}
-
-	failedDeletes := RapidPagesDeploymentDelete(options)
+	var failedDeletes map[string]error
+	if c.Bool(experimentalDelete) {
+		failedDeletes = RapidPagesDeploymentDelete(options)
+	} else {
+		failedDeletes = PagesDeploymentDelete(options)
+	}
+	infiniteRetry := c.Int(persistRetryAmount) == 0
 	if len(failedDeletes) > 0 {
-		return fmt.Errorf("failed to delete %d deployments", len(failedDeletes))
+		if c.Bool(persistRetry) {
+			retryCount := 0
+			for len(failedDeletes) > 0 && (infiniteRetry || retryCount < c.Int(persistRetryAmount)) {
+				{
+					toRetry := make([]cloudflare.PagesProjectDeployment, len(failedDeletes))
+					for deploymentName, _ := range failedDeletes {
+						toRetry = append(toRetry, cloudflare.PagesProjectDeployment{
+							ID: deploymentName,
+						})
+					}
+					logger.Debugf("Retrying %d failed deletes", len(toRetry))
+					options.SelectedDeployments = toRetry
+					failedDeletes = PagesDeploymentDelete(options)
+					retryCount++
+					if len(failedDeletes) == 0 {
+						logger.Debugf("All failed deletes succeeded after %d retries", retryCount)
+						break
+					}
+				}
+			}
+		} else {
+			return fmt.Errorf("failed to delete %d deployments", len(failedDeletes))
+		}
 	}
 	return nil
 }

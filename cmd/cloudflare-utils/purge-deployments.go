@@ -9,6 +9,7 @@ import (
 const (
 	deleteProjectFlag     = "delete-project"
 	lotsOfDeploymentsFlag = "lots-of-deployments"
+	experimentalDelete    = "experimental-delete"
 )
 
 func buildPurgeDeploymentsCommand() *cli.Command {
@@ -16,30 +17,13 @@ func buildPurgeDeploymentsCommand() *cli.Command {
 		Name:   "purge-deployments",
 		Usage:  "Delete all deployments for a branch\nAPI Token Requirements: Pages:Edit",
 		Action: PurgeDeploymentsScreen,
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     projectNameFlag,
-				Aliases:  []string{"p"},
-				Usage:    "Pages project to delete the alias from",
-				Sources:  cli.EnvVars("CF_PAGES_PROJECT"),
-				Required: true,
-			},
+		Flags: append([]cli.Flag{
 			&cli.BoolFlag{
 				Name:  deleteProjectFlag,
 				Usage: "Delete the project as well. Will attempt to delete the project even if there are errors deleting deployments.",
 				Value: false,
 			},
-			&cli.BoolFlag{
-				Name:  dryRunFlag,
-				Usage: "Don't actually delete anything. Just print what would be deleted",
-				Value: false,
-			},
-			&cli.BoolFlag{
-				Name:  lotsOfDeploymentsFlag,
-				Usage: "If you are getting errors getting all of the deployments, you may need to use this flag.",
-				Value: false,
-			},
-		},
+		}, sharedPagesFlags...),
 	}
 }
 

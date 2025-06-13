@@ -80,7 +80,7 @@ chocolateys:
     tags: "cloudflare"
     bug_tracker_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils/issues"
     api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
-    copyright: "2023-2024 Cyb3r-Jak3"
+    copyright: "2023-2025 Cyb3r-Jak3"
     package_source_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils"
     icon_url: "https://cloudflare-utils.cyberjake.xyz/assets/images/logo.png"
     description: &description |

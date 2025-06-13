@@ -80,15 +80,15 @@ type PagesDeploymentPaginationOptions struct {
 // This is necessary because we need to be able to adjust the per_page parameter for large projects.
 func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.PagesProjectDeployment, error) {
 	var deployments []cloudflare.PagesProjectDeployment
-	resultInfo := cloudflare.ResultInfo{}
-	if params.CLIContext.Bool(lotsOfDeploymentsFlag) {
-		resultInfo.PerPage = 4
-	}
+	resultInfo := &cloudflare.ResultInfo{}
+	//if params.CLIContext.Bool(lotsOfDeploymentsFlag) {
+	//	resultInfo.PerPage = 4
+	//}
 	startDeploymentListing := time.Now()
 	for {
-		res, _, err := APIClient.ListPagesDeployments(params.ctx, params.AccountResource, cloudflare.ListPagesDeploymentsParams{
+		res, innerResultInfo, err := APIClient.ListPagesDeployments(params.ctx, params.AccountResource, cloudflare.ListPagesDeploymentsParams{
 			ProjectName: params.ProjectName,
-			ResultInfo:  resultInfo,
+			ResultInfo:  *resultInfo,
 		})
 		if err != nil {
 			if len(deployments) != 0 {
@@ -98,14 +98,16 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 			return []cloudflare.PagesProjectDeployment{}, fmt.Errorf("error listing deployments: %w", err)
 		}
 		deployments = append(deployments, res...)
-		logger.Tracef("Current result info: %v\n", resultInfo)
-		resultInfo = resultInfo.Next()
-		if resultInfo.Done() {
-			logger.Tracef("Breaking pagination loop after %d deployments. %v\n", len(deployments), resultInfo)
+		if innerResultInfo.Page == innerResultInfo.TotalPages {
+			logger.Tracef("Breaking pagination loop after %d deployments.\n", len(deployments))
 			break
 		}
+		resultInfo = innerResultInfo
 	}
-	logger.Debugf("Got %d deployments in %s\n", len(deployments), time.Since(startDeploymentListing))
+	duration := time.Since(startDeploymentListing)
+	minutes := int(duration.Minutes())
+	seconds := duration.Seconds() - float64(minutes*60)
+	logger.Debugf("Got %d deployments in %dm %.2fs\n", len(deployments), minutes, seconds)
 	return deployments, nil
 }
 
@@ -159,10 +161,10 @@ func RapidPagesDeploymentDelete(options pruneDeploymentOptions) map[string]error
 	if options.c.Bool(lotsOfDeploymentsFlag) {
 		goRoutines = 5
 	}
-	p := pool.NewWithResults[pruneResults]().WithMaxGoroutines(goRoutines).WithContext(options.ctx)
+	p := pool.NewWithResults[pruneResults]().WithMaxGoroutines(goRoutines)
 	for _, deployment := range options.SelectedDeployments {
-		p.Go(func(ctx2 context.Context) (pruneResults, error) {
-			err := APIClient.DeletePagesDeployment(ctx2, options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
+		p.Go(func() pruneResults {
+			err := APIClient.DeletePagesDeployment(context.Background(), options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
 				ProjectName:  options.ProjectName,
 				DeploymentID: deployment.ID,
 				Force:        true,
@@ -172,22 +174,34 @@ func RapidPagesDeploymentDelete(options pruneDeploymentOptions) map[string]error
 					ID:      deployment.ID,
 					Success: false,
 					Error:   err,
-				}, fmt.Errorf("error deleting deployment %s: %w", deployment.ID, err)
+				}
 			}
-			return pruneResults{ID: deployment.ID, Success: true, Error: nil}, nil
+			return pruneResults{ID: deployment.ID, Success: true, Error: nil}
 		},
 		)
 	}
-	runResults, err := p.Wait()
-	if err != nil {
-		logger.WithError(err).Error("Error waiting for deployment deletion. Some deployments may not have been deleted")
-		fmt.Println("Some deployments may not have been deleted due to an error. Please try again and report the issue if it persists.")
-	}
+	runResults := p.Wait()
 	results := make(map[string]error)
 	for _, result := range runResults {
 		if !result.Success {
 			logger.WithError(result.Error).Warningf("Failed to delete deployment: %s", result.ID)
 			results[result.ID] = result.Error
+		}
+	}
+	return results
+}
+
+func PagesDeploymentDelete(options pruneDeploymentOptions) map[string]error {
+	results := make(map[string]error, len(options.SelectedDeployments))
+	for _, deployment := range options.SelectedDeployments {
+		err := APIClient.DeletePagesDeployment(context.Background(), options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
+			ProjectName:  options.ProjectName,
+			DeploymentID: deployment.ID,
+			Force:        true,
+		})
+		if err != nil {
+			logger.WithError(err).Warningf("Failed to delete deployment: %s", deployment.ID)
+			results[deployment.ID] = err
 		}
 	}
 	return results

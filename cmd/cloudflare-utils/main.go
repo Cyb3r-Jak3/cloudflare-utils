@@ -106,9 +106,10 @@ func buildApp() *cli.Command {
 				Name:    "trace",
 				Sources: cli.EnvVars("LOG_LEVEL_TRACE"),
 			},
-			&cli.BoolFlag{
-				Name:  "with-base-url",
-				Usage: "Use base URL for API requests. Useful for testing with a local Cloudflare API mock",
+			&cli.StringFlag{
+				Name:   "with-base-url",
+				Usage:  "Use base URL for API requests. Useful for testing with a local Cloudflare API mock",
+				Hidden: true,
 			},
 		},
 		EnableShellCompletion: true,
@@ -133,7 +134,7 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 	sanitizedFlags := make(map[string]string)
 	for _, name := range c.FlagNames() {
 		value := c.String(name)
-		if slices.Contains([]string{apiTokenFlag, apiEmailFlag, apiKeyFlag}, name) {
+		if slices.Contains([]string{apiTokenFlag, apiEmailFlag, apiKeyFlag, zoneNameFlag}, name) {
 			if value != "" {
 				sanitizedFlags[name] = "[REDACTED]"
 			} else {
@@ -157,12 +158,12 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 		return ctx, errors.New("no authentication method detected")
 	}
 
-	rateLimit := c.Float("rate-limit")
-	if c.Bool(lotsOfDeploymentsFlag) {
-		rateLimit = 20 // Increase the rate limit for commands that may need to make many API calls, like pruning deployments.
-	}
+	//rateLimit := c.Float("rate-limit")
+	//if c.Bool(lotsOfDeploymentsFlag) {
+	//	rateLimit = 20 // Increase the rate limit for commands that may need to make many API calls, like pruning deployments.
+	//}
 	cfClientOptions := []cloudflare.Option{
-		cloudflare.UsingRateLimit(rateLimit),
+		//cloudflare.UsingRateLimit(rateLimit),
 		cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)),
 		cloudflare.Debug(logger.Level == logrus.TraceLevel),
 		cloudflare.UsingLogger(logger),

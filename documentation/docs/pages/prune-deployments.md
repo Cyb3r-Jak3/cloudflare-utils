@@ -30,7 +30,9 @@ Optional flags:
 
 - `--dry-run`: If you want to see what would be deleted without actually deleting anything.
 - `--lots-of-deployments`: If you have more than 1000 deployments, this will slow down the rate of listing deployments.
-
+- `--experimental-delete`: Uses a faster method to delete deployments. This will delete deployments in parallel but has a higher chance of errors and/or crashing.
+- `--persist-retry`: Persist retry. If the delete fails, it will retry until it succeeds
+- `--persist-retry-amount`: Number of times to retry the delete if it fails. Use 0 to retry indefinitely"
 Example:
 
 ```shell
