@@ -76,7 +76,7 @@ jobs:
           platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/arm/v6, linux/386, linux/riscv64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: cloudflare-utils/dist.Dockerfile
+          file: dist.Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
           sbom: true
@@ -89,7 +89,7 @@ jobs:
           username: cyb3rjak3
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: cyb3rjak3/cloudflare-utils
-          readme-filepath: cloudflare-utils/README.md
+          readme-filepath: README.md
 
       - name: GitHub Container Attestation
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
