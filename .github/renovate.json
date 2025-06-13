@@ -1,10 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    "helpers:pinGitHubActionDigestsToSemver",
-    "schedule:earlyMondays",
-    "github>Cyb3r-Jak3/renovate-configs//assign-me.json"
+    "github>Cyb3r-Jak3/renovate-configs//recommend-extended.json",
+    "github>Cyb3r-Jak3/renovate-configs//my-registry.json"
   ],
   "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"]
 }
