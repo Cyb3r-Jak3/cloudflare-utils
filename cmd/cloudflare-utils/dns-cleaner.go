@@ -230,7 +230,7 @@ func UploadDNS(ctx context.Context, c *cli.Command) error {
 		fmt.Printf("Dry Run: Would have removed %d records\n", len(toRemove))
 		return nil
 	}
-	removeErrors := RapidDNSDelete(ctx, zoneResource, toRemove)
+	removeErrors := RapidDNSDelete(zoneResource, toRemove)
 	errorCount = len(removeErrors)
 
 	if errorCount == 0 {

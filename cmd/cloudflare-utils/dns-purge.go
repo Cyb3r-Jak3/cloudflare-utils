@@ -63,7 +63,7 @@ func DNSPurge(ctx context.Context, c *cli.Command) error {
 		return nil
 	}
 
-	errors := RapidDNSDelete(ctx, zoneResource, records)
+	errors := RapidDNSDelete(zoneResource, records)
 	errorCount := len(errors)
 
 	if errorCount == 0 {
