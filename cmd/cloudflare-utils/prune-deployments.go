@@ -18,7 +18,6 @@ const (
 
 type pruneDeploymentOptions struct {
 	c                   *cli.Command
-	ctx                 context.Context
 	ResourceContainer   *cloudflare.ResourceContainer
 	ProjectName         string
 	SelectedDeployments []cloudflare.PagesProjectDeployment
@@ -74,7 +73,7 @@ func buildPruneDeploymentsCommand() *cli.Command {
 }
 
 // PruneDeploymentsScreen is the entry point for the prune-deployments command.
-// It handles parsing the CLI arguments, and then calls PruneDeploymentsRoot.
+// It handles parsing the CLI arguments and then calls PruneDeploymentsRoot.
 func PruneDeploymentsScreen(ctx context.Context, c *cli.Command) error {
 	logger.Info("Staring prune deployments")
 	if err := CheckAPITokenPermission(ctx, PagesWrite); err != nil {
