@@ -14,7 +14,39 @@ const (
 	beforeFlag     = "before"
 	afterFlag      = "after"
 	//timeShortcutFlag = "time" Not implemented yet.
+	persistRetry       = "persist-retry"
+	persistRetryAmount = "persist-retry-amount"
 )
+
+var sharedPagesFlags = []cli.Flag{
+	&cli.BoolFlag{
+		Name:  dryRunFlag,
+		Usage: "Don't actually delete anything. Just print what would be deleted",
+		Value: false,
+	},
+	&cli.BoolFlag{
+		Name:  persistRetry,
+		Usage: "Persist retry. If the delete fails, it will retry until it succeeds",
+		Value: false,
+	},
+	&cli.IntFlag{
+		Name:  persistRetryAmount,
+		Usage: "Number of times to retry the delete if it fails",
+		Value: 10,
+	},
+	&cli.StringFlag{
+		Name:     projectNameFlag,
+		Aliases:  []string{"p"},
+		Usage:    "Pages project to delete the alias from",
+		Required: true,
+		Sources:  cli.EnvVars("CF_PAGES_PROJECT"),
+	},
+	&cli.BoolFlag{
+		Name:  lotsOfDeploymentsFlag,
+		Usage: "If you are getting errors getting all of the deployments, you may need to use this flag.",
+		Value: false,
+	},
+}
 
 type pruneDeploymentOptions struct {
 	c                   *cli.Command
@@ -28,14 +60,7 @@ func buildPruneDeploymentsCommand() *cli.Command {
 		Name:   "prune-deployments",
 		Usage:  "Prune deployments by either branch of time\nAPI Token Requirements: Pages:Edit",
 		Action: PruneDeploymentsScreen,
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     projectNameFlag,
-				Aliases:  []string{"p"},
-				Usage:    "Pages project to delete the alias from",
-				Required: true,
-				Sources:  cli.EnvVars("CF_PAGES_PROJECT"),
-			},
+		Flags: append([]cli.Flag{
 			&cli.StringFlag{
 				Name:    branchNameFlag,
 				Aliases: []string{"b"},
@@ -63,12 +88,7 @@ func buildPruneDeploymentsCommand() *cli.Command {
 			//		"y (year), M (month), w (week), d (day), h (hour), m (minute), s (second)" +
 			//		"use a negative number to go back in time. Read the docs for more info",
 			//},
-			&cli.BoolFlag{
-				Name:  dryRunFlag,
-				Usage: "Don't actually delete anything. Just print what would be deleted",
-				Value: false,
-			},
-		},
+		}, sharedPagesFlags...),
 	}
 }
 
