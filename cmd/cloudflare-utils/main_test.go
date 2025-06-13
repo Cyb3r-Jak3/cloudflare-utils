@@ -45,8 +45,8 @@ func Test_GenDocs(t *testing.T) {
 }
 
 func Test_GlobalAuth(t *testing.T) {
-	t.Setenv("CLOUDFLARE_API_EMAIL", "example@example.com")
-	t.Setenv("CLOUDFLARE_API_KEY", "examplekey")
+	setupTestHTTPServer(t)
+	defer teardownTestHTTPServer()
 	app := buildApp()
 	err := app.Run(t.Context(), []string{"cloudflare-utils", "tunnel-versions"})
 	assert.EqualError(t, err, "Unable to authenticate request (10001)", "Expected error when running the app with tunnel-versions command")
@@ -62,7 +62,7 @@ var (
 
 // setupTestHTTPServer sets up a test HTTP server with mock API responses.
 // It is used to simulate the Cloudflare API for testing purposes.
-// All test responses are pulled from cloudflare-go
+// All test responses are pulled from cloudflare-go.
 func setupTestHTTPServer(t *testing.T) {
 	// test server
 	mux = http.NewServeMux()
@@ -75,6 +75,7 @@ func setupTestHTTPServer(t *testing.T) {
 	t.Setenv("LOG_LEVEL_TRACE", "true")
 	t.Setenv("CLOUDFLARE_ZONE_ID", "2")
 	verifyHandler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
 		  "success": true,
@@ -89,6 +90,7 @@ func setupTestHTTPServer(t *testing.T) {
 		}`)
 	}
 	tokenPermissionsHandler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
       "success": true,
@@ -135,6 +137,7 @@ func setupTestHTTPServer(t *testing.T) {
     }`)
 	}
 	pagesDeploymentPage1Handler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
 			"success": true,
@@ -229,6 +232,7 @@ func setupTestHTTPServer(t *testing.T) {
 				}`)
 	}
 	dnsRecordsPage1Handler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprint(w, `{
 			"success": true,
@@ -294,6 +298,7 @@ func setupTestHTTPServer(t *testing.T) {
 		}
 	}
 	dnsRecordDeleteHandler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodDelete, r.Method, "Expected a DELETE request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprint(w, `{
 			"success": true,
@@ -305,6 +310,7 @@ func setupTestHTTPServer(t *testing.T) {
 		}`)
 	}
 	tunnelListHandler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprint(w, `{
 		  "success": true,
@@ -357,6 +363,7 @@ func setupTestHTTPServer(t *testing.T) {
 		}`)
 	}
 	deletePagesDeploymentHandler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodDelete, r.Method, "Expected a DELETE request")
 		assert.Equal(t, "true", r.URL.Query().Get("force"))
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
@@ -367,6 +374,7 @@ func setupTestHTTPServer(t *testing.T) {
 		}`)
 	}
 	deletePagesProjectHandler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodDelete, r.Method, "Expected a DELETE request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
 			"success": true,
@@ -384,7 +392,6 @@ func setupTestHTTPServer(t *testing.T) {
 	mux.HandleFunc("/accounts/1/cfd_tunnel", tunnelListHandler)
 	mux.HandleFunc("/accounts/1/pages/projects/cloudflare-utils-pages-project/deployments/0012e50b-fa5d-44db-8cb5-1f372785dcbe", deletePagesDeploymentHandler)
 	mux.HandleFunc("/accounts/1/pages/projects/cloudflare-utils-pages-project", deletePagesProjectHandler)
-
 }
 
 func teardownTestHTTPServer() {
