@@ -54,6 +54,66 @@ func Test_GlobalAuth(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when running the app with tunnel-versions command and global auth")
 }
 
+func Test_BadAPIPermission(t *testing.T) {
+	mux = http.NewServeMux()
+	server = httptest.NewServer(mux)
+	defer server.Close()
+	t.Setenv("CLOUDFLARE_ACCOUNT_ID", "1")
+	t.Setenv("CLOUDFLARE_API_TOKEN", "exampletoken")
+	t.Setenv("CLOUDFLARE_BASE_URL", server.URL)
+	verifyHandler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprintf(w, `{
+		  "success": true,
+		  "errors": [],
+		  "messages": [],
+		  "result": {
+			"id": "ed17574386854bf78a67040be0a770b0",
+			"status": "active",
+			"not_before": "2018-07-01T05:20:00Z",
+			"expires_on": "2020-01-01T00:00:00Z"
+		  }
+		}`)
+	}
+	tokenBadPermissionsHandler := func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprintf(w, `{
+      "success": true,
+      "errors": [],
+      "messages": [],
+      "result": {
+          "id": "ed17574386854bf78a67040be0a770b0",
+          "name": "readonly token",
+          "status": "active",
+          "issued_on": "2018-07-01T05:20:00Z",
+          "modified_on": "2018-07-02T05:20:00Z",
+          "not_before": "2018-07-01T05:20:00Z",
+          "expires_on": "2020-01-01T00:00:00Z",
+          "policies": [
+            {
+              "id": "f267e341f3dd4697bd3b9f71dd96247f",
+              "effect": "allow",
+              "resources": {
+                "com.cloudflare.api.account.zone.eb78d65290b24279ba6f44721b3ea3c4": "*",
+                "com.cloudflare.api.account.zone.22b1de5f1c0e4b3ea97bb1e963b06a43": "*"
+              },
+              "permission_groups": []
+            }
+          ],
+          "condition": {}
+        }
+    }`)
+	}
+	mux.HandleFunc("/user/tokens/verify", verifyHandler)
+	mux.HandleFunc("/user/tokens/ed17574386854bf78a67040be0a770b0", tokenBadPermissionsHandler)
+	app := buildApp()
+	err := app.Run(t.Context(), []string{"cloudflare-utils", "tunnel-versions"})
+	assert.Error(t, err, "Expected an error when running the app with insufficient permissions")
+	assert.Contains(t, err.Error(), "API Token does not have permission [TunnelRead]")
+}
+
 var (
 	// mux is the HTTP request multiplexer used with the test server.
 	mux *http.ServeMux
