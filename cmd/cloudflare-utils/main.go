@@ -84,7 +84,7 @@ func buildApp() *cli.Command {
 				Sources: cli.EnvVars("CLOUDFLARE_ACCOUNT_ID"),
 			},
 			&cli.FloatFlag{
-				Name:   "rate-limit",
+				Name:   rateLimitFlag,
 				Usage:  "Rate limit for API calls.\nDefault is 4 which matches the Cloudflare API limit of 1200 calls per 5 minutes",
 				Value:  4,
 				Hidden: true,
@@ -142,7 +142,10 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 		return ctx, errors.New("no authentication method detected")
 	}
 
-	rateLimit := c.Float("rate-limit")
+	rateLimit := c.Float(rateLimitFlag)
+	if c.Bool(lotsOfDeploymentsFlag) {
+		rateLimit = 3
+	}
 	cfClientOptions := []cloudflare.Option{
 		cloudflare.UsingRateLimit(rateLimit),
 		cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)),
