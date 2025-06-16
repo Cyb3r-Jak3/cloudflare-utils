@@ -216,7 +216,10 @@ func buildGenerateDocsCommand() *cli.Command {
 					return fmt.Errorf("error writing to output file: %s", err)
 				}
 			} else {
-				fmt.Fprintln(os.Stdout, output)
+				_, err = fmt.Fprintln(os.Stdout, output)
+				if err != nil {
+					return fmt.Errorf("error writing to stdout: %s", err)
+				}
 			}
 			return nil
 		},
