@@ -143,7 +143,7 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 	}
 
 	rateLimit := c.Float(rateLimitFlag)
-	if c.Bool(lotsOfDeploymentsFlag) {
+	if c.Bool(lotsOfDeploymentsFlag) && rateLimit == 4 {
 		rateLimit = 3
 	}
 	cfClientOptions := []cloudflare.Option{
