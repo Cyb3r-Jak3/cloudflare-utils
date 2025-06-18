@@ -11,4 +11,5 @@ const (
 	projectNameFlag = "project"
 	dryRunFlag      = "dry-run"
 	forceFlag       = "force"
+	rateLimitFlag   = "rate-limit"
 )

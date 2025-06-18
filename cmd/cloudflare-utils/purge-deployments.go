@@ -22,11 +22,6 @@ func buildPurgeDeploymentsCommand() *cli.Command {
 				Usage: "Delete the project as well. Will attempt to delete the project even if there are errors deleting deployments.",
 				Value: false,
 			},
-			&cli.BoolFlag{
-				Name:  lotsOfDeploymentsFlag,
-				Usage: "If you are getting errors getting all of the deployments, you may need to use this flag.",
-				Value: false,
-			},
 		}, sharedPagesFlags...),
 	}
 }
