@@ -21,6 +21,6 @@ func Test_PurgeDeployments(t *testing.T) {
 	defer teardownTestHTTPServer()
 
 	app := buildApp()
-	err := app.Run(t.Context(), []string{"cloudflare-utils", "purge-deployments", "--project", "cloudflare-utils-pages-project", "--delete-project"})
+	err := app.Run(t.Context(), []string{"cloudflare-utils", "purge-deployments", "--project", "cloudflare-utils-pages-project", "--delete-project", "--lots-of-deployments"})
 	assert.NoError(t, err, "Expected no error when running the app with delete-project flag")
 }
