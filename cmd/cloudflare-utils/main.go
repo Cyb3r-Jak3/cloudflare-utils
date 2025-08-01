@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/Cyb3r-Jak3/common/v5"
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/cloudflare/cloudflare-go/v5"
 	"github.com/sirupsen/logrus"
 	docs "github.com/urfave/cli-docs/v3"
 	"github.com/urfave/cli/v3"
