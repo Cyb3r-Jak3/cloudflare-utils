@@ -36,7 +36,7 @@ jobs:
     runs-on: windows-latest
     env:
       GO111MODULE: on
-      GOTEST_SUM_VERSION: v1.12.2
+      GOTEST_SUM_VERSION: v1.12.3
 
     steps:
 
