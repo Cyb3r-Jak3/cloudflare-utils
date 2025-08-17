@@ -36,6 +36,7 @@ jobs:
     runs-on: windows-latest
     env:
       GO111MODULE: on
+      GOTEST_SUM_VERSION: v1.12.2
 
     steps:
 
@@ -51,7 +52,7 @@ jobs:
           cache: true
 
       - name: Install gotestsum
-        run: go install gotest.tools/gotestsum@v1.12.2
+        run: go install gotest.tools/gotestsum@${{ env.GOTEST_SUM_VERSION }}
 
       - name: Install Syft
         run: choco install syft --yes
@@ -90,7 +91,7 @@ jobs:
           path: dist/*
 
 
-      - name: Upload to S3
+      - name: Upload to R2
         run: |
           aws s3 cp dist/ s3://github-actions-artifacts/snapshots/cloudflare-utils/${{ github.sha }} --recursive --checksum-algorithm CRC32
         env:
