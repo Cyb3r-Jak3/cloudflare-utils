@@ -11,7 +11,7 @@ import (
 
 	"github.com/sourcegraph/conc/pool"
 
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/cloudflare/cloudflare-go/v6"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v3"
 )
