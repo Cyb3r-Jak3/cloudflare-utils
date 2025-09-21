@@ -30,14 +30,14 @@ cloudflare-utils --api-token <API Token with Account:Rule Lists:Edit> --account-
 
 #### Preset
 
-- cloudflare
-  - This is the list of ips that Cloudflare uses for their services. It is updated automatically when Cloudflare updates their ips.
-- cloudflare-china
-  - This is the list of ips that Cloudflare uses for their services in China. It is updated automatically when Cloudflare updates their ips.
-- github
- - This is the list of ips that GitHub uses for their services. Includes, web, hooks, api, git, packages, packages, actions, actions_macos.
-- uptime-robot
-    - This is the list of ips that Uptime Robot uses for their services.
+- `cloudflare`
+    This is the list of ips that Cloudflare uses for their services. It is updated automatically when Cloudflare updates their ips.
+- `cloudflare-china`
+    This is the list of ips that Cloudflare uses for their services in China. It is updated automatically when Cloudflare updates their ips.
+- `github`
+    This is the list of ips that GitHub uses for their services. Includes, web, hooks, api, git, packages, packages, actions, actions_macos.
+- `uptime-robot`
+    This is the list of ips that Uptime Robot uses for their services.
 
 ```shell
 cloudflare-utils --api-token <API Token with Account:Rule Lists:Edit> --account-id <account id> sync-list --list-name <list name> preset://cloudflare

@@ -43,11 +43,29 @@ func Test_SyncList_FileSource(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when syncing list from file source")
 }
 
-func Test_SyncList_PresetSource(t *testing.T) {
+func Test_SyncList_PresetCloudflare(t *testing.T) {
 	setupTestHTTPServer(t)
 	defer teardownTestHTTPServer()
 	app := buildApp()
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://cloudflare"}
+	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://cloudflare-china"}
+	err := app.Run(t.Context(), args)
+	assert.NoError(t, err, "Expected no error when syncing list from cloudflare-china source")
+}
+
+func Test_SyncList_PresetGitHub(t *testing.T) {
+	setupTestHTTPServer(t)
+	defer teardownTestHTTPServer()
+	app := buildApp()
+	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://github", "--no-wait"}
+	err := app.Run(t.Context(), args)
+	assert.NoError(t, err, "Expected no error when syncing list from preset source")
+}
+
+func Test_SyncList_PresetUptime(t *testing.T) {
+	setupTestHTTPServer(t)
+	defer teardownTestHTTPServer()
+	app := buildApp()
+	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://uptime-robot", "--no-comment"}
 	err := app.Run(t.Context(), args)
 	assert.NoError(t, err, "Expected no error when syncing list from preset source")
 }
@@ -59,6 +77,14 @@ func Test_SyncList_InvalidSource(t *testing.T) {
 	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "invalid://source"}
 	err := app.Run(t.Context(), args)
 	assert.Error(t, err, "Expected error for invalid source scheme")
+
+	args = []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "ftp://example.com/ips.txt"}
+	err = app.Run(t.Context(), args)
+	assert.Error(t, err, "Expected error for ftp source scheme")
+
+	args = []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "https://example.com/ips.txt", "--ip-version", "invalid"}
+	err = app.Run(t.Context(), args)
+	assert.Error(t, err, "Expected error for invalid IP version")
 }
 
 func Test_SyncList_EmptyIPs(t *testing.T) {
