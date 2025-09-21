@@ -10,4 +10,4 @@ This project is not affiliated with Cloudflare in any way.
 
 
 ???+ abstract "Generative AI Notice"
-    I use Co-Pilot to help with code and documentation and all content is reviewed by me. If you see any issues with the generated content then please let me know.
+    I use Co-Pilot to help with code and documentation and all content is reviewed by me. If you see any issues with the content then please let me know.
