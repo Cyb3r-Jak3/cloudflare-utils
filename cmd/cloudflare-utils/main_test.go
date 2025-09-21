@@ -65,46 +65,46 @@ func Test_BadAPIPermission(t *testing.T) {
 		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
-		  "success": true,
-		  "errors": [],
-		  "messages": [],
-		  "result": {
-			"id": "ed17574386854bf78a67040be0a770b0",
-			"status": "active",
-			"not_before": "2018-07-01T05:20:00Z",
-			"expires_on": "2020-01-01T00:00:00Z"
-		  }
-		}`)
+  "success": true,
+  "errors": [],
+  "messages": [],
+  "result": {
+    "id": "ed17574386854bf78a67040be0a770b0",
+    "status": "active",
+    "not_before": "2018-07-01T05:20:00Z",
+    "expires_on": "2020-01-01T00:00:00Z"
+  }
+}`)
 	}
 	tokenBadPermissionsHandler := func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
-      "success": true,
-      "errors": [],
-      "messages": [],
-      "result": {
-          "id": "ed17574386854bf78a67040be0a770b0",
-          "name": "readonly token",
-          "status": "active",
-          "issued_on": "2018-07-01T05:20:00Z",
-          "modified_on": "2018-07-02T05:20:00Z",
-          "not_before": "2018-07-01T05:20:00Z",
-          "expires_on": "2020-01-01T00:00:00Z",
-          "policies": [
-            {
-              "id": "f267e341f3dd4697bd3b9f71dd96247f",
-              "effect": "allow",
-              "resources": {
-                "com.cloudflare.api.account.zone.eb78d65290b24279ba6f44721b3ea3c4": "*",
-                "com.cloudflare.api.account.zone.22b1de5f1c0e4b3ea97bb1e963b06a43": "*"
-              },
-              "permission_groups": []
-            }
-          ],
-          "condition": {}
-        }
-    }`)
+  "success": true,
+  "errors": [],
+  "messages": [],
+  "result": {
+    "id": "ed17574386854bf78a67040be0a770b0",
+    "name": "readonly token",
+    "status": "active",
+    "issued_on": "2018-07-01T05:20:00Z",
+    "modified_on": "2018-07-02T05:20:00Z",
+    "not_before": "2018-07-01T05:20:00Z",
+    "expires_on": "2020-01-01T00:00:00Z",
+    "policies": [
+      {
+        "id": "f267e341f3dd4697bd3b9f71dd96247f",
+        "effect": "allow",
+        "resources": {
+          "com.cloudflare.api.account.zone.eb78d65290b24279ba6f44721b3ea3c4": "*",
+          "com.cloudflare.api.account.zone.22b1de5f1c0e4b3ea97bb1e963b06a43": "*"
+        },
+        "permission_groups": []
+      }
+    ],
+    "condition": {}
+  }
+}`)
 	}
 	mux.HandleFunc("/user/tokens/verify", verifyHandler)
 	mux.HandleFunc("/user/tokens/ed17574386854bf78a67040be0a770b0", tokenBadPermissionsHandler)
@@ -140,63 +140,63 @@ func setupTestHTTPServer(t *testing.T) {
 		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
-		  "success": true,
-		  "errors": [],
-		  "messages": [],
-		  "result": {
-			"id": "ed17574386854bf78a67040be0a770b0",
-			"status": "active",
-			"not_before": "2018-07-01T05:20:00Z",
-			"expires_on": "2020-01-01T00:00:00Z"
-		  }
-		}`)
+  "success": true,
+  "errors": [],
+  "messages": [],
+  "result": {
+    "id": "ed17574386854bf78a67040be0a770b0",
+    "status": "active",
+    "not_before": "2018-07-01T05:20:00Z",
+    "expires_on": "2020-01-01T00:00:00Z"
+  }
+}`)
 	}
 	tokenPermissionsHandler := func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
-      "success": true,
-      "errors": [],
-      "messages": [],
-      "result": {
-          "id": "ed17574386854bf78a67040be0a770b0",
-          "name": "readonly token",
-          "status": "active",
-          "issued_on": "2018-07-01T05:20:00Z",
-          "modified_on": "2018-07-02T05:20:00Z",
-          "not_before": "2018-07-01T05:20:00Z",
-          "expires_on": "2020-01-01T00:00:00Z",
-          "policies": [
-            {
-              "id": "f267e341f3dd4697bd3b9f71dd96247f",
-              "effect": "allow",
-              "resources": {
-                "com.cloudflare.api.account.zone.eb78d65290b24279ba6f44721b3ea3c4": "*",
-                "com.cloudflare.api.account.zone.22b1de5f1c0e4b3ea97bb1e963b06a43": "*"
-              },
-              "permission_groups": [
-                {
-                  "id": "8d28297797f24fb8a0c332fe0866ec89",
-                  "name": "Pages Write"
-                },
-                {
-                  "id": "4755a26eedb94da69e1066d98aa820be",
-                  "name": "DNS Write"
-                },
-				{
-				  "id": "efea2ab8357b47888938f101ae5e053f",
-				  "name": "Tunnel Read"
-				},
-				{
-				  "id": "c07321b023e944ff818fec44d8203567",
-				  "name": "Tunnel Write"
-				}
-              ]
-            }
-          ],
-          "condition": {}
-        }
-    }`)
+  "success": true,
+  "errors": [],
+  "messages": [],
+  "result": {
+    "id": "ed17574386854bf78a67040be0a770b0",
+    "name": "readonly token",
+    "status": "active",
+    "issued_on": "2018-07-01T05:20:00Z",
+    "modified_on": "2018-07-02T05:20:00Z",
+    "not_before": "2018-07-01T05:20:00Z",
+    "expires_on": "2020-01-01T00:00:00Z",
+    "policies": [
+      {
+        "id": "f267e341f3dd4697bd3b9f71dd96247f",
+        "effect": "allow",
+        "resources": {
+          "com.cloudflare.api.account.zone.eb78d65290b24279ba6f44721b3ea3c4": "*",
+          "com.cloudflare.api.account.zone.22b1de5f1c0e4b3ea97bb1e963b06a43": "*"
+        },
+        "permission_groups": [
+          {
+            "id": "8d28297797f24fb8a0c332fe0866ec89",
+            "name": "Pages Write"
+          },
+          {
+            "id": "4755a26eedb94da69e1066d98aa820be",
+            "name": "DNS Write"
+          },
+          {
+            "id": "efea2ab8357b47888938f101ae5e053f",
+            "name": "Tunnel Read"
+          },
+          {
+            "id": "c07321b023e944ff818fec44d8203567",
+            "name": "Tunnel Write"
+          }
+        ]
+      }
+    ],
+    "condition": {}
+  }
+}`)
 	}
 	pagesDeploymentPage1Handler := func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request")
@@ -445,6 +445,11 @@ func setupTestHTTPServer(t *testing.T) {
 			"result": null
 		}`)
 	}
+	mux.HandleFunc("/test-ips.txt", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request for test-ips.txt")
+		w.Header().Set("content-type", "text/plain")
+		fmt.Fprint(w, "1.2.3.4\n2001:db8::1\n8.8.8.8\n")
+	})
 	mux.HandleFunc("/user/tokens/verify", verifyHandler)
 	mux.HandleFunc("/user/tokens/ed17574386854bf78a67040be0a770b0", tokenPermissionsHandler)
 	mux.HandleFunc("/accounts/1/pages/projects/cloudflare-utils-pages-project/deployments", pagesDeploymentPage1Handler)
@@ -454,6 +459,77 @@ func setupTestHTTPServer(t *testing.T) {
 	mux.HandleFunc("/accounts/1/cfd_tunnel", tunnelListHandler)
 	mux.HandleFunc("/accounts/1/pages/projects/cloudflare-utils-pages-project/deployments/0012e50b-fa5d-44db-8cb5-1f372785dcbe", deletePagesDeploymentHandler)
 	mux.HandleFunc("/accounts/1/pages/projects/cloudflare-utils-pages-project", deletePagesProjectHandler)
+	mux.HandleFunc("/ips?china_colo=1", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request for /ips")
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, `{
+			"success": true,
+			"errors": [],
+			"messages": [],
+			"result": {
+				"ipv4_cidrs": [
+					"1.1.1.1"
+				],
+				"ipv6_cidrs": [
+					"2606:4700:4700::1111"
+				],
+				"china_ipv4_cidrs": [
+					"2.2.2.2"
+				],
+				"china_ipv6_cidrs": [
+					"2606:4700:4700::2222"
+				]
+			}
+		}`)
+	})
+	mux.HandleFunc("/accounts/1/rules/lists", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected method 'GET', got %s", r.Method)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, `{
+			"result": [
+				{
+					"id": "2c0fc9fa937b11eaa1b71c4d701ab86e",
+					"name": "test-list",
+					"description": "This is a note.",
+					"kind": "ip",
+					"num_items": 10,
+					"num_referencing_filters": 2,
+					"created_on": "2020-01-01T08:00:00Z",
+					"modified_on": "2020-01-10T14:00:00Z"
+				}
+			],
+			"success": true,
+			"errors": [],
+			"messages": []
+		}`)
+	})
+	mux.HandleFunc("/accounts/1/rules/lists/2c0fc9fa937b11eaa1b71c4d701ab86e/items", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPut, r.Method, "Expected method 'PUT', got %s", r.Method)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, `{
+			"result": {
+				"operation_id": "4da8780eeb215e6cb7f48dd981c4ea02"
+			},
+			"success": true,
+			"errors": [],
+			"messages": []
+		}`)
+	})
+	mux.HandleFunc("/accounts/1/rules/lists/bulk_operations/4da8780eeb215e6cb7f48dd981c4ea02", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "Expected method 'GET', got %s", r.Method)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, `{
+			"result": {
+				"id": "4da8780eeb215e6cb7f48dd981c4ea02",
+				"status": "completed",
+				"error": "",
+				"completed": "2020-01-01T08:00:00Z"
+			},
+			"success": true,
+			"errors": [],
+			"messages": []
+		}`)
+	})
 }
 
 func teardownTestHTTPServer() {

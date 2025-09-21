@@ -1,0 +1,355 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/Cyb3r-Jak3/common/v5"
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/google/go-github/v74/github"
+	"github.com/urfave/cli/v3"
+)
+
+const (
+	ipv4Flag   = "ipv4"
+	ipv6Flag   = "ipv6"
+	ipBothFlag = "both"
+)
+
+func buildListSyncCommand() *cli.Command {
+	return &cli.Command{
+		Name:   "sync-list",
+		Usage:  "Syncs a list of IPs with a Cloudflare List. This currently replaces all items in a list\nAPI Token Requirements: Account Filter Lists:Edit",
+		Action: SyncList,
+		Flags: append([]cli.Flag{
+			&cli.StringFlag{
+				Name:     "list-name",
+				Usage:    "Name of the list to sync with. If the list does not exist, it will be created.",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:  "list-id",
+				Usage: "ID of the list to sync with. If both list-name and list-id are provided, list-id will be used.",
+			},
+			&cli.StringFlag{
+				Name: "source",
+				Usage: "Source of the IPs to sync. Can be a URL, file path, or preset. URL and file path must start with http(s):// or file:// respectively.\n" +
+					"Presets starts with preset://. Currently, support presets are: \n" +
+					"  - cloudflare\n" +
+					"  - cloudflare-china\n" +
+					"  - uptime-robot\n" +
+					"  - github\n" +
+					"For more information on formats, see: https://cloudflare-utils.cyberjake.xyz/lists/sync-list/",
+				Required: true,
+				Action: func(_ context.Context, _ *cli.Command, s string) error {
+					if !strings.Contains(s, "://") {
+						return fmt.Errorf("source must start with a valid scheme (e.g., http://, https://, file://, preset://)")
+					}
+					source := strings.Split(s, "://")
+					switch source[0] {
+					case "http", "https", "file", "preset":
+					default:
+						return fmt.Errorf("invalid source scheme: %s", source[0])
+					}
+					if source[0] == "preset" {
+						validPresets := []string{"cloudflare", "uptime-robot", "github", "cloudflare-china"}
+						if !common.StringSearch(source[1], validPresets) {
+							return fmt.Errorf("invalid preset: %s. Valid presets are: %s", source[1], strings.Join(validPresets, ", "))
+						}
+					}
+					return nil
+				},
+			},
+			&cli.StringFlag{
+				Name:  "ip-version",
+				Usage: fmt.Sprintf("IP version to sync. Can be either %s, %s, or %s. Default is %s.", ipv4Flag, ipv6Flag, ipBothFlag, ipBothFlag),
+				Value: "both",
+				Action: func(_ context.Context, _ *cli.Command, s string) error {
+					validVersions := []string{ipv4Flag, ipv6Flag, ipBothFlag}
+					if !common.StringSearch(s, validVersions) {
+						return fmt.Errorf("invalid ip-version: %s. Valid versions are: %s", s, strings.Join(validVersions, ", "))
+					}
+
+					return nil
+				},
+			},
+			&cli.BoolFlag{
+				Name:  "no-wait",
+				Usage: "If set, the command will not wait for the list sync operation to complete. This means that the command will exit immediately after starting the operation. You can check the status of the operation later using the operation ID.",
+				Value: false,
+			},
+			&cli.BoolFlag{
+				Name:  dryRunFlag,
+				Usage: "Don't actually sync anything. Just print what would be synced.",
+				Value: false,
+			},
+			&cli.BoolFlag{
+				Name:  "no-comment",
+				Usage: "If set, the command will not add a comment to each list item indicating when it was added. This is useful if you want to keep the list items clean.",
+				Value: false,
+			},
+		},
+			githubTokenFlag),
+	}
+}
+
+func SyncList(ctx context.Context, c *cli.Command) error {
+	listSource := c.String("source")
+	var ips []string
+	switch {
+	case strings.HasPrefix(listSource, "preset://"):
+		preset := strings.TrimPrefix(listSource, "preset://")
+		switch preset {
+		case "cloudflare", "cloudflare-china":
+			var err error
+			ips, err = getCloudflareIPs(c)
+			if err != nil {
+				return fmt.Errorf("error getting Cloudflare IPs: %w", err)
+			}
+		case "uptime-robot":
+			var err error
+			ips, err = getUptimeRobotIPs(ctx)
+			if err != nil {
+				return fmt.Errorf("error getting Uptime Robot IPs: %w", err)
+			}
+		case "github":
+			var err error
+			ips, err = getGitHubIPs(ctx, c)
+			if err != nil {
+				return fmt.Errorf("error getting GitHub IPs: %w", err)
+			}
+		default:
+			return fmt.Errorf("invalid preset: %s", preset)
+		}
+	case strings.HasPrefix(listSource, "http://"), strings.HasPrefix(listSource, "https://"):
+		var err error
+		ips, err = getIPsFromURL(ctx, listSource)
+		if err != nil {
+			return fmt.Errorf("error getting IPs from URL: %w", err)
+		}
+	}
+	if strings.HasPrefix(listSource, "file://") {
+		filePath := strings.TrimPrefix(listSource, "file://")
+		if !common.FileExists(filePath) {
+			return fmt.Errorf("file does not exist: %s", filePath)
+		}
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			return fmt.Errorf("error reading file: %w", err)
+		}
+		lines := strings.Split(string(data), "\n")
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line != "" {
+				ips = append(ips, line)
+			}
+		}
+	}
+
+	if len(ips) == 0 {
+		return fmt.Errorf("no IPs found to sync")
+	}
+
+	listID := c.String("list-id")
+	if listID == "" {
+		var err error
+		listID, err = getCloudflareList(ctx, c)
+		if err != nil {
+			return fmt.Errorf("error getting Cloudflare list: %w", err)
+		}
+	}
+	if listID == "" {
+		return fmt.Errorf("list ID is empty")
+	}
+
+	listItems := getFilteredIPs(ips, c.String("ip-version"), c.Bool("no-comment"))
+
+	logger.Infof("Syncing %d IPs to list ID %s", len(listItems), listID)
+	if c.Bool(dryRunFlag) {
+		fmt.Printf("Dry Run: Would sync %d IPs to list ID %s\n", len(listItems), listID)
+		return nil
+	}
+	syncStart := time.Now()
+	opID, err := APIClient.ReplaceListItemsAsync(ctx, accountRC, cloudflare.ListReplaceItemsParams{ID: listID, Items: listItems})
+	if err != nil {
+		return fmt.Errorf("error replacing list items: %w", err)
+	}
+	if c.Bool("no-wait") {
+		fmt.Printf("Started async operation to replace list items. Operation ID: %s\n", opID.Result.OperationID)
+		return nil
+	}
+	logger.Infof("Started async operation to replace list items. Operation ID: %s", opID.Result.OperationID)
+	err = PollListBulkOperation(ctx, accountRC, opID.Result.OperationID)
+	if err != nil {
+		return fmt.Errorf("error polling list bulk operation: %w", err)
+	}
+	logger.Debugf("List sync operation completed in %s", time.Since(syncStart).String())
+	logger.Infof("Successfully synced %d IPs to list ID %s", len(listItems), listID)
+	fmt.Printf("Successfully synced %d IPs to list ID %s\n", len(listItems), listID)
+	return nil
+}
+
+func getFilteredIPs(ips []string, version string, noComment bool) []cloudflare.ListItemCreateRequest {
+	listItems := make([]cloudflare.ListItemCreateRequest, 0, len(ips))
+	comment := "Added by cloudflare-utils at " + startTime.Format(time.RFC3339)
+	if noComment {
+		comment = ""
+	}
+	for _, ip := range ips {
+		if ip == "" {
+			logger.Warnf("Skipping empty IP: %s", ip)
+			continue
+		}
+		if version == ipv4Flag && strings.Contains(ip, ".") && !strings.Contains(ip, ":") {
+			listItems = append(listItems, cloudflare.ListItemCreateRequest{
+				IP:      cloudflare.StringPtr(ip),
+				Comment: comment,
+			})
+		} else if version == ipv6Flag && strings.Contains(ip, ":") && !strings.Contains(ip, ".") {
+			listItems = append(listItems, cloudflare.ListItemCreateRequest{
+				IP:      cloudflare.StringPtr(ip),
+				Comment: comment,
+			})
+		} else if version == ipBothFlag {
+			listItems = append(listItems, cloudflare.ListItemCreateRequest{
+				IP:      cloudflare.StringPtr(ip),
+				Comment: comment,
+			})
+		}
+	}
+	return listItems
+}
+
+func getCloudflareList(ctx context.Context, c *cli.Command) (string, error) {
+	listName := c.String("list-name")
+	// Fetch list by Name
+	logger.Infof("Fetching list by name: %s", listName)
+	if accountRC == nil {
+		return "", fmt.Errorf("accountRC is nil")
+	}
+	lists, err := APIClient.ListLists(ctx, accountRC, cloudflare.ListListsParams{})
+	if err != nil {
+		return "", fmt.Errorf("error fetching lists: %w", err)
+	}
+	for _, list := range lists {
+		if list.Name == listName {
+			logger.Infof("Found list with name %s and ID %s", list.Name, list.ID)
+			return list.ID, nil
+		}
+	}
+	// Create list if not found
+	if c.Bool(dryRunFlag) {
+		fmt.Printf("Dry Run: Would have created list with name %s\n", listName)
+		return "dry-run-list-id", nil
+	}
+	if listName == "" {
+		return "", fmt.Errorf("could not find list and list name is empty, cannot create list")
+	}
+	logger.Infof("List with name %s not found, creating it", listName)
+	newList, err := APIClient.CreateList(ctx, accountRC, cloudflare.ListCreateParams{
+		Name:        listName,
+		Description: "Created by cloudflare-utils",
+		Kind:        "ip",
+	})
+	if err != nil {
+		return "", fmt.Errorf("error creating list: %w", err)
+	}
+	logger.Infof("Created list with name %s and ID %s", newList.Name, newList.ID)
+	return newList.ID, nil
+}
+
+func getCloudflareIPs(c *cli.Command) ([]string, error) {
+	var ips []string
+	ranges, err := cloudflare.IPs()
+	includeChina := c.String("source") == "preset://cloudflare-china"
+	if err != nil {
+		return nil, fmt.Errorf("error fetching Cloudflare IPs: %w", err)
+	}
+	ipVersion := c.String("ip-version")
+	if ipVersion == ipv4Flag || ipVersion == ipBothFlag {
+		ips = append(ips, ranges.IPv4CIDRs...)
+	}
+	if ipVersion == ipv6Flag || ipVersion == ipBothFlag {
+		ips = append(ips, ranges.IPv6CIDRs...)
+	}
+	if includeChina {
+		if ipVersion == ipv4Flag || ipVersion == ipBothFlag {
+			ips = append(ips, ranges.ChinaIPv4CIDRs...)
+		}
+		if ipVersion == ipv6Flag || ipVersion == ipBothFlag {
+			ips = append(ips, ranges.ChinaIPv6CIDRs...)
+		}
+	}
+
+	return ips, nil
+}
+
+func getUptimeRobotIPs(ctx context.Context) ([]string, error) {
+	return getIPsFromURL(ctx, "https://cdn.uptimerobot.com/api/IPv4andIPv6.txt")
+}
+
+func getGitHubIPs(ctx context.Context, c *cli.Command) ([]string, error) {
+	githubToken := c.String(githubTokenFlagName)
+	gClient := github.NewClient(nil)
+	if githubToken != "" {
+		gClient = github.NewClient(nil).WithAuthToken(githubToken)
+	}
+	results, _, err := gClient.Meta.Get(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching GitHub IPs: %w", err)
+	}
+	var ips []string
+	ips = append(ips, results.Git...)
+	ips = append(ips, results.Hooks...)
+	ips = append(ips, results.Web...)
+	ips = append(ips, results.API...)
+	ips = append(ips, results.Packages...)
+	ips = append(ips, results.Actions...)
+	ips = append(ips, results.Dependabot...)
+	ips = append(ips, results.ActionsMacos...)
+
+	// Remove duplicates
+	unique := make(map[string]struct{})
+	var deduped []string
+	for _, ip := range ips {
+		if _, exists := unique[ip]; !exists {
+			unique[ip] = struct{}{}
+			deduped = append(deduped, ip)
+		}
+	}
+
+	return deduped, nil
+}
+
+func getIPsFromURL(ctx context.Context, url string) ([]string, error) {
+	var ips []string
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching IPs from URL: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error fetching IPs from URL: received status code %d", resp.StatusCode)
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading IPs from URL: %w", err)
+	}
+	lines := strings.Split(string(body), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line != "" {
+			ips = append(ips, line)
+		}
+	}
+	return ips, nil
+}

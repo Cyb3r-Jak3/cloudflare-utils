@@ -36,13 +36,12 @@ func DNSPurge(ctx context.Context, c *cli.Command) error {
 		return err
 	}
 
-	zoneID, err := GetZoneID(ctx, c)
+	err := GetZoneID(ctx, c)
 	if err != nil {
 		return err
 	}
 
-	zoneResource := cloudflare.ZoneIdentifier(zoneID)
-	records, _, err := APIClient.ListDNSRecords(ctx, zoneResource, cloudflare.ListDNSRecordsParams{})
+	records, _, err := APIClient.ListDNSRecords(ctx, zoneRC, cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		logger.WithError(err).Error("Error getting zone info with ID")
 		return err
@@ -63,7 +62,7 @@ func DNSPurge(ctx context.Context, c *cli.Command) error {
 		return nil
 	}
 
-	errors := RapidDNSDelete(zoneResource, records)
+	errors := RapidDNSDelete(zoneRC, records)
 	errorCount := len(errors)
 
 	if errorCount == 0 {
