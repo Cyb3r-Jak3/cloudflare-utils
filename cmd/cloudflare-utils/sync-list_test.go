@@ -47,7 +47,7 @@ func Test_SyncList_PresetCloudflare(t *testing.T) {
 	setupTestHTTPServer(t)
 	defer teardownTestHTTPServer()
 	app := buildApp()
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://cloudflare-china"}
+	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://cloudflare-china", "--comment", "test comment"}
 	err := app.Run(t.Context(), args)
 	assert.NoError(t, err, "Expected no error when syncing list from cloudflare-china source")
 }

@@ -8,9 +8,7 @@ There are currently 3 supported sources:
 - url
 - preset
 
-You can supply either the list name or list id to identify the list you want to sync. If you supply a list name then it will look for an existing list with that name and use it. If no list exists with that name then it will create a new list with that name.
-
-If you supply a list id and not a list name and the list does not exist then it will return an error.
+All items of the list will be replaced with the new items.
 
 #### File
 
@@ -46,6 +44,19 @@ cloudflare-utils --api-token <API Token with Account:Rule Lists:Edit> --account-
 ```
 
 If you want to see a new preset added, please open an issue or a PR.
+
+### Options
+
+One of the source options must be provided and either `--list-id` or `--list-name` must be provided.
+
+- `--list-id`: ID of the list you want to sync. If you supply a list id and not a list name and the list does not exist then it will return an error.
+- `--list-name`: Name of the list you want to sync. If no list exists with that name then it will create a new list with that name.
+- `--list-description`: Description of the list you want to create. Only used if the list does not exist and is being created.
+- `--item-comment`: Comment to add to each item in the list. Default is "Added by cloudflare-utils"
+- `--dry-run`: Output what would be changed without actually making any changes.
+- `--no-comment`: Don't add a comment to each item in the list. Overrides `--comment`
+- `--comment`: Comment to add to each item in the list. Default is "Added by cloudflare-utils"
+- `--no-wait`: Do not wait for the list to be updated. By default, the command will wait for the list to be updated before exiting.
 
 #### Required API Permissions
 

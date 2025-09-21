@@ -93,8 +93,17 @@ func buildListSyncCommand() *cli.Command {
 				Usage: "If set, the command will not add a comment to each list item indicating when it was added. This is useful if you want to keep the list items clean.",
 				Value: false,
 			},
-		},
-			githubTokenFlag),
+			&cli.StringFlag{
+				Name:  "comment",
+				Usage: "Custom comment to add to each list item. If not set, a default comment will be used. Ignored if --no-comment is set.",
+				Action: func(_ context.Context, _ *cli.Command, s string) error {
+					if len(s) > 64 {
+						return fmt.Errorf("comment cannot be longer than 64 characters")
+					}
+					return nil
+				},
+			},
+		}, githubTokenFlag),
 	}
 }
 
@@ -167,7 +176,7 @@ func SyncList(ctx context.Context, c *cli.Command) error {
 		return fmt.Errorf("list ID is empty")
 	}
 
-	listItems := getFilteredIPs(ips, c.String("ip-version"), c.Bool("no-comment"))
+	listItems := getFilteredIPs(ips, c)
 
 	logger.Infof("Syncing %d IPs to list ID %s", len(listItems), listID)
 	if c.Bool(dryRunFlag) {
@@ -189,33 +198,40 @@ func SyncList(ctx context.Context, c *cli.Command) error {
 		return fmt.Errorf("error polling list bulk operation: %w", err)
 	}
 	logger.Debugf("List sync operation completed in %s", time.Since(syncStart).String())
-	logger.Infof("Successfully synced %d IPs to list ID %s", len(listItems), listID)
 	fmt.Printf("Successfully synced %d IPs to list ID %s\n", len(listItems), listID)
 	return nil
 }
 
-func getFilteredIPs(ips []string, version string, noComment bool) []cloudflare.ListItemCreateRequest {
+func getFilteredIPs(ips []string, c *cli.Command) []cloudflare.ListItemCreateRequest {
 	listItems := make([]cloudflare.ListItemCreateRequest, 0, len(ips))
-	comment := "Added by cloudflare-utils at " + startTime.Format(time.RFC3339)
+	ipVersion := c.String("ip-version")
+
+	comment := "Added by cloudflare-utils sync-list on " + startTime.Format(time.RFC822Z)
+	noComment := c.Bool("no-comment")
+	customComment := c.String("comment")
+	if customComment != "" {
+		comment = customComment
+	}
+	// Override comment if no-comment is set
 	if noComment {
 		comment = ""
 	}
 	for _, ip := range ips {
 		if ip == "" {
-			logger.Warnf("Skipping empty IP: %s", ip)
+			logger.Warn("Skipping empty IP")
 			continue
 		}
-		if version == ipv4Flag && strings.Contains(ip, ".") && !strings.Contains(ip, ":") {
+		if ipVersion == ipv4Flag && strings.Contains(ip, ".") && !strings.Contains(ip, ":") {
 			listItems = append(listItems, cloudflare.ListItemCreateRequest{
 				IP:      cloudflare.StringPtr(ip),
 				Comment: comment,
 			})
-		} else if version == ipv6Flag && strings.Contains(ip, ":") && !strings.Contains(ip, ".") {
+		} else if ipVersion == ipv6Flag && strings.Contains(ip, ":") && !strings.Contains(ip, ".") {
 			listItems = append(listItems, cloudflare.ListItemCreateRequest{
 				IP:      cloudflare.StringPtr(ip),
 				Comment: comment,
 			})
-		} else if version == ipBothFlag {
+		} else if ipVersion == ipBothFlag {
 			listItems = append(listItems, cloudflare.ListItemCreateRequest{
 				IP:      cloudflare.StringPtr(ip),
 				Comment: comment,
