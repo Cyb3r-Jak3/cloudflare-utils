@@ -18,6 +18,8 @@ Cloudflare-utils is build for Windows, Mac and Linux and the latest release is a
 
 The recommended method to authenticate is with an [API Token](https://developers.cloudflare.com/api/tokens/create/). Each command will list the API permissions needed for it to run.
 
+You can use [this link](https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22account_rule_lists%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22argotunnel%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22dns%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22page%22%2C%22type%22%3A%22edit%22%7D%5D&name=Cloudflare+Utils&accountId=*&zoneId=all) to create a token with all the necessary permissions.
+
 **To Use**
 
 `cloudflare-utils --api-token <Token Here>`

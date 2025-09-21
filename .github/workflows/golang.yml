@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - main
     paths:
       - 'go.sum'
       - 'go.mod'
@@ -31,15 +33,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Snapshot:
+  Test:
     if: ${{ startsWith(github.ref, 'refs/tags/v') == false }}
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     env:
       GO111MODULE: on
-      GOTEST_SUM_VERSION: v1.12.3
+      GOTEST_SUM_VERSION: v1.13.0
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -53,9 +54,6 @@ jobs:
 
       - name: Install gotestsum
         run: go install gotest.tools/gotestsum@${{ env.GOTEST_SUM_VERSION }}
-
-      - name: Install Syft
-        run: choco install syft --yes
 
       - name: Test
         run: make test
@@ -73,6 +71,26 @@ jobs:
         with:
           use_oidc: true
 
+  Snapshot:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') == false || github.branch != 'main' }}
+    runs-on: windows-latest
+    env:
+      GO111MODULE: on
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Install Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install Syft
+        run: choco install syft --yes
+
       - name: Download AutoComplete file
         run: Invoke-WebRequest -Uri https://raw.githubusercontent.com/urfave/cli/v3.1.1/autocomplete/bash_autocomplete -OutFile bash_completion
 
@@ -89,7 +107,6 @@ jobs:
         with:
           name: cloudflare-utils
           path: dist/*
-
 
       - name: Upload to R2
         run: |

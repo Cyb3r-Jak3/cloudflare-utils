@@ -9,7 +9,7 @@ build:
 	go build -trimpath -ldflags='$(VERSION_FLAGS) -extldflags -static' ./cmd/...
 
 snapshot:
-	cd ./cmd/cloudflare-utils; goreleaser --snapshot --clean --skip=publish,sign
+	goreleaser --snapshot --clean --skip=publish,sign
 
 lint:
 	golangci-lint run --config .golangci-lint.yml ./cmd/...

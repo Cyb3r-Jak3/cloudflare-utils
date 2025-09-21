@@ -13,7 +13,6 @@ const (
 	allTunnelsFlag     = "all-tunnels"
 	includeDeletedFlag = "include-deleted"
 	activeOnlyFlag     = "healthy-only"
-	githubTokenFlag    = "github-token"
 )
 
 func buildTunnelVersionCommand() *cli.Command {
@@ -21,7 +20,7 @@ func buildTunnelVersionCommand() *cli.Command {
 		Name:   "tunnel-versions",
 		Usage:  "Get version of tunnel connectors\nAPI Token Requirements: Cloudflare Tunnel:Read",
 		Action: TunnelVersionAction,
-		Flags: []cli.Flag{
+		Flags: append([]cli.Flag{
 			&cli.BoolFlag{
 				Name:    allTunnelsFlag,
 				Aliases: []string{"a"},
@@ -42,14 +41,7 @@ func buildTunnelVersionCommand() *cli.Command {
 				Sources: cli.EnvVars("ACTIVE_ONLY_TUNNELS"),
 				Value:   false,
 			},
-			&cli.StringFlag{
-				Name:    githubTokenFlag,
-				Aliases: []string{"gh"},
-				Usage:   "GitHub token to use for getting the latest version of cloudflared. Helps with rate limiting of GitHub API",
-				Sources: cli.EnvVars("GITHUB_TOKEN"),
-				Value:   "",
-			},
-		},
+		}, githubTokenFlag),
 	}
 }
 
@@ -66,10 +58,12 @@ func GetLatestTunnelVersion(token string) (string, error) {
 }
 
 func TunnelVersionAction(ctx context.Context, c *cli.Command) error {
+	if accountRC == nil {
+		return fmt.Errorf("account ID must be set for this command")
+	}
 	if err := CheckAPITokenPermission(ctx, TunnelRead); err != nil {
 		return err
 	}
-	accountRC := cloudflare.AccountIdentifier(c.String(accountIDFlag))
 	tunnels, _, err := APIClient.ListTunnels(ctx, accountRC, cloudflare.TunnelListParams{
 		IsDeleted: cloudflare.BoolPtr(c.Bool(includeDeletedFlag)),
 	})
@@ -86,7 +80,7 @@ func TunnelVersionAction(ctx context.Context, c *cli.Command) error {
 		}
 		tunnels = screenedTunnels
 	}
-	githubToken := c.String(githubTokenFlag)
+	githubToken := c.String(githubTokenFlagName)
 	latestVersion, err := GetLatestTunnelVersion(githubToken)
 	if err != nil {
 		logger.WithError(err).Error("Error getting latest release of cloudflared from github")

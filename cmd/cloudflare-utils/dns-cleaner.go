@@ -139,21 +139,19 @@ func DownloadDNS(ctx context.Context, c *cli.Command) error {
 		return errors.New("existing DNS file found and no overwrite flag is set")
 	}
 
-	zoneID, err := GetZoneID(ctx, c)
+	err := GetZoneID(ctx, c)
 	if err != nil {
 		return err
 	}
 	zoneName := strings.TrimSpace(c.String(zoneNameFlag))
-	if zoneName == "" {
-		zoneName = zoneID
-	}
-	records, _, err := APIClient.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{})
+
+	records, _, err := APIClient.ListDNSRecords(ctx, zoneRC, cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		logger.WithError(err).Errorln("Error getting zone info with ID")
 		return err
 	}
 	recordFile := &RecordFile{
-		ZoneID:   zoneID,
+		ZoneID:   zoneRC.Identifier,
 		ZoneName: zoneName,
 	}
 	toKeep := !c.Bool(noKeepFlag)

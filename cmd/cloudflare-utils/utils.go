@@ -16,7 +16,18 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const maxGoRoutines = 10
+const (
+	maxGoRoutines       = 10
+	githubTokenFlagName = "github-token"
+)
+
+var githubTokenFlag = &cli.StringFlag{
+	Name:    githubTokenFlagName,
+	Aliases: []string{"gh"},
+	Usage:   "Helps with rate limiting of GitHub API. Only used for tunnel-version and sync-list commands.",
+	Sources: cli.EnvVars("GITHUB_TOKEN"),
+	Value:   "",
+}
 
 // SetLogLevel sets the log level based on the CLI flags.
 func SetLogLevel(c *cli.Command, logger *logrus.Logger) {
@@ -41,11 +52,11 @@ func SetLogLevel(c *cli.Command, logger *logrus.Logger) {
 }
 
 // GetZoneID gets the zone ID from the CLI flags either by name or ID.
-func GetZoneID(ctx context.Context, c *cli.Command) (string, error) {
+func GetZoneID(ctx context.Context, c *cli.Command) error {
 	zoneName := c.String(zoneNameFlag)
 	zoneID := c.String(zoneIDFlag)
 	if zoneName == "" && zoneID == "" {
-		return "", fmt.Errorf("need `%s` or `%s` set", zoneNameFlag, zoneIDFlag)
+		return fmt.Errorf("need `%s` or `%s` set", zoneNameFlag, zoneIDFlag)
 	}
 
 	if zoneID == "" {
@@ -62,11 +73,15 @@ func GetZoneID(ctx context.Context, c *cli.Command) (string, error) {
 				}
 			}
 			logger.WithError(err).Errorln("Error getting zone id from name")
-			return "", err
+			return err
 		}
 		zoneID = id
 	}
-	return zoneID, nil
+	zoneRC = cloudflare.ZoneIdentifier(zoneID)
+	if zoneRC == nil {
+		return fmt.Errorf("error setting zone resource container")
+	}
+	return nil
 }
 
 type PagesDeploymentPaginationOptions struct {
@@ -170,6 +185,7 @@ const (
 	PagesWrite  APIPermissionName = "PagesWrite"
 	TunnelRead  APIPermissionName = "TunnelRead"
 	TunnelWrite APIPermissionName = "TunnelWrite"
+	ListsWrites APIPermissionName = "ListsWrite"
 )
 
 var apiPermissionMap = map[APIPermissionName]string{
@@ -177,7 +193,12 @@ var apiPermissionMap = map[APIPermissionName]string{
 	PagesWrite:  "8d28297797f24fb8a0c332fe0866ec89",
 	TunnelRead:  "efea2ab8357b47888938f101ae5e053f",
 	TunnelWrite: "c07321b023e944ff818fec44d8203567",
+	ListsWrites: "2edbf20661fd4661b0fe10e9e12f485c",
 }
+
+var (
+	ErrAPIPermissionError = errors.New("API Token does not have the required permissions")
+)
 
 func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionName) error {
 	if APIClient.APIToken == "" {
@@ -189,7 +210,7 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 	}
 	token, err := VerifyAPIToken(ctx)
 	if err != nil {
-		if strings.Contains(err.Error(), "API token is not authorized to check if it has the correct permissions") {
+		if errors.Is(err, ErrAPIPermissionError) {
 			return nil
 		}
 		return err
@@ -220,10 +241,45 @@ func VerifyAPIToken(ctx context.Context) (cloudflare.APIToken, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), "Unauthorized to access requested resource") {
 			logger.Debug("API token is not authorized to check if it has the correct permissions")
-			return cloudflare.APIToken{}, errors.New("API token is not authorized to check if it has the correct permissions")
+			return cloudflare.APIToken{}, ErrAPIPermissionError
 		}
 		logger.WithError(err).Debug("Error getting API token permissions")
 		return cloudflare.APIToken{}, err
 	}
 	return permissions, nil
+}
+
+// Copied from cloudflare-go because it is not exposed.
+const (
+	errOperationUnexpectedStatus = "bulk operation returned an unexpected status"
+	errOperationStillRunning     = "bulk operation did not finish before timeout"
+)
+
+func PollListBulkOperation(ctx context.Context, rc *cloudflare.ResourceContainer, ID string) error {
+	for i := uint8(0); i < 16; i++ {
+		sleepDuration := 1 << (i / 2) * time.Second
+		select {
+		case <-time.After(sleepDuration):
+		case <-ctx.Done():
+			return fmt.Errorf("operation aborted during backoff: %w", ctx.Err())
+		}
+
+		bulkResult, err := APIClient.GetListBulkOperation(ctx, rc, ID)
+		if err != nil {
+			return err
+		}
+
+		switch bulkResult.Status {
+		case "failed":
+			return errors.New(bulkResult.Error)
+		case "pending", "running":
+			continue
+		case "completed":
+			return nil
+		default:
+			return fmt.Errorf("%s: %s", errOperationUnexpectedStatus, bulkResult.Status)
+		}
+	}
+
+	return errors.New(errOperationStillRunning)
 }

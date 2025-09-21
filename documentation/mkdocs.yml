@@ -44,6 +44,8 @@ nav:
     - pages/purge-deployments.md
   - Tunnels:
     - tunnels/list-versions.md
+  - Lists:
+    - lists/sync-list.md
   - roadmap.md
   - troubleshooting.md
 

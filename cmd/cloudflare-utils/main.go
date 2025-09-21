@@ -26,6 +26,8 @@ var (
 	ctx           = context.Background()
 	startTime     = time.Now()
 	versionString = fmt.Sprintf("%s (built %s)", version, date)
+	accountRC     *cloudflare.ResourceContainer
+	zoneRC        *cloudflare.ResourceContainer
 )
 
 func buildApp() *cli.Command {
@@ -51,6 +53,7 @@ func buildApp() *cli.Command {
 			buildPurgeDeploymentsCommand(),
 			buildGenerateDocsCommand(),
 			buildTunnelVersionCommand(),
+			buildListSyncCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -171,6 +174,12 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 		if err != nil {
 			logger.WithError(err).Error("Error creating new API instance with legacy method")
 		}
+	}
+	if c.String("account-id") != "" {
+		accountRC = cloudflare.AccountIdentifier(c.String("account-id"))
+	}
+	if c.String("zone-id") != "" {
+		zoneRC = cloudflare.ZoneIdentifier(c.String("zone-id"))
 	}
 
 	return ctx, err
