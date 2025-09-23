@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/Cyb3r-Jak3/common/v5 v5.5.0
 	github.com/cloudflare/cloudflare-go v0.116.0
-	github.com/google/go-github/v74 v74.0.0
+	github.com/google/go-github/v75 v75.0.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/sourcegraph/conc v0.3.0
 	github.com/stretchr/testify v1.11.1

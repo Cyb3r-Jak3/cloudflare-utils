@@ -11,7 +11,7 @@ import (
 
 	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-github/v74/github"
+	"github.com/google/go-github/v75/github"
 	"github.com/urfave/cli/v3"
 )
 
