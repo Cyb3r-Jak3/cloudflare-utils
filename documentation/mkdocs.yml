@@ -48,6 +48,7 @@ nav:
     - lists/sync-list.md
   - roadmap.md
   - troubleshooting.md
+  - github-actions.md
 
 copyright: |
   &copy; 2022-2024 Cyb3r-Jak3. All rights reserved.
