@@ -4,6 +4,8 @@
 
 Cloudflare-utils is build for Windows, Mac and Linux and the latest release is available to download from [GitHub](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/latest). Download the tar/zip file for your operating system and then extract the executable.
 
+There is also a GitHub Action available to install and run cloudflare-utils in your workflows read more: [here](./github-actions.md).
+
 ### Additional Installation Methods
 
 1. Docker
