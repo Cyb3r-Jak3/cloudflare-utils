@@ -16,6 +16,7 @@ This is a collection of utilities for Cloudflare. The utilities are written in G
 * [Deployment Purge](https://cloudflare-utils.cyberjake.xyz/pages/purge-deployments/)
 * [Deployment Prune](https://cloudflare-utils.cyberjake.xyz/pages/prune-deployments/)
 * [List Tunnel Version](https://cloudflare-utils.cyberjake.xyz/tunnels/list-versions/)
+* [Sync IP List](https://cloudflare-utils.cyberjake.xyz/lists/sync-list/)
 
 ## Installation
 
