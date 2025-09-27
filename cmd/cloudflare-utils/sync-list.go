@@ -112,13 +112,13 @@ func SyncList(ctx context.Context, c *cli.Command) error {
 	listName := c.String("list-name")
 	listID := c.String("list-id")
 	if listName == "" && listID == "" {
-		return fmt.Errorf("either list-name or list-id must be provided")
+		return fmt.Errorf("either --list-id or --list-name must be provided")
 	}
 	listSource := c.String("source")
 	if listSource == "" {
 		listSource = c.Args().First()
 		if listSource == "" {
-			return fmt.Errorf("source must be provided")
+			return fmt.Errorf("source must be provided as an argument or with --source")
 		}
 	}
 	sourceURL, err := url.Parse(listSource)
