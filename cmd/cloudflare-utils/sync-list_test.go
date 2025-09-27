@@ -12,6 +12,16 @@ func Test_SyncList_HTTPSource(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when syncing list from HTTP source")
 }
 
+func Test_SyncList_SourceAsArg(t *testing.T) {
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "https://www.cloudflare.com/ips-v4"})
+	assert.NoError(t, err, "Expected no error when syncing list from HTTP source as argument")
+}
+
+func Test_SyncList_TestID(t *testing.T) {
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-id", "2c0fc9fa937b11eaa1b71c4d701ab86e", "https://www.cloudflare.com/ips-v4"})
+	assert.NoError(t, err, "Expected no error when syncing list from HTTP source when using list ID")
+}
+
 func Test_SyncList_HTTPSourceDryRun(t *testing.T) {
 	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--dry-run", "--source", "https://www.cloudflare.com/ips-v4"})
 	assert.NoError(t, err, "Expected no error when dry-running sync list from HTTP source")
