@@ -7,7 +7,6 @@ import (
 )
 
 func Test_PruneDeployments_Branch(t *testing.T) {
-
 	err := withApp(t, []string{"cloudflare-utils", "prune-deployments", "--project", "cloudflare-utils-pages-project", "--branch", "main"})
 	assert.NoError(t, err, "Expected no error when running the app with dry-run flag")
 }

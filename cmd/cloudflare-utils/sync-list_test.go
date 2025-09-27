@@ -79,5 +79,4 @@ func Test_SyncList_EmptyIPs(t *testing.T) {
 	defer os.Remove(fileName)
 	err = withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "file://" + fileName})
 	assert.Error(t, err, "Expected error for empty IPs list")
-
 }

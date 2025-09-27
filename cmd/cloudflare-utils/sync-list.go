@@ -116,14 +116,9 @@ func SyncList(ctx context.Context, c *cli.Command) error {
 	if err != nil {
 		return fmt.Errorf("error parsing source URL: %w", err)
 	}
-	if sourceURL.Scheme == "http" || sourceURL.Scheme == "https" {
-		if sourceURL.Host == "" {
-			return fmt.Errorf("invalid URL: host is empty")
-		}
-	}
 	var ips []string
-	switch {
-	case sourceURL.Scheme == "preset":
+	switch sourceURL.Scheme {
+	case "preset":
 		switch sourceURL.Host {
 		case "cloudflare":
 			ips, err = getCloudflareIPs(c, sourceURL.Query())
@@ -143,13 +138,13 @@ func SyncList(ctx context.Context, c *cli.Command) error {
 		default:
 			return fmt.Errorf("invalid preset: %s", sourceURL.Host)
 		}
-	case sourceURL.Scheme == "http" || sourceURL.Scheme == "https":
+	case "http", "https":
 		ips, err = getIPsFromURL(ctx, listSource)
 		if err != nil {
 			return fmt.Errorf("error getting IPs from URL: %w", err)
 		}
 
-	case sourceURL.Scheme == "file":
+	case "file":
 		filePath := sourceURL.Host
 		if !common.FileExists(filePath) {
 			return fmt.Errorf("file does not exist: %s", filePath)
@@ -380,12 +375,7 @@ func getIPsFromURL(ctx context.Context, url string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error fetching IPs from URL: %w", err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			logger.WithError(err).Warn("Error closing response body")
-		}
-	}(resp.Body)
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("error fetching IPs from URL: received status code %d", resp.StatusCode)
 	}

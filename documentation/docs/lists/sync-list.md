@@ -31,11 +31,16 @@ cloudflare-utils --api-token <API Token with Account:Rule Lists:Edit> --account-
 There are the following presets available:
 
 #### - `cloudflare`
-    List of ips that Cloudflare uses for their services. To include china ips add `?include=china` to the end of the preset. For example: `preset://cloudflare?include=china`
+
+IPs that Cloudflare uses for their services. To include china ips add `?include=china` to the end of the preset. For example: `preset://cloudflare?include=china`
+
 #### - `github`
-    List of ips that GitHub uses for their services. Includes, web, hooks, api, git, packages, packages, actions, actions_macos. You can exclude any of these by adding `?exclude=` followed by a comma separated list of items to exclude. For example, to exclude actions and actions_macos: `preset://github?exclude=actions,actions_macos`
+
+IPs that GitHub uses for their services. Includes, web, hooks, api, git, packages, packages, actions, actions_macos. You can exclude any of these by adding `?exclude=` followed by a comma separated list of items to exclude. For example, to exclude actions and actions_macos: `preset://github?exclude=actions,actions_macos`
+
 #### - `uptime-robot`
-    List of ips that Uptime Robot uses for their services.
+
+IPs that Uptime Robot uses for their services.
 
 Example usage:
 ```shell
