@@ -445,11 +445,6 @@ func setupTestHTTPServer(t *testing.T) {
 			"result": null
 		}`)
 	}
-	mux.HandleFunc("/test-ips.txt", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodGet, r.Method, "Expected a GET request for test-ips.txt")
-		w.Header().Set("content-type", "text/plain")
-		fmt.Fprint(w, "1.2.3.4\n2001:db8::1\n8.8.8.8\n")
-	})
 	mux.HandleFunc("/user/tokens/verify", verifyHandler)
 	mux.HandleFunc("/user/tokens/ed17574386854bf78a67040be0a770b0", tokenPermissionsHandler)
 	mux.HandleFunc("/accounts/1/pages/projects/cloudflare-utils-pages-project/deployments", pagesDeploymentPage1Handler)
@@ -534,4 +529,11 @@ func setupTestHTTPServer(t *testing.T) {
 
 func teardownTestHTTPServer() {
 	server.Close()
+}
+
+func withApp(t *testing.T, args []string) error {
+	setupTestHTTPServer(t)
+	t.Cleanup(teardownTestHTTPServer)
+	app := buildApp()
+	return app.Run(t.Context(), args)
 }
