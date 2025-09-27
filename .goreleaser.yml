@@ -157,4 +157,4 @@ homebrew_casks:
 announce:
   bluesky:
     enabled: true
-    username: releases.cyberjake.xyz
+    username: "releases.cyberjake.xyz"

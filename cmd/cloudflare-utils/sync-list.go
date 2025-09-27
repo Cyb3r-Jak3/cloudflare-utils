@@ -33,9 +33,8 @@ func buildListSyncCommand() *cli.Command {
 		Action: SyncList,
 		Flags: append([]cli.Flag{
 			&cli.StringFlag{
-				Name:     "list-name",
-				Usage:    "Name of the list to sync with. If the list does not exist, it will be created.",
-				Required: true,
+				Name:  "list-name",
+				Usage: "Name of the list to sync with. If the list does not exist, it will be created.",
 			},
 			&cli.StringFlag{
 				Name:  "list-id",
@@ -49,7 +48,6 @@ func buildListSyncCommand() *cli.Command {
 					"  - uptime-robot\n" +
 					"  - github\n" +
 					"For more information on formats, see: https://cloudflare-utils.cyberjake.xyz/lists/sync-list/",
-				Required: true,
 				Action: func(_ context.Context, _ *cli.Command, s string) error {
 					sourceURL, err := url.Parse(s)
 					if err != nil {
@@ -111,7 +109,18 @@ func buildListSyncCommand() *cli.Command {
 }
 
 func SyncList(ctx context.Context, c *cli.Command) error {
+	listName := c.String("list-name")
+	listID := c.String("list-id")
+	if listName == "" && listID == "" {
+		return fmt.Errorf("either --list-id or --list-name must be provided")
+	}
 	listSource := c.String("source")
+	if listSource == "" {
+		listSource = c.Args().First()
+		if listSource == "" {
+			return fmt.Errorf("source must be provided as an argument or with --source")
+		}
+	}
 	sourceURL, err := url.Parse(listSource)
 	if err != nil {
 		return fmt.Errorf("error parsing source URL: %w", err)
@@ -166,7 +175,6 @@ func SyncList(ctx context.Context, c *cli.Command) error {
 		return fmt.Errorf("no IPs found to sync")
 	}
 
-	listID := c.String("list-id")
 	if listID == "" {
 		listID, err = getCloudflareList(ctx, c)
 		if err != nil {
@@ -174,7 +182,7 @@ func SyncList(ctx context.Context, c *cli.Command) error {
 		}
 	}
 	if listID == "" {
-		return fmt.Errorf("list ID is empty")
+		return fmt.Errorf("list ID is empty after attempting to fetch or create the list")
 	}
 
 	listItems := getFilteredIPs(ips, c)

@@ -61,6 +61,7 @@ One of the source options must be provided and either `--list-id` or `--list-nam
 - `--no-comment`: Don't add a comment to each item in the list. Overrides `--comment`
 - `--comment`: Comment to add to each item in the list. Default is "Added by cloudflare-utils"
 - `--no-wait`: Do not wait for the list to be updated. By default, the command will wait for the list to be updated before exiting.
+- `--source`: Source of the list. Can be `file://`, `http://`, `https://`, or `preset://`. It can also be supplied as the last argument without the `--source` flag.
 
 #### Required API Permissions
 
