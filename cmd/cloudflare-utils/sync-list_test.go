@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -9,96 +8,75 @@ import (
 )
 
 func Test_SyncList_HTTPSource(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
-	serverBase := os.Getenv("CLOUDFLARE_BASE_URL")
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", fmt.Sprintf("%s/test-ips.txt", serverBase)}
-	err := app.Run(t.Context(), args)
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "https://www.cloudflare.com/ips-v4"})
 	assert.NoError(t, err, "Expected no error when syncing list from HTTP source")
 }
 
 func Test_SyncList_HTTPSourceDryRun(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
-	serverBase := os.Getenv("CLOUDFLARE_BASE_URL")
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--dry-run", "--source", fmt.Sprintf("%s/test-ips.txt", serverBase)}
-	err := app.Run(t.Context(), args)
-	assert.NoError(t, err, "Expected no error when syncing list from HTTP source with dry-run")
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--dry-run", "--source", "https://www.cloudflare.com/ips-v4"})
+	assert.NoError(t, err, "Expected no error when dry-running sync list from HTTP source")
 }
 
 func Test_SyncList_FileSource(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
 	fileName := "test-ips.txt"
 	err := os.WriteFile(fileName, []byte("1.2.3.4\n2001:db8::1\n"), 0600)
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 	defer os.Remove(fileName)
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--no-wait", "--source", "file://" + fileName}
-	err = app.Run(t.Context(), args)
+	err = withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--no-wait", "--source", "file://" + fileName})
 	assert.NoError(t, err, "Expected no error when syncing list from file source")
 }
 
 func Test_SyncList_PresetCloudflare(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://cloudflare-china", "--comment", "test comment"}
-	err := app.Run(t.Context(), args)
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://cloudflare?china=true", "--comment", "test comment"})
 	assert.NoError(t, err, "Expected no error when syncing list from cloudflare-china source")
 }
 
 func Test_SyncList_PresetGitHub(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://github", "--no-wait"}
-	err := app.Run(t.Context(), args)
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://github", "--no-wait"})
+	assert.NoError(t, err, "Expected no error when syncing list from preset source")
+}
+
+func Test_SyncList_PresetGitHubExclude(t *testing.T) {
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://github?exclude=actions", "--no-wait"})
 	assert.NoError(t, err, "Expected no error when syncing list from preset source")
 }
 
 func Test_SyncList_PresetUptime(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://uptime-robot", "--no-comment"}
-	err := app.Run(t.Context(), args)
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "preset://uptime-robot", "--no-comment"})
 	assert.NoError(t, err, "Expected no error when syncing list from preset source")
 }
 
 func Test_SyncList_InvalidSource(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "invalid://source"}
-	err := app.Run(t.Context(), args)
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "invalid://source"})
 	assert.Error(t, err, "Expected error for invalid source scheme")
+	if err == nil || err.Error() != "invalid source scheme: invalid" {
+		t.Errorf("Expected error message to contain 'invalid source scheme', got: %v", err)
+	}
 
-	args = []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "ftp://example.com/ips.txt"}
-	err = app.Run(t.Context(), args)
-	assert.Error(t, err, "Expected error for ftp source scheme")
+	err = withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "ftp://example.com/ips.txt"})
+	if err == nil || err.Error() != "invalid source scheme: ftp" {
+		t.Errorf("Expected error message to contain 'invalid source scheme', got: %v", err)
+	}
+}
 
-	args = []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "https://example.com/ips.txt", "--ip-version", "invalid"}
-	err = app.Run(t.Context(), args)
+func Test_SyncList_InvalidIPVersion(t *testing.T) {
+	err := withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "https://example.com/ips.txt", "--ip-version", "invalid"})
+
 	assert.Error(t, err, "Expected error for invalid IP version")
+	if err == nil || err.Error() != "invalid ip-version: invalid. Valid versions are: both, ipv4, ipv6" {
+		t.Errorf("Expected error message to contain 'invalid ip version', got: %v", err)
+	}
 }
 
 func Test_SyncList_EmptyIPs(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
-	// Point to an empty file
 	fileName := "empty-ips.txt"
 	err := os.WriteFile(fileName, []byte(""), 0600)
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 	defer os.Remove(fileName)
-	args := []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "file://" + fileName}
-	err = app.Run(t.Context(), args)
+	err = withApp(t, []string{"cloudflare-utils", "sync-list", "--list-name", "test-list", "--source", "file://" + fileName})
 	assert.Error(t, err, "Expected error for empty IPs list")
 }

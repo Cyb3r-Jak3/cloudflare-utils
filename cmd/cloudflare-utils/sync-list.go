@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -19,6 +20,10 @@ const (
 	ipv4Flag   = "ipv4"
 	ipv6Flag   = "ipv6"
 	ipBothFlag = "both"
+)
+
+var (
+	validPresets = []string{"cloudflare", "uptime-robot", "github"}
 )
 
 func buildListSyncCommand() *cli.Command {
@@ -40,27 +45,25 @@ func buildListSyncCommand() *cli.Command {
 				Name: "source",
 				Usage: "Source of the IPs to sync. Can be a URL, file path, or preset. URL and file path must start with http(s):// or file:// respectively.\n" +
 					"Presets starts with preset://. Currently, support presets are: \n" +
-					"  - cloudflare\n" +
-					"  - cloudflare-china\n" +
+					"  - cloudflare. You can also do ?include=china to include China DC IP addresses\n" +
 					"  - uptime-robot\n" +
 					"  - github\n" +
 					"For more information on formats, see: https://cloudflare-utils.cyberjake.xyz/lists/sync-list/",
 				Required: true,
 				Action: func(_ context.Context, _ *cli.Command, s string) error {
-					if !strings.Contains(s, "://") {
-						return fmt.Errorf("source must start with a valid scheme (e.g., http://, https://, file://, preset://)")
+					sourceURL, err := url.Parse(s)
+					if err != nil {
+						return fmt.Errorf("precheck error parsing source URL: %w", err)
 					}
-					source := strings.Split(s, "://")
-					switch source[0] {
-					case "http", "https", "file", "preset":
-					default:
-						return fmt.Errorf("invalid source scheme: %s", source[0])
-					}
-					if source[0] == "preset" {
-						validPresets := []string{"cloudflare", "uptime-robot", "github", "cloudflare-china"}
-						if !common.StringSearch(source[1], validPresets) {
-							return fmt.Errorf("invalid preset: %s. Valid presets are: %s", source[1], strings.Join(validPresets, ", "))
+					switch sourceURL.Scheme {
+					case "http", "https", "file":
+						return nil
+					case "preset":
+						if !common.StringSearch(sourceURL.Host, validPresets) {
+							return fmt.Errorf("invalid preset: %s. Valid presets are: %s", sourceURL.Host, strings.Join(validPresets, ", "))
 						}
+					default:
+						return fmt.Errorf("invalid source scheme: %s", sourceURL.Scheme)
 					}
 					return nil
 				},
@@ -109,41 +112,40 @@ func buildListSyncCommand() *cli.Command {
 
 func SyncList(ctx context.Context, c *cli.Command) error {
 	listSource := c.String("source")
+	sourceURL, err := url.Parse(listSource)
+	if err != nil {
+		return fmt.Errorf("error parsing source URL: %w", err)
+	}
 	var ips []string
-	switch {
-	case strings.HasPrefix(listSource, "preset://"):
-		preset := strings.TrimPrefix(listSource, "preset://")
-		switch preset {
-		case "cloudflare", "cloudflare-china":
-			var err error
-			ips, err = getCloudflareIPs(c)
+	switch sourceURL.Scheme {
+	case "preset":
+		switch sourceURL.Host {
+		case "cloudflare":
+			ips, err = getCloudflareIPs(c, sourceURL.Query())
 			if err != nil {
 				return fmt.Errorf("error getting Cloudflare IPs: %w", err)
 			}
 		case "uptime-robot":
-			var err error
 			ips, err = getUptimeRobotIPs(ctx)
 			if err != nil {
 				return fmt.Errorf("error getting Uptime Robot IPs: %w", err)
 			}
 		case "github":
-			var err error
-			ips, err = getGitHubIPs(ctx, c)
+			ips, err = getGitHubIPs(ctx, c, sourceURL.Query())
 			if err != nil {
 				return fmt.Errorf("error getting GitHub IPs: %w", err)
 			}
 		default:
-			return fmt.Errorf("invalid preset: %s", preset)
+			return fmt.Errorf("invalid preset: %s", sourceURL.Host)
 		}
-	case strings.HasPrefix(listSource, "http://"), strings.HasPrefix(listSource, "https://"):
-		var err error
+	case "http", "https":
 		ips, err = getIPsFromURL(ctx, listSource)
 		if err != nil {
 			return fmt.Errorf("error getting IPs from URL: %w", err)
 		}
-	}
-	if strings.HasPrefix(listSource, "file://") {
-		filePath := strings.TrimPrefix(listSource, "file://")
+
+	case "file":
+		filePath := sourceURL.Host
 		if !common.FileExists(filePath) {
 			return fmt.Errorf("file does not exist: %s", filePath)
 		}
@@ -166,7 +168,6 @@ func SyncList(ctx context.Context, c *cli.Command) error {
 
 	listID := c.String("list-id")
 	if listID == "" {
-		var err error
 		listID, err = getCloudflareList(ctx, c)
 		if err != nil {
 			return fmt.Errorf("error getting Cloudflare list: %w", err)
@@ -207,13 +208,12 @@ func getFilteredIPs(ips []string, c *cli.Command) []cloudflare.ListItemCreateReq
 	ipVersion := c.String("ip-version")
 
 	comment := "Added by cloudflare-utils sync-list on " + startTime.Format(time.RFC822Z)
-	noComment := c.Bool("no-comment")
 	customComment := c.String("comment")
 	if customComment != "" {
 		comment = customComment
 	}
 	// Override comment if no-comment is set
-	if noComment {
+	if c.Bool("no-comment") {
 		comment = ""
 	}
 	for _, ip := range ips {
@@ -279,13 +279,13 @@ func getCloudflareList(ctx context.Context, c *cli.Command) (string, error) {
 	return newList.ID, nil
 }
 
-func getCloudflareIPs(c *cli.Command) ([]string, error) {
+func getCloudflareIPs(c *cli.Command, query url.Values) ([]string, error) {
 	var ips []string
 	ranges, err := cloudflare.IPs()
-	includeChina := c.String("source") == "preset://cloudflare-china"
 	if err != nil {
 		return nil, fmt.Errorf("error fetching Cloudflare IPs: %w", err)
 	}
+	includeChina := queryToList(query)["china"]
 	ipVersion := c.String("ip-version")
 	if ipVersion == ipv4Flag || ipVersion == ipBothFlag {
 		ips = append(ips, ranges.IPv4CIDRs...)
@@ -309,7 +309,7 @@ func getUptimeRobotIPs(ctx context.Context) ([]string, error) {
 	return getIPsFromURL(ctx, "https://cdn.uptimerobot.com/api/IPv4andIPv6.txt")
 }
 
-func getGitHubIPs(ctx context.Context, c *cli.Command) ([]string, error) {
+func getGitHubIPs(ctx context.Context, c *cli.Command, query url.Values) ([]string, error) {
 	githubToken := c.String(githubTokenFlagName)
 	gClient := github.NewClient(nil)
 	if githubToken != "" {
@@ -319,15 +319,38 @@ func getGitHubIPs(ctx context.Context, c *cli.Command) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error fetching GitHub IPs: %w", err)
 	}
+	exclude := queryToList(query)
 	var ips []string
-	ips = append(ips, results.Git...)
-	ips = append(ips, results.Hooks...)
-	ips = append(ips, results.Web...)
-	ips = append(ips, results.API...)
-	ips = append(ips, results.Packages...)
-	ips = append(ips, results.Actions...)
-	ips = append(ips, results.Dependabot...)
-	ips = append(ips, results.ActionsMacos...)
+	if !exclude["git"] {
+		ips = append(ips, results.Git...)
+	}
+	if !exclude["hooks"] {
+		ips = append(ips, results.Hooks...)
+	}
+	if !exclude["pages"] {
+		ips = append(ips, results.Pages...)
+	}
+	if !exclude["importer"] {
+		ips = append(ips, results.Importer...)
+	}
+	if !exclude["actions"] {
+		ips = append(ips, results.Actions...)
+	}
+	if !exclude["dependabot"] {
+		ips = append(ips, results.Dependabot...)
+	}
+	if !exclude["actions-macos"] {
+		ips = append(ips, results.ActionsMacos...)
+	}
+	if !exclude["api"] {
+		ips = append(ips, results.API...)
+	}
+	if !exclude["packages"] {
+		ips = append(ips, results.Packages...)
+	}
+	if !exclude["web"] {
+		ips = append(ips, results.Web...)
+	}
 
 	// Remove duplicates
 	unique := make(map[string]struct{})
@@ -368,4 +391,19 @@ func getIPsFromURL(ctx context.Context, url string) ([]string, error) {
 		}
 	}
 	return ips, nil
+}
+
+func queryToList(query url.Values) map[string]bool {
+	// Parse include query parameter
+	// Example: ?include=china,foo,bar
+	// Result: map[string]bool{"china": true, "foo": true, "bar": true}
+
+	includes := make(map[string]bool)
+	include := query.Get("include")
+	if include != "" {
+		for _, inc := range strings.Split(include, ",") {
+			includes[strings.TrimSpace(strings.ToLower(inc))] = true
+		}
+	}
+	return includes
 }

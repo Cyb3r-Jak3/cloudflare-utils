@@ -8,35 +8,29 @@ import (
 )
 
 func Test_DNSCleanerRootDownload(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
-	err := app.Run(t.Context(), []string{"cloudflare-utils", "--trace", "dns-cleaner", "--zone-id", "2", "--dns-file", "test.yaml"})
+	err := withApp(t, []string{"cloudflare-utils", "--trace", "dns-cleaner", "--zone-id", "2", "--dns-file", "test.yaml"})
 	assert.NoError(t, err, "Expected no error when running the app with dns-cleaner download command")
 	// Check if the file was created
-	if _, err := os.Stat("test.yaml"); os.IsNotExist(err) {
+	if _, err = os.Stat("test.yaml"); os.IsNotExist(err) {
 		t.Errorf("File test.yaml was not created")
 	} else {
 		// Remove the file after the test
-		err := os.Remove("test.yaml")
+		err = os.Remove("test.yaml")
 		if err != nil {
-			t.Errorf("Error removing test.yaml: %v", err)
+			t.Fatalf("Error removing test.yaml: %v", err)
 		}
 	}
 }
 
 func Test_DNSCleanerDownload(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
-	err := app.Run(t.Context(), []string{"cloudflare-utils", "--trace", "dns-cleaner", "download", "--zone-id", "2", "--dns-file", "test.yaml", "--quick-clean"})
+	err := withApp(t, []string{"cloudflare-utils", "--trace", "dns-cleaner", "download", "--zone-id", "2", "--dns-file", "test.yaml", "--quick-clean"})
 	assert.NoError(t, err, "Expected no error when running the app with dns-cleaner download command")
 	// Check if the file was created
-	if _, err := os.Stat("test.yaml"); os.IsNotExist(err) {
+	if _, err = os.Stat("test.yaml"); os.IsNotExist(err) {
 		t.Errorf("File test.yaml was not created")
 	} else {
 		// Remove the file after the test
-		err := os.Remove("test.yaml")
+		err = os.Remove("test.yaml")
 		if err != nil {
 			t.Errorf("Error removing test.yaml: %v", err)
 		}
@@ -54,18 +48,14 @@ func Test_Failed_DNSCleanerDownload(t *testing.T) {
 }
 
 func Test_DNSCleaner(t *testing.T) {
-	setupTestHTTPServer(t)
-	defer teardownTestHTTPServer()
-	app := buildApp()
 	outputFileName := "complete.yaml"
-	err := app.Run(t.Context(), []string{"cloudflare-utils", "dns-cleaner", "--zone-name", "2", "--dns-file", outputFileName, "--no-keep"})
+	err := withApp(t, []string{"cloudflare-utils", "dns-cleaner", "--zone-name", "2", "--dns-file", outputFileName, "--no-keep"})
 	assert.NoError(t, err, "Expected no error when running the app with dns-cleaner download command")
 	// Check if the file was created
-	if _, err := os.Stat(outputFileName); os.IsNotExist(err) {
+	if _, err = os.Stat(outputFileName); os.IsNotExist(err) {
 		t.Errorf("File %s was not created", outputFileName)
 	}
-	app = buildApp()
-	err = app.Run(t.Context(), []string{"cloudflare-utils", "dns-cleaner", "--zone-name", "2", "--dns-file", outputFileName})
+	err = withApp(t, []string{"cloudflare-utils", "dns-cleaner", "--zone-name", "2", "--dns-file", outputFileName})
 	assert.NoError(t, err, "Expected no error when running the app with dns-cleaner upload command")
 
 	removeErr := os.Remove(outputFileName)
