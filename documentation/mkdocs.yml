@@ -6,6 +6,8 @@ repo_name: Cyb3r-Jak3/cloudflare-utils
 theme:
   name: material
   language: en
+  icon:
+    repo: fontawesome/brands/github
   palette:
     - media: "(prefers-color-scheme: light)"  # Light mode
       scheme: default
@@ -31,6 +33,7 @@ theme:
     - search
     - minify:
         minify_html: true
+    - offline
   logo: assets/images/logo.png
 
 nav:
