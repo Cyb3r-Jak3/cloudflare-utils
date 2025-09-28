@@ -16,7 +16,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Clear Page Deployments
-        uses: Cyb3r-Jak3/actions-cloudflare-utils@v1
+        uses: Cyb3r-Jak3/actions-cloudflare-utils@cb50a7ebdf658584982e5d470397058d815608d3 # v1
         if: ${{ github.event.pull_request.merged == true }}
         with:
           args: prune-deployments --project-name cloudflare-utils --branch ${{ github.event.pull_request.head.ref }}
