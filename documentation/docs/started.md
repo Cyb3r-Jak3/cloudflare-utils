@@ -4,6 +4,10 @@
 
 Cloudflare-utils is build for Windows, Mac and Linux and the latest release is available to download from [GitHub](https://github.com/Cyb3r-Jak3/cloudflare-utils/releases/latest). Download the tar/zip file for your operating system and then extract the executable.
 
+??? abstract "Deprecated archive naming convention"
+    The archive downloads previously had the version number in the name, for example `cloudflare-utils_1.2.3_windows_amd64.zip`. This has been deprecated and the new naming convention is just `cloudflare-utils_windows_amd64.zip`.
+    The old naming convention will be removed in v2.0.0.
+
 There is also a GitHub Action available to install and run cloudflare-utils in your workflows read more: [here](./github-actions.md).
 
 ### Additional Installation Methods

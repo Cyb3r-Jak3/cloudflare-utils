@@ -1,11 +1,9 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
-before:
-  hooks:
-    - go mod tidy
 
 builds:
-  - main: "./cmd/cloudflare-utils/"
+  - id: default
+    main: "./cmd/cloudflare-utils/"
     env:
       - CGO_ENABLED=0
     flags:
@@ -36,13 +34,24 @@ builds:
 
 
 archives:
-  - formats: ['tar.xz']
+  - id: legacy
+    formats: ['tar.xz']
     files:
         - README.md
     format_overrides:
       - goos: windows
         formats: ['zip']
     name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+  - id: default
+    formats: ['tar.xz']
+    format_overrides:
+      - goos: windows
+        formats: [ 'zip' ]
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+
+  - id: binary
+    formats: [ 'binary' ]
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 
 checksum:
   name_template: 'checksums.txt'
@@ -86,6 +95,8 @@ chocolateys:
     copyright: "2023-2025 Cyb3r-Jak3"
     package_source_url: "https://github.com/Cyb3r-Jak3/cloudflare-utils"
     icon_url: "https://cloudflare-utils.cyberjake.xyz/assets/images/logo.png"
+    ids:
+      - default
     description: &description |
       Community created utilities for Cloudflare such as:
       
@@ -130,18 +141,24 @@ nfpms:
         dst: /usr/share/doc/{{ .ProjectName }}/README.md
       - src: bash_completion
         dst: /etc/bash_completion.d/{{ .ProjectName }}
+    ids:
+      - default
 
 blobs:
   - provider: s3
     region: auto
     endpoint: https://8be772befd147a8df540aae0fa15c047.r2.cloudflarestorage.com
     bucket: public-files
+    ids:
+      - default
 
 release:
   draft: true
 
 homebrew_casks:
   - name: cloudflare-utils
+    ids:
+      - default
     directory: Casks
     description: *description
     license: *license
