@@ -22,3 +22,4 @@ jobs:
           args: prune-deployments --project cloudflare-utils --branch ${{ github.event.pull_request.head.ref }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_CLEANER }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
