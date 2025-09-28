@@ -19,6 +19,6 @@ jobs:
         uses: Cyb3r-Jak3/actions-cloudflare-utils@v1
         if: ${{ github.event.pull_request.merged == true }}
         with:
-          args: prune-deployments --project-name cloudflare-utils --branch ${{ github.event.pull_request.head.ref }}
+          args: prune-deployments --project cloudflare-utils --branch ${{ github.event.pull_request.head.ref }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_CLEANER }}

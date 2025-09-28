@@ -16,13 +16,13 @@ You need to pass the following flags to run this program:
 
 - `--api-token`: Your API token with the required permissions.
 - `--account-id`: Your account ID where the pages project is located.
-- `--project-name`: The name of the pages project.
+- `--project`: Name of the pages project.
 
 You need to pass only one of the following flags:
 
-- `--branch`: The alias you want to remove deployments from.
-- `--before`: The date you want to remove deployments before. Format: `YYYY-MM-DDTHH:mm:ss`. Example: `2021-01-01T00:00:00` = January 1st, 2021 at 12:00:00 AM.
-- `--after`: The date you want to remove deployments after. Format: `YYYY-MM-DDTHH:mm:ss`. Example: `2021-01-01T00:00:00` = January 1st, 2021 at 12:00:00 AM.
+- `--branch`: Alias you want to remove deployments from.
+- `--before`: Date you want to remove deployments before. Format: `YYYY-MM-DDTHH:mm:ss`. Example: `2021-01-01T00:00:00` = January 1st, 2021 at 12:00:00 AM.
+- `--after`: Date you want to remove deployments after. Format: `YYYY-MM-DDTHH:mm:ss`. Example: `2021-01-01T00:00:00` = January 1st, 2021 at 12:00:00 AM.
 
 [//]: # (- `--time`: Shortcut for deleting based on time. Use the format of `1<unit>` where unit is one of y &#40;year&#41;, M &#40;month&#41;, w &#40;week&#41;, d &#40;day&#41;, h &#40;hour&#41;, m &#40;minute&#41;, s &#40;second&#41;. To delete all deployments older than an hours use `1h`. For more into refer to [time-shortcut]&#40;#time-shortcut&#41;.)
 
