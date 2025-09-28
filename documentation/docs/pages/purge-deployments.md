@@ -7,14 +7,14 @@ If you want to remove deployments for a specific branch, check out the [prune de
 
 You need to pass the following flags to run this program:
 
-- `--api-token`: Your API token with the required permissions.
-- `--account-id`: Your account ID where the pages project is located.
-- `--project-name`: The name of the pages project.
+- `--api-token`: API token with the required permissions.
+- `--account-id`: Account ID where the pages project is located.
+- `--project-name`: Name of the pages project.
 
 Optional flags:
 
-- `--dry-run`: If you want to see what would be deleted without actually deleting anything.
-- `--delete-project`: If you want to delete the Pages project after deleting all deployments. It will delete the project even if there are deployments left.
+- `--dry-run`: See what would be deleted without actually deleting anything.
+- `--delete-project`: Delete the Pages project after deleting all deployments. It will delete the project even if there are deployments left.
 - `--lots-of-deployments`: If you have more than 20,000 deployments, this will slow down the rate of listing deployments.
 
 Example: 
