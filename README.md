@@ -48,6 +48,23 @@ go install github.com/Cyb3r-Jak3/cloudflare-utils/cmd/cloudflare-utils@latest
 brew install cyb3r-jak3/cyberjake/cloudflare-utils
 ```
 
+
+### GitHub Actions
+
+```yaml
+- name: Cloudflare Utils - DNS Purge
+  uses: Cyb3r-Jak3/actions-cloudflare-utils@v1
+  with:
+     version: 'latest' # Optional, defaults to latest
+     args: '--zone-name example.com dns-purge --confirm'
+  env:
+    CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+```
+
+More:
+ - [Repo](https://github.com/Cyb3r-Jak3/actions-cloudflare-utils)
+ - [Marketplace](https://github.com/marketplace/actions/cloudflare-utils)
+
 ## Usage
 
 Check the [docs](https://cloudflare-utils.cyberjake.xyz/) for more information on how to use the utilities.
