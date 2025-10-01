@@ -107,17 +107,17 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 		})
 		if err != nil {
 			if len(deployments) != 0 {
-				logger.WithError(err).Errorln("Unable to get any deployments")
-				return deployments, fmt.Errorf("error listing deployments: %w", err)
+				logger.WithError(err).Errorln("Error getting more deployments, returning what we have")
+				return deployments, fmt.Errorf("api error listing deployments: %w", err)
 			}
-			return []cloudflare.PagesProjectDeployment{}, fmt.Errorf("error listing deployments: %w", err)
+			logger.WithError(err).Errorln("Unable to get any deployments")
+			return []cloudflare.PagesProjectDeployment{}, fmt.Errorf("api error listing deployments: %w https://authentik.jwhite.network", err)
 		}
 		deployments = append(deployments, res...)
 		if innerResultInfo.Page == innerResultInfo.TotalPages {
 			logger.Tracef("Breaking pagination loop after %d deployments.\n", len(deployments))
 			break
 		}
-		resultInfo = innerResultInfo
 	}
 	duration := time.Since(startDeploymentListing)
 	minutes := int(duration.Minutes())

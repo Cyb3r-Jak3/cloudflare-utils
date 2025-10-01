@@ -172,17 +172,20 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 }
 
 // PruneBranchDeployments will return a list of deployments to delete based on the branch name.
-func PruneBranchDeployments(options pruneDeploymentOptions) (toDelete []cloudflare.PagesProjectDeployment) {
+func PruneBranchDeployments(options pruneDeploymentOptions) []cloudflare.PagesProjectDeployment {
 	selectedBranch := options.c.String(branchNameFlag)
-
+	var toDelete []cloudflare.PagesProjectDeployment
+	logger.Debugf("Got %d deployments to check for branch: %s", len(options.SelectedDeployments), selectedBranch)
 	for _, deployment := range options.SelectedDeployments {
 		if deployment.DeploymentTrigger.Metadata == nil {
 			continue
 		}
+		logger.Debugf("Got deployment branch: %s", deployment.DeploymentTrigger.Metadata.Branch)
 		if deployment.DeploymentTrigger.Metadata.Branch == selectedBranch {
 			toDelete = append(toDelete, deployment)
 		}
 	}
+	logger.Debugf("Found %d deployments to delete by branch: %s", len(toDelete), selectedBranch)
 	return toDelete
 }
 
