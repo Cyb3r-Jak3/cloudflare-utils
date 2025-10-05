@@ -186,6 +186,7 @@ const (
 	TunnelRead  APIPermissionName = "TunnelRead"
 	TunnelWrite APIPermissionName = "TunnelWrite"
 	ListsWrites APIPermissionName = "ListsWrite"
+	CachePurge  APIPermissionName = "CachePurge"
 )
 
 var apiPermissionMap = map[APIPermissionName]string{
@@ -194,6 +195,7 @@ var apiPermissionMap = map[APIPermissionName]string{
 	TunnelRead:  "efea2ab8357b47888938f101ae5e053f",
 	TunnelWrite: "c07321b023e944ff818fec44d8203567",
 	ListsWrites: "2edbf20661fd4661b0fe10e9e12f485c",
+	CachePurge:  "e17beae8b8cb423a99b1730f21238bed",
 }
 
 var (
@@ -221,7 +223,7 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 	}
 	logger.Debugf("There are %d policies", len(token.Policies))
 	for _, policy := range token.Policies {
-		logger.Debugf("Policy ID: %s, N", policy.ID)
+		logger.Debugf("Policy ID: %s", policy.ID)
 		for _, p := range policy.PermissionGroups {
 			if slices.Contains(permissionIDMap, p.ID) {
 				return nil

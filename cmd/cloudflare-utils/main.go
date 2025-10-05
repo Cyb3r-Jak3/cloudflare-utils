@@ -54,6 +54,7 @@ func buildApp() *cli.Command {
 			buildGenerateDocsCommand(),
 			buildTunnelVersionCommand(),
 			buildListSyncCommand(),
+			buildCacheCleanerCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
