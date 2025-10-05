@@ -190,7 +190,15 @@ func setupTestHTTPServer(t *testing.T) {
           {
             "id": "c07321b023e944ff818fec44d8203567",
             "name": "Tunnel Write"
-          }
+          },
+		  {
+			"id": "2edbf20661fd4661b0fe10e9e12f485c",
+			"name": "Lists Write"
+		  },
+		  {
+			"id": "e17beae8b8cb423a99b1730f21238bed",
+			"name": "Cache Purge"
+		  }
         ]
       }
     ],
@@ -519,6 +527,18 @@ func setupTestHTTPServer(t *testing.T) {
 				"status": "completed",
 				"error": "",
 				"completed": "2020-01-01T08:00:00Z"
+			},
+			"success": true,
+			"errors": [],
+			"messages": []
+		}`)
+	})
+	mux.HandleFunc("/zones/2/purge_cache", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method, "Expected method 'POST', got %s", r.Method)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, `{
+			"result": {
+				"id": "eaa6f3f4-5d6b-4c3e-8b8e-1a2b3c4d5e6f"
 			},
 			"success": true,
 			"errors": [],
