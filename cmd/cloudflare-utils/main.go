@@ -110,6 +110,11 @@ func buildApp() *cli.Command {
 				Sources: cli.EnvVars("LOG_LEVEL_TRACE"),
 			},
 			&cli.StringFlag{
+				Name:    "extra-user-agent",
+				Usage:   "Extra string to append to the user agent. Can be used for tracking purposes in Cloudflare logs.",
+				Sources: cli.EnvVars("CLOUDFLARE_EXTRA_USER_AGENT"),
+			},
+			&cli.StringFlag{
 				Name:    "with-base-url",
 				Usage:   "Use base URL for API requests. Useful for testing with a local Cloudflare API mock",
 				Hidden:  true,
@@ -150,9 +155,13 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 	if c.Bool(lotsOfDeploymentsFlag) && rateLimit == 4 {
 		rateLimit = 3
 	}
+	userAgent := fmt.Sprintf("cloudflare-utils/%s", version)
+	if c.String("extra-user-agent") != "" {
+		userAgent = fmt.Sprintf("%s (%s)", userAgent, c.String("extra-user-agent"))
+	}
 	cfClientOptions := []cloudflare.Option{
 		cloudflare.UsingRateLimit(rateLimit),
-		cloudflare.UserAgent(fmt.Sprintf("cloudflare-utils/%s", version)),
+		cloudflare.UserAgent(userAgent),
 		cloudflare.Debug(logger.Level == logrus.TraceLevel),
 		cloudflare.UsingLogger(logger),
 	}

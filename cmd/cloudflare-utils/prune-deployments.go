@@ -167,7 +167,7 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 	}
 
 	if c.Bool(dryRunFlag) {
-		fmt.Printf("Dry Run: would delete %d deployments", len(toDelete))
+		fmt.Printf("Dry Run: would delete %d deployments\n", len(toDelete))
 		return nil
 	}
 
@@ -188,7 +188,7 @@ func PruneBranchDeployments(branch string, options pruneDeploymentOptions) []clo
 			logger.Debugln("No metadata for deployment, skipping")
 			continue
 		}
-		logger.Debugf("Got deployment branch: %s", deployment.DeploymentTrigger.Metadata.Branch)
+		logger.Tracef("Got deployment branch: %s", deployment.DeploymentTrigger.Metadata.Branch)
 		if deployment.DeploymentTrigger.Metadata.Branch == branch {
 			toDelete = append(toDelete, deployment)
 		}

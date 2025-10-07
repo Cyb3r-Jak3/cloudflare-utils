@@ -226,6 +226,7 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 		logger.Debugf("Policy ID: %s", policy.ID)
 		for _, p := range policy.PermissionGroups {
 			if slices.Contains(permissionIDMap, p.ID) {
+				logger.Debugf("API Token has permission %s", permission)
 				return nil
 			}
 		}
