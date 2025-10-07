@@ -145,10 +145,7 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 	before := c.Timestamp(beforeFlag)
 	after := c.Timestamp(afterFlag)
 
-	preventPurgeAll := false
-	if branch != "" && !before.IsZero() || !after.IsZero() {
-		preventPurgeAll = true
-	}
+	preventPurgeAll := branch != "" && !before.IsZero() || !after.IsZero()
 
 	if branch != "" {
 		logger.Infof("Pruning by branch: %s", branch)
