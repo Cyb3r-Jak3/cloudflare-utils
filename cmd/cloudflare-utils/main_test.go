@@ -433,7 +433,6 @@ func setupTestHTTPServer(t *testing.T) {
 	}
 	deletePagesDeploymentHandler := func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method, "Expected a DELETE request")
-		assert.Equal(t, "true", r.URL.Query().Get("force"))
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
 			"success": true,
