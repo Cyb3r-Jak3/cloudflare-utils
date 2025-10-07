@@ -46,11 +46,15 @@ var sharedPagesFlags = []cli.Flag{
 		Usage: "If you are getting errors getting all of the deployments, you may need to use this flag.",
 		Value: false,
 	},
+	&cli.BoolFlag{
+		Name:  forceFlag,
+		Usage: "Force delete deployments",
+		Value: false,
+	},
 }
 
 type pruneDeploymentOptions struct {
 	c                   *cli.Command
-	ResourceContainer   *cloudflare.ResourceContainer
 	ProjectName         string
 	SelectedDeployments []cloudflare.PagesProjectDeployment
 }
@@ -119,15 +123,13 @@ func PruneDeploymentsScreen(ctx context.Context, c *cli.Command) error {
 
 // PruneDeploymentsRoot is the main function for pruning and purging deployments.
 func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
-	accountResource := cloudflare.AccountIdentifier(c.String(accountIDFlag))
 	projectName := c.String(projectNameFlag)
 
 	allDeployments, err := DeploymentsPaginate(
 		PagesDeploymentPaginationOptions{
-			CLIContext:      c,
-			ctx:             ctx,
-			AccountResource: accountResource,
-			ProjectName:     projectName,
+			CLIContext:  c,
+			ctx:         ctx,
+			ProjectName: projectName,
 		})
 	if err != nil {
 		return fmt.Errorf("error listing deployments: %w", err)
@@ -135,7 +137,6 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 
 	options := pruneDeploymentOptions{
 		c:                   c,
-		ResourceContainer:   accountResource,
 		ProjectName:         projectName,
 		SelectedDeployments: allDeployments,
 	}
@@ -145,7 +146,7 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 	before := c.Timestamp(beforeFlag)
 	after := c.Timestamp(afterFlag)
 
-	preventPurgeAll := branch != "" && !before.IsZero() || !after.IsZero()
+	preventPurgeAll := c.Name == "prune-deployments"
 
 	if branch != "" {
 		logger.Infof("Pruning by branch: %s", branch)
@@ -175,6 +176,12 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 	fmt.Printf("Deleted %d deployments\n", len(toDelete)-len(failedDeletes))
 	if len(failedDeletes) > 0 {
 		return fmt.Errorf("failed to delete %d deployments", len(failedDeletes))
+	}
+	if c.Bool(deleteProjectFlag) {
+		fmt.Printf("Deleting project: %s\n", projectName)
+		if projectDeleteErr := APIClient.DeletePagesProject(ctx, accountRC, projectName); err != nil {
+			return fmt.Errorf("error deleting project: %w", projectDeleteErr)
+		}
 	}
 	return nil
 }

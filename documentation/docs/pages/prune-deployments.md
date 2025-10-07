@@ -28,8 +28,9 @@ You need to pass only one of the following flags:
 
 Optional flags:
 
-- `--dry-run`: If you want to see what would be deleted without actually deleting anything.
-- `--lots-of-deployments`: If you have more than 1000 deployments, this will slow down the rate of listing deployments.
+- `--dry-run`: See what would be deleted without actually deleting anything.
+- `--lots-of-deployments`: Useful if there are more than 1000 deployments, this will slow down the rate of listing deployments.
+- `--force`: Forces the deletes of deployments.
 
 Example:
 

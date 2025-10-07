@@ -85,10 +85,9 @@ func GetZoneID(ctx context.Context, c *cli.Command) error {
 }
 
 type PagesDeploymentPaginationOptions struct {
-	CLIContext      *cli.Command
-	ctx             context.Context
-	AccountResource *cloudflare.ResourceContainer
-	ProjectName     string
+	CLIContext  *cli.Command
+	ctx         context.Context
+	ProjectName string
 }
 
 // DeploymentsPaginate is a helper function to paginate through all deployments.
@@ -101,7 +100,7 @@ func DeploymentsPaginate(params PagesDeploymentPaginationOptions) ([]cloudflare.
 	}
 	startDeploymentListing := time.Now()
 	for {
-		res, innerResultInfo, err := APIClient.ListPagesDeployments(params.ctx, params.AccountResource, cloudflare.ListPagesDeploymentsParams{
+		res, innerResultInfo, err := APIClient.ListPagesDeployments(params.ctx, accountRC, cloudflare.ListPagesDeploymentsParams{
 			ProjectName: params.ProjectName,
 			ResultInfo:  *resultInfo,
 		})
@@ -158,12 +157,13 @@ func RapidPagesDeploymentDelete(options pruneDeploymentOptions) map[string]error
 	}
 	results := make(map[string]error)
 	p.WithMaxGoroutines(goRoutines)
+	forceDelete := options.c.Bool(forceFlag)
 	for _, deployment := range options.SelectedDeployments {
 		p.Go(func() bool {
-			err := APIClient.DeletePagesDeployment(context.Background(), options.ResourceContainer, cloudflare.DeletePagesDeploymentParams{
+			err := APIClient.DeletePagesDeployment(context.Background(), accountRC, cloudflare.DeletePagesDeploymentParams{
 				ProjectName:  options.ProjectName,
 				DeploymentID: deployment.ID,
-				Force:        true,
+				Force:        forceDelete,
 			})
 			if err != nil {
 				logger.WithError(err).Warningf("Error deleting deployment: %s", deployment.ID)
@@ -223,7 +223,6 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 	}
 	logger.Debugf("There are %d policies", len(token.Policies))
 	for _, policy := range token.Policies {
-		logger.Debugf("Policy ID: %s", policy.ID)
 		for _, p := range policy.PermissionGroups {
 			if slices.Contains(permissionIDMap, p.ID) {
 				logger.Debugf("API Token has permission %s", permission)
