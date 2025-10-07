@@ -166,7 +166,7 @@ func RapidPagesDeploymentDelete(options pruneDeploymentOptions) map[string]error
 				Force:        true,
 			})
 			if err != nil {
-				logger.WithError(err).Warningf("Error deleting deployment: %s\n", deployment.ID)
+				logger.WithError(err).Warningf("Error deleting deployment: %s", deployment.ID)
 				results[deployment.ID] = err
 				return false
 			}
