@@ -32,9 +32,8 @@ func TestAppBuild(t *testing.T) {
 
 func Test_Basic_Flags(t *testing.T) {
 	// Test the basic functionality of the app
-	app := buildApp()
-	err := app.Run(t.Context(), []string{"--debug", "--rate-limit", "5"})
-	assert.NoError(t, err, "Expected no error when running the app with missing command")
+	err := withApp(t, []string{"--debug", "--rate-limit", "5", "--extra-user-agent", "test-agent"})
+	assert.NoError(t, err, "Expected error when running sync-list command")
 }
 
 func Test_GenDocs(t *testing.T) {
@@ -434,7 +433,6 @@ func setupTestHTTPServer(t *testing.T) {
 	}
 	deletePagesDeploymentHandler := func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method, "Expected a DELETE request")
-		assert.Equal(t, "true", r.URL.Query().Get("force"))
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintf(w, `{
 			"success": true,

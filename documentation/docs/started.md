@@ -64,3 +64,6 @@ You can pass your API email and key with environment variables of `CLOUDFLARE_AP
 
 - `--zone-id`
   You can pass your zone ID with the `--zone-id` flag or with the environment variable `CLOUDFLARE_ZONE_ID`. This is useful if you are running a command that only requires a zone ID.
+
+- `--extra-user-agent`
+  You can pass an extra user agent string to be added to the default user agent with the `--extra-user-agent` flag. This is useful if you want to identify requests made by cloudflare-utils in your Cloudflare logs. The final format of the user agent will be `cloudflare-utils/<version> (<extra-user-agent>)`

@@ -46,11 +46,15 @@ var sharedPagesFlags = []cli.Flag{
 		Usage: "If you are getting errors getting all of the deployments, you may need to use this flag.",
 		Value: false,
 	},
+	&cli.BoolFlag{
+		Name:  forceFlag,
+		Usage: "Force delete deployments",
+		Value: false,
+	},
 }
 
 type pruneDeploymentOptions struct {
 	c                   *cli.Command
-	ResourceContainer   *cloudflare.ResourceContainer
 	ProjectName         string
 	SelectedDeployments []cloudflare.PagesProjectDeployment
 }
@@ -119,15 +123,13 @@ func PruneDeploymentsScreen(ctx context.Context, c *cli.Command) error {
 
 // PruneDeploymentsRoot is the main function for pruning and purging deployments.
 func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
-	accountResource := cloudflare.AccountIdentifier(c.String(accountIDFlag))
 	projectName := c.String(projectNameFlag)
 
 	allDeployments, err := DeploymentsPaginate(
 		PagesDeploymentPaginationOptions{
-			CLIContext:      c,
-			ctx:             ctx,
-			AccountResource: accountResource,
-			ProjectName:     projectName,
+			CLIContext:  c,
+			ctx:         ctx,
+			ProjectName: projectName,
 		})
 	if err != nil {
 		return fmt.Errorf("error listing deployments: %w", err)
@@ -135,20 +137,27 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 
 	options := pruneDeploymentOptions{
 		c:                   c,
-		ResourceContainer:   accountResource,
 		ProjectName:         projectName,
 		SelectedDeployments: allDeployments,
 	}
 
 	var toDelete []cloudflare.PagesProjectDeployment
+	branch := c.String(branchNameFlag)
+	before := c.Timestamp(beforeFlag)
+	after := c.Timestamp(afterFlag)
 
-	if c.String(branchNameFlag) != "" {
-		logger.Infoln("Pruning by branch")
-		toDelete = PruneBranchDeployments(options)
-	} else if !c.Timestamp(beforeFlag).IsZero() || !c.Timestamp(afterFlag).IsZero() {
+	preventPurgeAll := c.Name == "prune-deployments"
+
+	if branch != "" {
+		logger.Infof("Pruning by branch: %s", branch)
+		toDelete = PruneBranchDeployments(branch, options)
+	} else if !before.IsZero() || !after.IsZero() {
 		logger.Infoln("Pruning by time")
 		toDelete = PruneTimeDeployments(options)
 	} else {
+		if preventPurgeAll {
+			return errors.New("refusing to delete all deployments when a branch or time was specified. This is a safety feature to prevent accidental deletion of all deployments")
+		}
 		logger.Infoln("Purging all deployments")
 		toDelete = options.SelectedDeployments
 	}
@@ -159,7 +168,7 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 	}
 
 	if c.Bool(dryRunFlag) {
-		fmt.Printf("Dry Run: would delete %d deployments", len(toDelete))
+		fmt.Printf("Dry Run: would delete %d deployments\n", len(toDelete))
 		return nil
 	}
 
@@ -168,24 +177,30 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 	if len(failedDeletes) > 0 {
 		return fmt.Errorf("failed to delete %d deployments", len(failedDeletes))
 	}
+	if c.Bool(deleteProjectFlag) {
+		fmt.Printf("Deleting project: %s\n", projectName)
+		if projectDeleteErr := APIClient.DeletePagesProject(ctx, accountRC, projectName); err != nil {
+			return fmt.Errorf("error deleting project: %w", projectDeleteErr)
+		}
+	}
 	return nil
 }
 
 // PruneBranchDeployments will return a list of deployments to delete based on the branch name.
-func PruneBranchDeployments(options pruneDeploymentOptions) []cloudflare.PagesProjectDeployment {
-	selectedBranch := options.c.String(branchNameFlag)
+func PruneBranchDeployments(branch string, options pruneDeploymentOptions) []cloudflare.PagesProjectDeployment {
 	var toDelete []cloudflare.PagesProjectDeployment
-	logger.Debugf("Got %d deployments to check for branch: %s", len(options.SelectedDeployments), selectedBranch)
+	logger.Debugf("Got %d deployments to check for branch: %s", len(options.SelectedDeployments), branch)
 	for _, deployment := range options.SelectedDeployments {
 		if deployment.DeploymentTrigger.Metadata == nil {
+			logger.Debugln("No metadata for deployment, skipping")
 			continue
 		}
-		logger.Debugf("Got deployment branch: %s", deployment.DeploymentTrigger.Metadata.Branch)
-		if deployment.DeploymentTrigger.Metadata.Branch == selectedBranch {
+		logger.Tracef("Got deployment branch: %s", deployment.DeploymentTrigger.Metadata.Branch)
+		if deployment.DeploymentTrigger.Metadata.Branch == branch {
 			toDelete = append(toDelete, deployment)
 		}
 	}
-	logger.Debugf("Found %d deployments to delete by branch: %s", len(toDelete), selectedBranch)
+	logger.Debugf("Found %d deployments to delete by branch: %s", len(toDelete), branch)
 	return toDelete
 }
 
