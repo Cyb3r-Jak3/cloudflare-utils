@@ -6,7 +6,7 @@ require (
 	github.com/Cyb3r-Jak3/common/v5 v5.5.0
 	github.com/cloudflare/cloudflare-go v0.116.0
 	github.com/google/go-github/v81 v81.0.0
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/sourcegraph/conc v0.3.0
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli-docs/v3 v3.1.0
