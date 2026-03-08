@@ -24,6 +24,7 @@ permissions:
   packages: write
   id-token: write
   attestations: write
+  artifact-metadata: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -92,7 +93,7 @@ jobs:
           readme-filepath: README.md
 
       - name: GitHub Container Attestation
-        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         id: attest
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         with:
