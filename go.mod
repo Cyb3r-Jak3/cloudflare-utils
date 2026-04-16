@@ -3,7 +3,7 @@ module github.com/Cyb3r-Jak3/cloudflare-utils
 go 1.25.0
 
 require (
-	github.com/Cyb3r-Jak3/common/v5 v5.5.0
+	github.com/Cyb3r-Jak3/common/v5 v5.6.0
 	github.com/cloudflare/cloudflare-go v0.116.0
 	github.com/google/go-github/v84 v84.0.0
 	github.com/sirupsen/logrus v1.9.4
