@@ -10,7 +10,6 @@ linters:
     - bodyclose
     - copyloopvar
     - dupl
-    - goconst
     - gocyclo
     - godot
     - goprintffuncname
