@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/Cyb3r-Jak3/common/v5 v5.6.0
 	github.com/cloudflare/cloudflare-go v0.117.0
-	github.com/google/go-github/v86 v86.0.0
+	github.com/google/go-github/v87 v87.0.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/sourcegraph/conc v0.3.0
 	github.com/stretchr/testify v1.11.1
