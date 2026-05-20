@@ -12,7 +12,6 @@ import (
 
 	"github.com/Cyb3r-Jak3/common/v5"
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-github/v87/github"
 	"github.com/urfave/cli/v3"
 )
 
@@ -318,10 +317,9 @@ func getUptimeRobotIPs(ctx context.Context) ([]string, error) {
 }
 
 func getGitHubIPs(ctx context.Context, c *cli.Command, query url.Values) ([]string, error) {
-	githubToken := c.String(githubTokenFlagName)
-	gClient := github.NewClient(nil)
-	if githubToken != "" {
-		gClient = github.NewClient(nil).WithAuthToken(githubToken)
+	gClient, err := buildGithubClient(c.String(githubTokenFlagName))
+	if err != nil {
+		return nil, fmt.Errorf("error building github client: %w", err)
 	}
 	results, _, err := gClient.Meta.Get(ctx)
 	if err != nil {
