@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/Cyb3r-Jak3/common/v5"
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/cloudflare/cloudflare-go/v7"
 	"github.com/google/go-github/v86/github"
 	"github.com/urfave/cli/v3"
 )
