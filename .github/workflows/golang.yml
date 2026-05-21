@@ -117,7 +117,7 @@ jobs:
           ARTIFACT_URL: ${{ vars.ARTIFACT_PUBLIC_DOMAIN }}
         with:
           script: |
-            const artifactUrl = process.env.ARTIFACT_URL + '/cloudflare-utils/' + context.sha + '/';
+            const artifactUrl = process.env.ARTIFACT_URL + 'cloudflare-utils/' + context.sha + '/';
             const summaryBody = `Snapshot release for commit ${context.sha} is available.`;
             core.summary.addHeading('Snapshot Release').addRaw(summaryBody).addBreak().addLink('Download Artifacts', artifactUrl).write();  
 
