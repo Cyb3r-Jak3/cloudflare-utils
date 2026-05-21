@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/go-github/v87/github"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/cloudflare/cloudflare-go"
@@ -284,4 +285,15 @@ func PollListBulkOperation(ctx context.Context, rc *cloudflare.ResourceContainer
 	}
 
 	return errors.New(errOperationStillRunning)
+}
+
+func buildGithubClient(githubToken string) (*github.Client, error) {
+	gClient, err := github.NewClient()
+	if githubToken != "" {
+		gClient, err = github.NewClient(github.WithAuthToken(githubToken))
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error creating github client: %w", err)
+	}
+	return gClient, nil
 }

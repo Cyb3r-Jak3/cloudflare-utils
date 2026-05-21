@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-github/v86/github"
 	"github.com/urfave/cli/v3"
 )
 
@@ -46,9 +45,9 @@ func buildTunnelVersionCommand() *cli.Command {
 }
 
 func GetLatestTunnelVersion(token string) (string, error) {
-	gClient := github.NewClient(nil)
-	if token != "" {
-		gClient = github.NewClient(nil).WithAuthToken(token)
+	gClient, err := buildGithubClient(token)
+	if err != nil {
+		return "", fmt.Errorf("error building github client: %w", err)
 	}
 	release, _, err := gClient.Repositories.GetLatestRelease(ctx, "cloudflare", "cloudflared")
 	if err != nil {
