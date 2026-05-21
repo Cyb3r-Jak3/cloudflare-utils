@@ -19,6 +19,8 @@ on:
       - '**.go'
       - 'go.sum'
       - 'go.mod'
+      - .github/workflows/golang.yml
+      - '.goreleaser.yml'
 
 permissions:
   security-events: write
