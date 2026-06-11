@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM library/golang:1.26-alpine@sha256:f23e8b227fb4493eabe03bede4d5a32d04092da71962f1fb79b5f7d1e6c2a17f AS builder
+FROM --platform=$BUILDPLATFORM library/golang:1.26-alpine@sha256:bd14630652464086289693533d25b791aa9ae7481e784d7eac5d4c948e9736ea AS builder
 
 WORKDIR /usr/app
 ENV CGO_ENABLED=0
