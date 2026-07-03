@@ -110,8 +110,8 @@ jobs:
         run: |
           aws s3 cp dist/ s3://github-actions-artifacts/snapshots/cloudflare-utils/${{ github.sha }} --recursive --checksum-algorithm CRC32
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.ARTIFACTS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ARTIFACTS_AWS_SECRET_ACCESS_KEY }}
           AWS_ENDPOINT_URL_S3: https://8be772befd147a8df540aae0fa15c047.r2.cloudflarestorage.com
 
       - name: Add step summary with artifact link
