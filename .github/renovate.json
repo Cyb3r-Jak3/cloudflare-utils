@@ -4,5 +4,8 @@
     "github>Cyb3r-Jak3/renovate-configs//recommend-extended.json",
     "github>Cyb3r-Jak3/renovate-configs//my-registry.json"
   ],
-  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"]
+  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
+  "lockFileMaintenance": {
+    "enabled": true
+  }
 }
