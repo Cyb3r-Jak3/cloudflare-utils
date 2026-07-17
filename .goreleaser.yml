@@ -2,8 +2,7 @@
 version: 2
 
 builds:
-  - id: default
-    main: "./cmd/cloudflare-utils/"
+  - main: "./cmd/cloudflare-utils/"
     env:
       - CGO_ENABLED=0
     flags:
@@ -55,6 +54,9 @@ archives:
 
 checksum:
   name_template: 'checksums.txt'
+
+docker_digest:
+  name_template: "digest.txt"
 
 snapshot:
   version_template: "{{ .Version }}-snapshot-{{ .ShortCommit }}"
@@ -141,8 +143,6 @@ nfpms:
         dst: /usr/share/doc/{{ .ProjectName }}/README.md
       - src: bash_completion
         dst: /etc/bash_completion.d/{{ .ProjectName }}
-    ids:
-      - default
 
 blobs:
   - provider: s3
@@ -170,6 +170,32 @@ homebrew_casks:
       name: homebrew-tap
       token: "{{ .Env.GITHUB_TOKEN }}"
 
+
+dockers_v2:
+  - images:
+      - "cyb3rjak3/cloudflare-utils"
+      - "ghcr.io/cyb3r-jak3/cloudflare-utils"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/386
+      - linux/riscv64
+      - linux/s390x
+      - linux/ppc64le
+    tags:
+      - "v{{ .Version }}"
+      - "latest"
+      - "v{{ .Major }}"
+      - "{{ .Tag }}"
+    labels:
+      "org.opencontainers.image.description": " Helpful Cloudflare utility program "
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+      "org.opencontainers.image.vendor": "Cyb3rJak3"
+      "org.opencontainers.image.licenses": "Apache-2.0"
 
 announce:
   bluesky:
