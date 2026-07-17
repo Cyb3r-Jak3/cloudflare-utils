@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v88/github"
+	"github.com/google/go-github/v89/github"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/cloudflare/cloudflare-go"

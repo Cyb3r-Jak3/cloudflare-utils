@@ -53,7 +53,7 @@ func GetLatestTunnelVersion(token string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return *release.TagName, nil
+	return release.TagName, nil
 }
 
 func TunnelVersionAction(ctx context.Context, c *cli.Command) error {
