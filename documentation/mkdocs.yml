@@ -34,6 +34,7 @@ theme:
     - minify:
         minify_html: true
     - offline
+    - optimize
   logo: assets/images/logo.png
 
 nav:
@@ -54,7 +55,7 @@ nav:
   - github-actions.md
 
 copyright: |
-  &copy; 2022-2025 Cyb3r-Jak3. All rights reserved.
+  &copy; 2022-2026 Cyb3r-Jak3. All rights reserved.
 
 markdown_extensions:
   - admonition
