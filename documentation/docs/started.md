@@ -20,9 +20,16 @@ There is also a GitHub Action available to install and run cloudflare-utils in y
 
 ## Authentication
 
+### OAuth 2.0
+
+Starting with v1.7.0, you can add `--oauth` to your command to remove the need for an API token. You will need to have access to a browser for the oauth callback process.
+This is the recommended way as you don't need to store any auth credentials and the token is revoked after it has been used. All 6 scopes will be always be requested.
+
+Non-interactive runs will need to use either API Token or API Key to run.
+
 ### API Token
 
-The recommended method to authenticate is with an [API Token](https://developers.cloudflare.com/api/tokens/create/). Each command will list the API permissions needed for it to run.
+The recommended method to authenticate in CI pipelines is with an [API Token](https://developers.cloudflare.com/api/tokens/create/). Each command will list the API permissions needed for it to run.
 
 You can use [this link](https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22account_rule_lists%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22argotunnel%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22dns%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22page%22%2C%22type%22%3A%22edit%22%7D%5D&name=Cloudflare+Utils&accountId=*&zoneId=all) to create a token with all the necessary permissions.
 
@@ -40,30 +47,33 @@ The legacy [API Key](https://developers.cloudflare.com/api/keys/) method is also
 
 `cloudflare-utils --api-token <API Token Here>`
 
-You can pass your API email and key with environment variables of `CLOUDFLARE_API_EMAIL` and `CLOUDFLARE_API_KEY`
+Pass your API email and key with environment variables of `CLOUDFLARE_API_EMAIL` and `CLOUDFLARE_API_KEY`
 
 ## Global Flags
 
 - `--account-id`
-  You can pass your account ID with the `--account-id` flag or with the environment variable `CLOUDFLARE_ACCOUNT_ID`
+  Pass your account ID with the `--account-id` flag or with the environment variable `CLOUDFLARE_ACCOUNT_ID`
 
 - `--api-email`
-  You can pass your API email with the `--api-email` flag or with the environment variable `CLOUDFLARE_API_EMAIL`. This is only needed if you are using the legacy auth method.
+  Pass your API email with the `--api-email` flag or with the environment variable `CLOUDFLARE_API_EMAIL`. This is only needed if you are using the legacy auth method.
 
 - `--api-key`
-  You can pass your API key with the `--api-key` flag or with the environment variable `CLOUDFLARE_API_KEY`. This is only needed if you are using the legacy auth method.
+  Pass your API key with the `--api-key` flag or with the environment variable `CLOUDFLARE_API_KEY`. This is only needed if you are using the legacy auth method.
 
 - `--api-token`
-  You can pass your API token with the `--api-token` flag or with the environment variable `CLOUDFLARE_API_TOKEN`. This is the recommended method of authentication.
+  Pass your API token with the `--api-token` flag or with the environment variable `CLOUDFLARE_API_TOKEN`. This is the recommended method of authentication.
 
 - `--rate-limit`
-  You can pass the rate limit in milliseconds with the `--rate-limit` flag. This is useful if you are getting rate limited by Cloudflare or want to speed up the rate of requests.
+  Pass the rate limit in milliseconds with the `--rate-limit` flag. This is useful if you are getting rate limited by Cloudflare or want to speed up the rate of requests.
 
 - `--zone-name`
-  You can pass your zone name with the `--zone-name` flag or with the environment variable `CLOUDFLARE_ZONE_NAME`. This is useful if you are running a command that only requires a zone name.
+  Pass your zone name with the `--zone-name` flag or with the environment variable `CLOUDFLARE_ZONE_NAME`. This is useful if you are running a command that only requires a zone name.
 
 - `--zone-id`
-  You can pass your zone ID with the `--zone-id` flag or with the environment variable `CLOUDFLARE_ZONE_ID`. This is useful if you are running a command that only requires a zone ID.
+  Pass your zone ID with the `--zone-id` flag or with the environment variable `CLOUDFLARE_ZONE_ID`. This is useful if you are running a command that only requires a zone ID.
 
 - `--extra-user-agent`
-  You can pass an extra user agent string to be added to the default user agent with the `--extra-user-agent` flag. This is useful if you want to identify requests made by cloudflare-utils in your Cloudflare logs. The final format of the user agent will be `cloudflare-utils/<version> (<extra-user-agent>)`
+  Pass an extra user agent string to be added to the default user agent with the `--extra-user-agent` flag. This is useful if you want to identify requests made by cloudflare-utils in your Cloudflare logs. The final format of the user agent will be `cloudflare-utils/<version> (<extra-user-agent>)`
+
+- `--oauth`
+  Triggers an oauth flow to get credentials rather than using API Token and will override any passed api credentials. Requires a browser on the same machine.

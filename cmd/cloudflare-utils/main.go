@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/mail"
 	"os"
 	"runtime/debug"
@@ -16,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	docs "github.com/urfave/cli-docs/v3"
 	"github.com/urfave/cli/v3"
+	"golang.org/x/oauth2"
 )
 
 var (
@@ -28,6 +30,7 @@ var (
 	versionString = fmt.Sprintf("%s (built %s)", version, date)
 	accountRC     *cloudflare.ResourceContainer
 	zoneRC        *cloudflare.ResourceContainer
+	useOAuth      bool
 )
 
 func buildApp() *cli.Command {
@@ -46,6 +49,7 @@ func buildApp() *cli.Command {
 			},
 		},
 		Before: setup,
+		After:  teardown,
 		Commands: []*cli.Command{
 			buildDNSCleanerCommand(),
 			buildDNSPurgeCommand(),
@@ -71,6 +75,12 @@ func buildApp() *cli.Command {
 				Name:    apiKeyFlag,
 				Usage:   "Cloudflare Global API key (legacy)",
 				Sources: cli.EnvVars("CLOUDFLARE_API_KEY"),
+			},
+			&cli.BoolFlag{
+				Name:        "oauth",
+				Usage:       "Use OAuth to get token rather than needing an API token",
+				Value:       false,
+				Destination: &useOAuth,
 			},
 			&cli.StringFlag{
 				Name:    zoneNameFlag,
@@ -146,8 +156,18 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 	apiToken := strings.TrimSpace(c.String(apiTokenFlag))
 	apiEmail := strings.TrimSpace(c.String(apiEmailFlag))
 	apiKey := strings.TrimSpace(c.String(apiKeyFlag))
+	httpClient := http.DefaultClient
 
-	if apiToken == "" && apiEmail == "" && apiKey == "" {
+	if useOAuth {
+		logger.Debug("Using OAuth")
+		oauthToken, generateErr := generateOauthToken(ctx)
+		if generateErr != nil {
+			return ctx, fmt.Errorf("error generating oauth token: %v", err)
+		}
+		apiToken = oauthToken.AccessToken
+		httpClient = oauth2.NewClient(ctx, oauth2.StaticTokenSource(oauthToken))
+	} else if apiToken == "" && apiEmail == "" && apiKey == "" {
+		logger.Warning("No API token or email or api key provided. In v2, this will trigger the oauth flow")
 		return ctx, errors.New("no authentication method detected")
 	}
 
@@ -164,6 +184,8 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 		cloudflare.UserAgent(userAgent),
 		cloudflare.Debug(logger.Level == logrus.TraceLevel),
 		cloudflare.UsingLogger(logger),
+		cloudflare.HTTPClient(httpClient),
+		cloudflare.UsingRetryPolicy(3, 1, 5),
 	}
 	if c.String("with-base-url") != "" {
 		cfClientOptions = append(cfClientOptions, cloudflare.BaseURL(c.String("with-base-url")))
@@ -193,6 +215,20 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 	}
 
 	return ctx, err
+}
+
+func teardown(ctx context.Context, _ *cli.Command) error {
+	if useOAuth {
+		if APIClient.APIToken == "" {
+			logger.Warning("API token unavailable for oauth revoke")
+		}
+		logger.Debug("Revoking OAuth token")
+		revokeErr := revokeOauthToken(ctx, APIClient.APIToken)
+		if revokeErr != nil {
+			logger.WithError(revokeErr).Warnf("Error revoking API token")
+		}
+	}
+	return nil
 }
 
 func buildGenerateDocsCommand() *cli.Command {

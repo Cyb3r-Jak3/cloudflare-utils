@@ -33,6 +33,10 @@ linters:
     rules:
       - path: (.+)\.go$
         text: exclude-dirs-use-default
+      - path: cmd/cloudflare-utils/oauth_test.go
+        linters:
+          - revive
+        text: "unused-parameter: parameter"
     paths:
       - third_party$
       - builtin$

@@ -204,6 +204,10 @@ var (
 )
 
 func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionName) error {
+	if useOAuth {
+		logger.Debug("Using OAuth. Skipping API Token permission check.")
+		return nil
+	}
 	if APIClient.APIToken == "" {
 		logger.Debug("No API Token set. Skipping permission check")
 		return nil
@@ -288,12 +292,8 @@ func PollListBulkOperation(ctx context.Context, rc *cloudflare.ResourceContainer
 }
 
 func buildGithubClient(githubToken string) (*github.Client, error) {
-	gClient, err := github.NewClient()
 	if githubToken != "" {
-		gClient, err = github.NewClient(github.WithAuthToken(githubToken))
+		return github.NewClient(github.WithAuthToken(githubToken))
 	}
-	if err != nil {
-		return nil, fmt.Errorf("error creating github client: %w", err)
-	}
-	return gClient, nil
+	return github.NewClient()
 }
