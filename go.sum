@@ -1,5 +1,5 @@
-github.com/Cyb3r-Jak3/common/v5 v5.6.0 h1:jS3/zh+CGVSYMwKHrEcgaSg3LRnh+gy42nJDBDfpykE=
-github.com/Cyb3r-Jak3/common/v5 v5.6.0/go.mod h1:RbXgHxB9rUJkU9TMwSYOa3vzTORBE4d/YWD3f4OjsBY=
+github.com/Cyb3r-Jak3/common/v5 v5.7.0 h1:/BDBBLrKVBxszs3Rwd3wGwdAMlhVGWwzxwNA+nJd37U=
+github.com/Cyb3r-Jak3/common/v5 v5.7.0/go.mod h1:RbXgHxB9rUJkU9TMwSYOa3vzTORBE4d/YWD3f4OjsBY=
 github.com/cloudflare/cloudflare-go v0.117.0 h1:y00E0XCvxuZGplL+gkoMRIhWpfNqIgyBFS6UUWC4s0c=
 github.com/cloudflare/cloudflare-go v0.117.0/go.mod h1:Ds6urDwn/TF2uIU24mu7H91xkKP8gSAHxQ44DSZgVmU=
 github.com/cpuguy83/go-md2man/v2 v2.0.7 h1:zbFlGlXEAKlwXpmvle3d8Oe3YnkKIK4xSRTd3sHPnBo=
