@@ -82,6 +82,11 @@ func buildApp() *cli.Command {
 				Value:       false,
 				Destination: &useOAuth,
 			},
+			&cli.BoolFlag{
+				Name:  "oauth-headless",
+				Usage: "Use web oauth server to get a token. Useful for running on machines that do not have a browser",
+				Value: false,
+			},
 			&cli.StringFlag{
 				Name:    zoneNameFlag,
 				Usage:   "Domain name of your zone",
@@ -164,6 +169,15 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 		if generateErr != nil {
 			return ctx, fmt.Errorf("error generating oauth token: %v", err)
 		}
+		apiToken = oauthToken.AccessToken
+		httpClient = oauth2.NewClient(ctx, oauth2.StaticTokenSource(oauthToken))
+	} else if c.Bool("oauth-headless") {
+		logger.Debug("Using headless OAuth")
+		oauthToken, headErr := GetWebOauthToken(ctx)
+		if headErr != nil {
+			return ctx, fmt.Errorf("error getting web oauth token: %v", headErr)
+		}
+		useOAuth = true
 		apiToken = oauthToken.AccessToken
 		httpClient = oauth2.NewClient(ctx, oauth2.StaticTokenSource(oauthToken))
 	} else if apiToken == "" && apiEmail == "" && apiKey == "" {

@@ -3,7 +3,7 @@ module github.com/Cyb3r-Jak3/cloudflare-utils
 go 1.25.0
 
 require (
-	github.com/Cyb3r-Jak3/common/v5 v5.6.0
+	github.com/Cyb3r-Jak3/common/v5 v5.7.0
 	github.com/cloudflare/cloudflare-go v0.117.0
 	github.com/google/go-github/v89 v89.0.0
 	github.com/sirupsen/logrus v1.9.4
@@ -24,8 +24,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/net v0.56.0 // indirect
-	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/text v0.38.0 // indirect
+	golang.org/x/net v0.57.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 )
