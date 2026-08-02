@@ -29,7 +29,7 @@ Non-interactive runs will need to use either API Token or API Key to run.
 
 #### Oauth Headless Mode
 
-If you are running on a system that does not have a browser and still want to use oauth then you can pass `--oauth-headless` and a link will be generated that you can complete your oauth with.
+If you are running on a system that does not have a browser and still want to use oauth then you can pass `--oauth-headless` and a link will be generated that you can complete your oauth with. The oauth token is still revoked after run.
 This process used a Cloudflare worker to handle the OAuth flow and the source code can be found at on [GitHub](https://github.com/Cyb3r-Jak3/cloudflare-utils-headless-oauth)
 
 ### API Token
