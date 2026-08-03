@@ -27,6 +27,11 @@ This is the recommended way as you don't need to store any auth credentials and 
 
 Non-interactive runs will need to use either API Token or API Key to run.
 
+#### Oauth Headless Mode
+
+If you are running on a system that does not have a browser and still want to use oauth then you can pass `--oauth-headless` and a link will be generated that you can complete your oauth with. The oauth token is still revoked after run.
+This process used a Cloudflare worker to handle the OAuth flow and the source code can be found at on [GitHub](https://github.com/Cyb3r-Jak3/cloudflare-utils-headless-oauth)
+
 ### API Token
 
 The recommended method to authenticate in CI pipelines is with an [API Token](https://developers.cloudflare.com/api/tokens/create/). Each command will list the API permissions needed for it to run.
@@ -77,3 +82,6 @@ Pass your API email and key with environment variables of `CLOUDFLARE_API_EMAIL`
 
 - `--oauth`
   Triggers an oauth flow to get credentials rather than using API Token and will override any passed api credentials. Requires a browser on the same machine.
+
+- `--oauth-headless`
+  Generates a link to complete the oauth process. Useful for when cloudflare-utils is running on a remote system and still want to use oauth.
