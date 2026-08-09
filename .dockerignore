@@ -2,7 +2,9 @@
 .idea/**
 .github/**
 documentation/**
+dist/**
 *.yml
+!Taskfile.yml
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -24,4 +26,3 @@ go.work
 LICENSE
 README.md
 .gitignore
-cloudflare-utils

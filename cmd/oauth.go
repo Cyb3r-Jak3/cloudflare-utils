@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"context"
@@ -124,9 +124,9 @@ func generateOauthToken(ctx context.Context) (*oauth2.Token, error) {
 		if result.err != nil {
 			return nil, result.err
 		}
-		tok, err := conf.Exchange(ctx, result.code, oauth2.VerifierOption(verifier))
-		if err != nil {
-			return nil, fmt.Errorf("error getting token: %w", err)
+		tok, exchangeErr := conf.Exchange(ctx, result.code, oauth2.VerifierOption(verifier))
+		if exchangeErr != nil {
+			return nil, fmt.Errorf("error getting token: %w", exchangeErr)
 		}
 		return tok, nil
 	}

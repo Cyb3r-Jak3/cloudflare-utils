@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"context"
@@ -180,7 +180,7 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 	}
 	if c.Bool(deleteProjectFlag) {
 		fmt.Printf("Deleting project: %s\n", projectName)
-		if projectDeleteErr := APIClient.DeletePagesProject(ctx, accountRC, projectName); err != nil {
+		if projectDeleteErr := APIClient.DeletePagesProject(ctx, accountRC, projectName); projectDeleteErr != nil {
 			return fmt.Errorf("error deleting project: %w", projectDeleteErr)
 		}
 	}

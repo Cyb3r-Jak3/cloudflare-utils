@@ -1,4 +1,4 @@
-package main
+package cmd
 
 // Flags that are shared between commands.
 const (
