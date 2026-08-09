@@ -172,6 +172,7 @@ func PruneDeploymentsRoot(ctx context.Context, c *cli.Command) error {
 		return nil
 	}
 
+	options.SelectedDeployments = toDelete
 	failedDeletes := RapidPagesDeploymentDelete(options)
 	fmt.Printf("Deleted %d deployments\n", len(toDelete)-len(failedDeletes))
 	if len(failedDeletes) > 0 {
