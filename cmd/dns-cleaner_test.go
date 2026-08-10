@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"os"
@@ -42,7 +42,7 @@ func Test_Failed_DNSCleanerDownload(t *testing.T) {
 	defer teardownTestHTTPServer()
 	t.Setenv("CLOUDFLARE_ZONE_NAME", "nonexistent")
 	t.Setenv("CLOUDFLARE_ZONE_ID", "")
-	app := buildApp()
+	app := BuildApp(testBuildArgs)
 	err := app.Run(t.Context(), []string{"cloudflare-utils", "--trace", "dns-cleaner", "download", "--dns-file", "test.yaml"})
 	assert.EqualError(t, err, "zone could not be found", "Expected error when running the app with dns-cleaner download command with missing zone name")
 }

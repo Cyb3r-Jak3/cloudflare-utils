@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"fmt"
@@ -6,7 +6,9 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,9 +16,16 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+var testBuildArgs = BuildArgs{
+	StartTime: time.Now(),
+	Logger:    logrus.New(),
+	Version:   "unit-tests",
+	Date:      "today",
+}
+
 func TestAppBuild(t *testing.T) {
 	// Test the app build function
-	app := buildApp()
+	app := BuildApp(testBuildArgs)
 	if app.Name != "cloudflare-utils" {
 		t.Errorf("Expected app name 'cloudflare-utils', got '%s'", app.Name)
 	}
@@ -38,7 +47,7 @@ func Test_Basic_Flags(t *testing.T) {
 
 func Test_GenDocs(t *testing.T) {
 	// Test the documentation generation
-	app := buildApp()
+	app := BuildApp(testBuildArgs)
 	err := app.Run(t.Context(), []string{"cloudflare-utils", "generate-doc"})
 	assert.NoError(t, err, "Expected no error when running the app with generate-doc command")
 }
@@ -48,7 +57,7 @@ func Test_GlobalAuth(t *testing.T) {
 	defer teardownTestHTTPServer()
 	t.Setenv("CLOUDFLARE_API_KEY", "exampleKey")
 	t.Setenv("CLOUDFLARE_API_EMAIL", "exampleEmail")
-	app := buildApp()
+	app := BuildApp(testBuildArgs)
 	err := app.Run(t.Context(), []string{"cloudflare-utils", "tunnel-versions"})
 	assert.NoError(t, err, "Expected no error when running the app with tunnel-versions command and global auth")
 }
@@ -107,7 +116,7 @@ func Test_BadAPIPermission(t *testing.T) {
 	}
 	mux.HandleFunc("/user/tokens/verify", verifyHandler)
 	mux.HandleFunc("/user/tokens/ed17574386854bf78a67040be0a770b0", tokenBadPermissionsHandler)
-	app := buildApp()
+	app := BuildApp(testBuildArgs)
 	err := app.Run(t.Context(), []string{"cloudflare-utils", "tunnel-versions"})
 	assert.Error(t, err, "Expected an error when running the app with insufficient permissions")
 	assert.Contains(t, err.Error(), "API Token does not have permission [TunnelRead]")
@@ -552,6 +561,6 @@ func teardownTestHTTPServer() {
 func withApp(t *testing.T, args []string) error {
 	setupTestHTTPServer(t)
 	t.Cleanup(teardownTestHTTPServer)
-	app := buildApp()
+	app := BuildApp(testBuildArgs)
 	return app.Run(t.Context(), args)
 }

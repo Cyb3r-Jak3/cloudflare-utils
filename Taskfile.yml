@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  GIT_VERSION:
+    sh: git describe --tags --always --dirty="-dev"
+  DATE:
+    sh: '{{if eq OS "windows"}}powershell -NoProfile -Command "(Get-Date).ToUniversalTime().ToString(''yyyy-MM-dd HH:mm'') + '' UTC''"{{else}}date -u "+%Y-%m-%d %H:%M UTC"{{end}}'
+  VERSION_FLAGS: -s -w -X "main.version={{.GIT_VERSION}}" -X "main.date={{.DATE}}"
+  DOCS_DIR: '{{.ROOT_DIR}}/documentation'
+
+tasks:
+  default:
+    desc: Build the binary
+    cmds:
+      - task: build
+
+  build:
+    desc: Build the binary
+    cmds:
+      - go build -trimpath -ldflags='{{.VERSION_FLAGS}} -extldflags -static'
+
+  snapshot:
+    desc: Build a snapshot release with GoReleaser
+    cmds:
+      - goreleaser --snapshot --clean --skip=publish,sign
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run
+
+  test:
+    desc: Run tests
+    cmds:
+      - gotestsum --format testname --junitfile junit.xml -- -coverprofile=cover.out ./...
+
+  docs:
+    desc: Build documentation
+    dir: documentation
+    cmds:
+      - mkdocs build
+
+  docs-serve:
+    desc: Serve documentation locally
+    dir: documentation
+    cmds:
+      - docker run --rm -v "{{.DOCS_DIR}}:/docs" -p 8000:8000 ghcr.io/squidfunk/mkdocs-material:9.7.7
+
+  generate-docs:
+    desc: Generate CLI documentation and shell completions
+    cmds:
+      - '{{if eq OS "windows"}}powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/generate-docs.ps1{{else}}./scripts/generate-docs.sh{{end}}'
+
+  docker:build:
+    desc: Build the docker container
+    cmds:
+      - docker build -t "cloudflare-utils:{{.GIT_VERSION}}" -f dist.Dockerfile .

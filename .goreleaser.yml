@@ -1,9 +1,12 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 
+before:
+  hooks:
+    - task generate-docs
+
 builds:
   - id: default
-    main: "./cmd/cloudflare-utils/"
     env:
       - CGO_ENABLED=0
     flags:
@@ -37,17 +40,36 @@ archives:
   - id: legacy
     formats: ['tar.xz']
     files:
-        - README.md
+      - src: README.md
+        info:
+          mtime: "{{ .CommitDate }}"
+      - src: LICENSE
+        info:
+          mtime: "{{ .CommitDate }}"
+      - src: completions/*
+        info:
+          mtime: "{{ .CommitDate }}"
     format_overrides:
       - goos: windows
         formats: ['zip']
     name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+
   - id: default
     formats: ['tar.xz']
     format_overrides:
       - goos: windows
         formats: [ 'zip' ]
     name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+    files:
+      - src: README.md
+        info:
+          mtime: "{{ .CommitDate }}"
+      - src: LICENSE
+        info:
+          mtime: "{{ .CommitDate }}"
+      - src: completions/*
+        info:
+          mtime: "{{ .CommitDate }}"
 
   - id: binary
     formats: [ 'binary' ]
@@ -124,23 +146,33 @@ nfpms:
       - cloudflare-utils
     section: default
     priority: extra
-    # Changelog YAML file, see: https://github.com/goreleaser/chglog
-    #
-    # You can use goreleaser/chglog to create the changelog for your project,
-    # pass that changelog yaml file to GoReleaser,
-    # and it should in turn setup it accordingly for the given available
-    # formats (deb and rpm at the moment).
-    #
-    # Experimental.
-    # Since: v1.11
-#    changelog: ./foo.yml
+
     contents:
       - src: LICENSE
         dst: /usr/share/licenses/{{ .ProjectName }}/LICENSE.md
+        file_info:
+          mode: 0644
+          mtime: "{{ .CommitDate }}"
       - src: README.md
         dst: /usr/share/doc/{{ .ProjectName }}/README.md
-      - src: bash_completion
-        dst: /etc/bash_completion.d/{{ .ProjectName }}
+        file_info:
+          mode: 0644
+          mtime: "{{ .CommitDate }}"
+      - src: ./completions/{{ .ProjectName }}.bash
+        dst: /usr/share/bash-completion/completions/{{ .ProjectName }}
+        file_info:
+          mode: 0644
+          mtime: "{{ .CommitDate }}"
+      - src: ./completions/{{ .ProjectName }}.fish
+        dst: /usr/share/fish/vendor_completions.d/{{ .ProjectName }}.fish
+        file_info:
+          mode: 0644
+          mtime: "{{ .CommitDate }}"
+      - src: ./completions/{{ .ProjectName }}.zsh
+        dst: /usr/share/zsh/vendor-completions/_{{ .ProjectName }}
+        file_info:
+          mode: 0644
+          mtime: "{{ .CommitDate }}"
     ids:
       - default
 
@@ -169,6 +201,10 @@ homebrew_casks:
       owner: Cyb3r-Jak3
       name: homebrew-tap
       token: "{{ .Env.GITHUB_TOKEN }}"
+    completions:
+      bash: ./completions/{{ .ProjectName }}.bash
+      zsh: ./completions/{{ .ProjectName }}.zsh
+      fish: ./completions/{{ .ProjectName }}.fish
 
 
 announce:

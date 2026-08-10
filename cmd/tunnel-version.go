@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"context"
@@ -44,7 +44,7 @@ func buildTunnelVersionCommand() *cli.Command {
 	}
 }
 
-func GetLatestTunnelVersion(token string) (string, error) {
+func GetLatestTunnelVersion(ctx context.Context, token string) (string, error) {
 	gClient, err := buildGithubClient(token)
 	if err != nil {
 		return "", fmt.Errorf("error building github client: %w", err)
@@ -80,7 +80,7 @@ func TunnelVersionAction(ctx context.Context, c *cli.Command) error {
 		tunnels = screenedTunnels
 	}
 	githubToken := c.String(githubTokenFlagName)
-	latestVersion, err := GetLatestTunnelVersion(githubToken)
+	latestVersion, err := GetLatestTunnelVersion(ctx, githubToken)
 	if err != nil {
 		logger.WithError(err).Error("Error getting latest release of cloudflared from github")
 		return err

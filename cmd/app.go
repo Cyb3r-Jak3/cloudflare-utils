@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"context"
@@ -20,26 +20,39 @@ import (
 	"golang.org/x/oauth2"
 )
 
+type ctxKey int
+
+// VersionContextKey is the context key under which the app version string is stored.
+const VersionContextKey ctxKey = iota
+
 var (
-	version       = "DEV"
-	date          = "unknown"
 	APIClient     *cloudflare.API
-	logger        = logrus.New()
-	ctx           = context.Background()
-	startTime     = time.Now()
-	versionString = fmt.Sprintf("%s (built %s)", version, date)
+	logger        *logrus.Logger
+	startTime     time.Time
+	versionString = ""
 	accountRC     *cloudflare.ResourceContainer
 	zoneRC        *cloudflare.ResourceContainer
 	useOAuth      bool
 )
 
-func buildApp() *cli.Command {
+type BuildArgs struct {
+	StartTime time.Time
+	Version   string
+	Date      string
+	Logger    *logrus.Logger
+}
+
+func BuildApp(args BuildArgs) *cli.Command {
+	logger = args.Logger
 	if buildInfo, available := debug.ReadBuildInfo(); available {
-		versionString = fmt.Sprintf("%s (built %s with %s)", version, date, buildInfo.GoVersion)
+		versionString = fmt.Sprintf("%s (built %s with %s)", args.Version, args.Date, buildInfo.GoVersion)
+	} else {
+		versionString = fmt.Sprintf("%s (built %s)", args.Version, args.Date)
+		logger.Warning("No Go build information available")
 	}
 	app := &cli.Command{
 		Name:    "cloudflare-utils",
-		Usage:   "Program for quick cloudflare utils",
+		Usage:   "Program for quick Cloudflare utils",
 		Version: versionString,
 		Suggest: true,
 		Authors: []any{
@@ -142,19 +155,9 @@ func buildApp() *cli.Command {
 	return app
 }
 
-func main() {
-	app := buildApp()
-	err := app.Run(context.Background(), os.Args)
-	logger.Debugf("Running took: %v", time.Since(startTime))
-	if err != nil {
-		fmt.Printf("Error running app: %s\n", err)
-		os.Exit(1)
-	}
-}
-
 func setup(ctx context.Context, c *cli.Command) (context context.Context, err error) {
 	SetLogLevel(c, logger)
-	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Args().First() == "generate-doc" || len(c.Args().Slice()) == 0 {
+	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Args().First() == "generate-doc" || len(c.Args().Slice()) == 0 || c.Args().First() == "completion" {
 		return ctx, nil
 	}
 
@@ -189,7 +192,7 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 	if c.Bool(lotsOfDeploymentsFlag) && rateLimit == 4 {
 		rateLimit = 3
 	}
-	userAgent := fmt.Sprintf("cloudflare-utils/%s", version)
+	userAgent := fmt.Sprintf("cloudflare-utils/%s", ctx.Value(VersionContextKey))
 	if c.String(extraUserAgentFlag) != "" {
 		userAgent = fmt.Sprintf("%s (%s)", userAgent, c.String(extraUserAgentFlag))
 	}

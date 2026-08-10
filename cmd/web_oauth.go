@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"context"
@@ -74,7 +74,7 @@ func PollForToken(ctx context.Context, registrationID string) (*oauth2.Token, er
 				return &oauth2.Token{}, fmt.Errorf("error creating poll request: %v", err)
 			}
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("User-Agent", fmt.Sprintf("cloudflare-utils/%s", version))
+			req.Header.Set("User-Agent", fmt.Sprintf("cloudflare-utils/%s", ctx.Value(VersionContextKey)))
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
 				return &oauth2.Token{}, fmt.Errorf("error polling web oauth token: %v", err)
