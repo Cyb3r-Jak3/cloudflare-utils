@@ -212,6 +212,10 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 		logger.Debug("No API Token set. Skipping permission check")
 		return nil
 	}
+	if ctx.Value(SkipTokenContextKey) != nil {
+		logger.Debug("Skipping API Token permission check")
+		return nil
+	}
 	if logger.Level >= logrus.DebugLevel {
 		logger.Debugf("Checking API Token permission: %s", permission)
 	}
