@@ -22,8 +22,13 @@ import (
 
 type ctxKey int
 
-// VersionContextKey is the context key under which the app version string is stored.
-const VersionContextKey ctxKey = iota
+const (
+	// VersionContextKey is the context key under which the app version string is stored.
+	VersionContextKey ctxKey = iota
+
+	// SkipTokenContextKey is the context key on if the API token permission should be checked.
+	SkipTokenContextKey
+)
 
 var (
 	APIClient     *cloudflare.API
@@ -148,6 +153,11 @@ func BuildApp(args BuildArgs) *cli.Command {
 				Hidden:  true,
 				Sources: cli.EnvVars("CLOUDFLARE_BASE_URL"),
 			},
+			&cli.BoolFlag{
+				Name:    "skip-token-check",
+				Usage:   "Skip checking that the API token is valid and has the correct permissions",
+				Sources: cli.EnvVars("CLOUDFLARE_SKIP_TOKEN_CHECK"),
+			},
 		},
 		EnableShellCompletion: true,
 	}
@@ -155,7 +165,7 @@ func BuildApp(args BuildArgs) *cli.Command {
 	return app
 }
 
-func setup(ctx context.Context, c *cli.Command) (context context.Context, err error) {
+func setup(ctx context.Context, c *cli.Command) (context.Context, error) {
 	SetLogLevel(c, logger)
 	if c.Args().First() == "help" || common.StringSearch("help", c.Args().Slice()) || common.StringSearch("help", c.FlagNames()) || c.Args().First() == "generate-doc" || len(c.Args().Slice()) == 0 || c.Args().First() == "completion" {
 		return ctx, nil
@@ -170,7 +180,7 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 		logger.Debug("Using OAuth")
 		oauthToken, generateErr := generateOauthToken(ctx)
 		if generateErr != nil {
-			return ctx, fmt.Errorf("error generating oauth token: %v", err)
+			return ctx, fmt.Errorf("error generating oauth token: %v", generateErr)
 		}
 		apiToken = oauthToken.AccessToken
 		httpClient = oauth2.NewClient(ctx, oauth2.StaticTokenSource(oauthToken))
@@ -207,11 +217,11 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 	if c.String("with-base-url") != "" {
 		cfClientOptions = append(cfClientOptions, cloudflare.BaseURL(c.String("with-base-url")))
 	}
-
+	var setupErr error
 	if apiToken != "" {
-		APIClient, err = cloudflare.NewWithAPIToken(apiToken, cfClientOptions...)
-		if err != nil {
-			logger.WithError(err).Error("Error creating new API instance with token")
+		APIClient, setupErr = cloudflare.NewWithAPIToken(apiToken, cfClientOptions...)
+		if setupErr != nil {
+			logger.WithError(setupErr).Error("Error creating new API instance with token")
 		}
 	}
 	if apiEmail != "" || apiKey != "" {
@@ -219,9 +229,9 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 			return ctx, errors.New("need to have both API Key and Email set for legacy method")
 		}
 		logger.Warning("Using legacy method. Using API tokens is recommended")
-		APIClient, err = cloudflare.New(apiKey, apiEmail, cfClientOptions...)
-		if err != nil {
-			logger.WithError(err).Error("Error creating new API instance with legacy method")
+		APIClient, setupErr = cloudflare.New(apiKey, apiEmail, cfClientOptions...)
+		if setupErr != nil {
+			logger.WithError(setupErr).Error("Error creating new API instance with legacy method")
 		}
 	}
 	if c.String("account-id") != "" {
@@ -230,8 +240,8 @@ func setup(ctx context.Context, c *cli.Command) (context context.Context, err er
 	if c.String("zone-id") != "" {
 		zoneRC = cloudflare.ZoneIdentifier(c.String("zone-id"))
 	}
-
-	return ctx, err
+	ctx = context.WithValue(ctx, SkipTokenContextKey, c.Bool("skip-token-check"))
+	return ctx, nil
 }
 
 func teardown(ctx context.Context, _ *cli.Command) error {

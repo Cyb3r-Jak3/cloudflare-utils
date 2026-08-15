@@ -212,6 +212,10 @@ func CheckAPITokenPermission(ctx context.Context, permission ...APIPermissionNam
 		logger.Debug("No API Token set. Skipping permission check")
 		return nil
 	}
+	if skip, ok := ctx.Value(SkipTokenContextKey).(bool); ok && skip {
+		logger.Debug("Skipping API Token permission check")
+		return nil
+	}
 	if logger.Level >= logrus.DebugLevel {
 		logger.Debugf("Checking API Token permission: %s", permission)
 	}
@@ -263,7 +267,7 @@ const (
 )
 
 func PollListBulkOperation(ctx context.Context, rc *cloudflare.ResourceContainer, ID string) error {
-	for i := uint8(0); i < 16; i++ {
+	for i := range uint8(16) {
 		sleepDuration := 1 << (i / 2) * time.Second
 		select {
 		case <-time.After(sleepDuration):
