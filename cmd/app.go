@@ -22,11 +22,13 @@ import (
 
 type ctxKey int
 
-// VersionContextKey is the context key under which the app version string is stored.
-const VersionContextKey ctxKey = iota
+const (
+	// VersionContextKey is the context key under which the app version string is stored.
+	VersionContextKey ctxKey = iota
 
-// SkipTokenContextKey is the context key on if the API token permission should be checked
-const SkipTokenContextKey ctxKey = iota
+	// SkipTokenContextKey is the context key on if the API token permission should be checked.
+	SkipTokenContextKey
+)
 
 var (
 	APIClient     *cloudflare.API
