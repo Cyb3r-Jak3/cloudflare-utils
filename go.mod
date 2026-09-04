@@ -1,11 +1,11 @@
 module github.com/Cyb3r-Jak3/cloudflare-utils
 
-go 1.26
+go 1.26.0
 
 require (
 	github.com/Cyb3r-Jak3/common/v5 v5.7.0
 	github.com/cloudflare/cloudflare-go v0.118.0
-	github.com/google/go-github/v90 v90.0.0
+	github.com/google/go-github/v91 v91.0.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/sourcegraph/conc v0.3.0
 	github.com/stretchr/testify v1.12.1
