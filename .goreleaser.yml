@@ -195,8 +195,6 @@ homebrew_casks:
     description: *description
     license: *license
     homepage: "https://cloudflare-utils.cyberjake.xyz/"
-    url:
-      verified: "github.com/Cyb3r-Jak3/cloudflare-utils"
     repository:
       owner: Cyb3r-Jak3
       name: homebrew-tap
