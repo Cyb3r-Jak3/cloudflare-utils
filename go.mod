@@ -5,7 +5,7 @@ go 1.27
 require (
 	github.com/Cyb3r-Jak3/common/v5 v5.7.0
 	github.com/cloudflare/cloudflare-go v0.119.0
-	github.com/google/go-github/v92 v92.0.0
+	github.com/google/go-github/v93 v93.0.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/sourcegraph/conc v0.3.0
 	github.com/stretchr/testify v1.12.1
